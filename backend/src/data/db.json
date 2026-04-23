@@ -1,0 +1,61 @@
+{
+  "users": [
+    { "email": "admin@gmail.com", "pass": "admin", "role": "admin", "path": "/admin" },
+    { "email": "gudang@gmail.com", "pass": "gudang", "role": "gudang", "path": "/gudang" },
+    { "email": "toko@gmail.com", "pass": "toko", "role": "toko", "path": "/toko" }
+  ],
+  "products": [
+    {
+      "id": 1,
+      "name": "Lampu LED 12W",
+      "variant": "Putih - 12W",
+      "sku": "LED-12W",
+      "barcode": "8991234567890",
+      "category": "Elektronik",
+      "price": 25000,
+      "stock": 150,
+      "stockStatus": "Aman",
+      "status": "Aktif",
+      "toko": ["Toko A", "Toko B"]
+    },
+    {
+      "id": 2,
+      "name": "Kabel NYM 3x1.5mm",
+      "variant": "Roll 50m",
+      "sku": "KBL-NYM-31.5",
+      "barcode": "8991234567891",
+      "category": "Elektronik",
+      "price": 450000,
+      "stock": 8,
+      "stockStatus": "Stok rendah",
+      "status": "Aktif",
+      "toko": ["Toko A"]
+    }
+  ],
+  "categories": [
+    { "id": 1, "label": "Elektronik", "color": "#4a90e2" },
+    { "id": 2, "label": "Plumbing", "color": "#52c41a" },
+    { "id": 3, "label": "Bahan Bangunan", "color": "#e4915a" },
+    { "id": 4, "label": "Lainnya", "color": "#8c8c8c" }
+  ],
+  "stores": [
+    { "id": 1, "name": "Toko A" },
+    { "id": 2, "name": "Toko B" },
+    { "id": 3, "name": "Toko C" }
+  ],
+  "warehouses": [
+    { "id": 1, "name": "Gudang Pusat" },
+    { "id": 2, "name": "Gudang Cabang A" }
+  ],
+  "stock_requests": [
+    {
+      "id": "ADD-001",
+      "tanggal": "02 Feb 2026, 09:12",
+      "barang": "BRG-002 (Lampu LED)",
+      "kategori": "Elektronik",
+      "jumlah": 50,
+      "catatan": "Tambah stok untuk promo akhir pekan",
+      "status": "Selesai"
+    }
+  ]
+}
