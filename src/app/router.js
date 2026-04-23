@@ -29,6 +29,8 @@ import ProfileGudang from "../pages/gudang/ProfileGudang";
 import SettingsGudang from "../pages/gudang/SettingsGudang";
 import StokGudang from "../pages/gudang/StokGudang";
 import PengirimanGudang from "../pages/gudang/PengirimanGudang";
+import PengeluaranBarang from "../pages/gudang/PengeluaranBarang";
+import TransferBarang from "../pages/gudang/TransferBarang";
 
 // Toko
 import TokoLayout from "../pages/toko/TokoLayout";
@@ -77,6 +79,8 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <GudangDashboard /> },
       { path: "penerimaan", element: <PenerimaanBarang /> },
+      { path: "pengeluaran", element: <PengeluaranBarang /> },
+      { path: "transfer", element: <TransferBarang /> },
       { path: "requests", element: <RequestsGudang /> },
       { path: "profile", element: <ProfileGudang /> },
       { path: "settings", element: <SettingsGudang /> },
