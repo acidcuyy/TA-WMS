@@ -1,0 +1,221 @@
+/* LAPORAN STOK (ADMIN) - PREMIUM DESIGN */
+
+.lsAdmin__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+}
+
+.lsAdmin__title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+
+.lsAdmin__subtitle {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 4px 0 0;
+}
+
+/* STATS ROW */
+.lsAdmin__stats {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.lsAdmin__statCard {
+  background: var(--bg);
+  padding: 16px 20px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.lsAdmin__statIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.lsAdmin__statLabel {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.lsAdmin__statValue {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.lsAdmin__statHint {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.lsAdmin__statHint b { color: #52c41a; }
+
+/* CHARTS GRID */
+.lsAdmin__chartsGrid {
+  display: grid;
+  grid-template-columns: 1.3fr 0.7fr;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.lsAdmin__card {
+  background: var(--bg);
+  padding: 24px;
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+}
+
+.lsAdmin__cardHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.lsAdmin__cardHead h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+
+/* LOCATIONS ROW */
+.lsAdmin__locations {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.lsAdmin__locCard {
+  background: var(--bg);
+  padding: 20px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+}
+
+.lsAdmin__locIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--bg-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  font-size: 18px;
+}
+
+.lsAdmin__locName { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+.lsAdmin__locMeta { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+.lsAdmin__locValue { font-size: 14px; font-weight: 800; color: var(--text); margin-bottom: 12px; }
+.lsAdmin__locStatus { font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+
+/* ALERT LIST */
+.lsAdmin__alertList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.lsAdmin__alertItem {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  background: var(--bg-2);
+  border-radius: 16px;
+}
+
+.lsAdmin__alertIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.lsAdmin__alertMain { flex: 1; }
+.lsAdmin__alertTitle { font-size: 13px; font-weight: 700; color: var(--text); }
+.lsAdmin__alertSub { font-size: 11px; color: var(--muted); }
+.lsAdmin__alertVal { font-size: 13px; font-weight: 800; color: var(--text); }
+
+/* TABLE */
+.lsAdmin__tableCard {
+  background: var(--bg);
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+}
+
+.lsAdmin__tableWrap {
+  overflow-x: auto;
+}
+
+.lsAdmin__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.lsAdmin__table th {
+  background: var(--bg-2);
+  padding: 14px 24px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.lsAdmin__table td {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 13px;
+}
+
+/* PILLS */
+.lsAdmin__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.lsAdmin__pill--safe { background: #e6f7ed; color: #2e7d32; }
+.lsAdmin__pill--low { background: #fff7e6; color: #fa8c16; }
+.lsAdmin__pill--out { background: #fff1f0; color: #ff4d4f; }
+
+@media (max-width: 1400px) {
+  .lsAdmin__stats { grid-template-columns: repeat(3, 1fr); }
+  .lsAdmin__locations { grid-template-columns: repeat(3, 1fr); }
+  .lsAdmin__chartsGrid { grid-template-columns: 1fr; }
+}

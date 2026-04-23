@@ -1,247 +1,259 @@
 /* =========================================================
-   FIGMA LOGIN LAYOUT (match screenshot #2)
-   - DO NOT change animation in Login.js
-   - We only fix position/sizing here
+   REASTOCK PREMIUM LOGIN LAYOUT
    ========================================================= */
 
-.figmaLogin{
-  position: relative;
-  height: 100dvh;
+.reastock-login-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
   overflow: hidden;
-  background: transparent;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* -----------------------
-   LEFT FORM AREA
-   Centered in left section (0 -> 52vw)
+   LEFT BRAND SECTION
    ----------------------- */
+.login-brand-section {
+  flex: 1.1;
+  background: radial-gradient(circle at center, #ffdcc6 10%, #e2af6b 90%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
 
-.figmaLogin__left{
-  position: absolute;
+.brand-content {
+  width: 100%;
+  max-width: 600px;
+  padding: 40px;
+}
 
-  /* ✅ FIX POSITION:
-     - lebih ke kiri
-     - sedikit lebih ke atas
-     - tetap center secara natural */
-  left: 11vw;
-  top: 30%;
-  transform: translate(-50%, -50%);
-  z-index: 1;
+.brand-logo-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
 
-  width: min(720px, 48vw);
-  max-width: 720px;
+.brand-logo {
+  width: 200px;
+  height: auto;
+  filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.15));
+}
+
+.brand-text-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.brand-name {
+  font-size: 48px;
+  font-weight: 800;
+  color: #333;
+  margin: 0;
+  letter-spacing: -1px;
+}
+
+.brand-tagline {
+  font-size: 18px;
+  color: #444;
+  margin: 0;
+  font-weight: 500;
+}
+
+.know-more-btn {
+  margin-top: 20px;
+  width: fit-content;
+  padding: 10px 24px;
+  background: #e67e22;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+  box-shadow: 0 4px 15px rgba(230, 126, 34, 0.3);
+}
+
+.know-more-btn:hover {
+  background: #ff6600;
+  transform: translateY(-2px);
+}
+
+/* -----------------------
+   RIGHT FORM SECTION
+   ----------------------- */
+.login-form-section {
+  flex: 0.9;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.form-container {
+  width: 100%;
+  max-width: 400px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.form-header {
   text-align: left;
 }
 
-.figmaLogin__title{
-  font-size: 34px;
-  font-weight: 900;
-  letter-spacing: .2px;
-  color: rgba(0,0,0,0.78);
-}
-
-.figmaLogin__subtitle{
-  font-size: 14px;
-  margin-top: 10px;
-  color: rgba(0,0,0,0.62);
-}
-
-/* form layout like figma */
-.figmaForm{
-  margin-top: 30px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.figmaField{
-  width: 100%;
-  max-width: 640px;
-}
-
-.figmaLabel{
-  display: block;
-  font-size: 12px;
-  font-weight: 600;
-  color: rgba(0,0,0,0.85);
-  margin-bottom: 6px;
-}
-
-.figmaRow{
-  display:flex;
-  justify-content: space-between;
-  align-items:center;
-  margin-bottom: 6px;
-}
-
-.figmaForgot{
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-  font-size: 11px;
-  color: #1c4ed8; /* blue link */
-  text-decoration: none;
-}
-.figmaForgot:hover{ text-decoration: underline; }
-
-.figmaInput{
-  width: 100%;
-  height: 46px;
-  padding: 0 14px;
-
-  border-radius: 14px;
-  border: 1px solid rgba(0,0,0,0.12);
-  background: rgba(255,255,255,0.55);
-
-  outline: none;
-  font-size: 14px;
-  font-weight: 700;
-  color: rgba(0,0,0,0.78);
-
-  box-shadow: 0 10px 24px rgba(0,0,0,0.06);
-  transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
-}
-
-.figmaInput:focus{
-  border-color: rgba(106, 74, 58, 0.55);
-  box-shadow: 0 14px 30px rgba(106, 74, 58, 0.18);
-  transform: translateY(-1px);
-}
-
-.figmaCheck{
-  width: 100%;
-  display:flex;
-  gap: 10px;
-  align-items:center;
-  justify-content:flex-start;
-
-  font-size: 12px;
-  color: rgba(0,0,0,0.72);
-  margin-top: 6px;
-  font-weight: 700;
-}
-
-/* ✅ error message bawah form */
-.figmaError{
-  width: 100%;
-  max-width: 640px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: rgba(255, 80, 80, 0.12);
-  border: 1px solid rgba(255, 80, 80, 0.25);
-  color: rgba(120, 0, 0, 0.85);
-  font-size: 12px;
+.form-title {
+  font-size: 32px;
   font-weight: 800;
+  color: #1a1a1a;
+  margin: 0;
 }
 
-.figmaBtnWrap{
-  width: 100%;
-  display:flex;
-  justify-content:center;
+.form-subtitle {
+  font-size: 16px;
+  color: #666;
   margin-top: 8px;
 }
 
-.figmaBtn{
-  width: 100%;
-  height: 48px;
-  border-radius: 16px;
-
-  border: 0;
-  cursor: pointer;
-  font-weight: 900;
-  letter-spacing: .2px;
-
-  background: linear-gradient(135deg, #6a4a3a, #8a5a42);
-  box-shadow: 0 18px 40px rgba(0,0,0,0.20);
-  transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.figmaBtn:hover{
-  transform: translateY(-1px);
-  box-shadow: 0 22px 50px rgba(0,0,0,0.25);
-  filter: brightness(1.02);
+.input-group {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
-.figmaBtn:active{
-  transform: translateY(0px);
-  box-shadow: 0 14px 30px rgba(0,0,0,0.18);
-}
-
-.loginScene__formWrap.figmaLogin__left{
-  padding: 26px 26px 22px;
-  border-radius: 22px;
-  background: rgba(255,255,255,0.22);
-  border: 1px solid rgba(255,255,255,0.35);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 30px 70px rgba(0,0,0,0.10);
-}
-
-/* -----------------------
-   RIGHT MOVING PANEL
-   Start from left (as your animation does),
-   ends at 52vw (from motion) -> we size it to look like figma panel
-   ----------------------- */
-.figmaLogin__panel{
+.input-icon {
   position: absolute;
-  top: 0;
-  bottom: 0;
+  left: 18px;
+  color: #aaa;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
 
+.auth-input {
   width: 100%;
-  left: calc(100vw - 520px - 36px - 52vw);
-  border-radius: 20px;
-
-  background: linear-gradient(
-    to right,
-    rgba(116, 90, 70, 0.644),
-    rgba(255, 220, 185, 0.473),
-    rgb(255, 221, 199)
-  );
-
-  box-shadow: 0 0px 70px rgba(0, 0, 0, 0.849);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-
-  display:flex;
-  align-items:center;
-  justify-content:flex-start;
-  padding-left: 180px;
-  z-index: 2;
+  padding: 16px 20px 16px 50px;
+  border: 1px solid #eee;
+  border-radius: 50px;
+  background: #fafafa;
+  font-size: 15px;
+  color: #333;
+  outline: none;
+  transition: all 0.2s;
 }
 
-.figmaLogin__panelInner{
-  text-align:center;
+.auth-input:focus {
+  border-color: #f78b4a;
+  background: white;
+  box-shadow: 0 0 0 4px rgba(247, 139, 74, 0.1);
 }
 
-.figmaLogin__logo{
-  width: 300px;
-  height: auto;
-  margin-left: 50px;
-  filter: drop-shadow(0 18px 30px rgba(0,0,0,0.18));
+.auth-input::placeholder {
+  color: #bbb;
 }
 
-.figmaLogin__brand{
-  margin-top: 10px;
-  font-weight: 900;
-  font-size: 32px;
-  letter-spacing: .5px;
-  color: rgba(0,0,0,0.55);
+.form-error-msg {
+  color: #c0392b;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.login-submit-btn {
+  padding: 16px;
+  background: #e67e22;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 10px 20px rgba(198, 40, 40, 0.2);
+}
+
+.login-submit-btn:hover {
+  background: #ff6600;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px rgba(198, 40, 40, 0.3);
+}
+
+.login-submit-btn:active {
+  transform: translateY(0);
+}
+
+.form-options {
+  text-align: center;
+}
+
+.remember-text {
+  font-size: 14px;
+  color: #888;
+  cursor: pointer;
+}
+
+.form-footer {
+  position: absolute;
+  bottom: 30px;
+  right: 40px;
+  font-size: 12px;
+  color: #aaa;
+  font-weight: 500;
 }
 
 /* =========================================================
    RESPONSIVE
    ========================================================= */
-@media (max-width: 980px){
-  .figmaLogin__left{
-    left: 50%;
-    top: 52%;
-    width: 92vw;
-    max-width: 520px;
+@media (max-width: 1024px) {
+  .reastock-login-container {
+    flex-direction: column;
+    overflow-y: auto;
   }
 
-  .figmaLogin__panel{
-    top: 18px;
-    bottom: auto;
-    height: 240px;
+  .login-brand-section {
+    flex: none;
+    height: 400px;
+    padding: 20px;
+  }
+
+  .brand-logo-wrapper {
+    flex-direction: column;
+    text-align: center;
+    gap: 15px;
+  }
+
+  .brand-logo {
+    width: 150px;
+  }
+
+  .brand-name {
+    font-size: 36px;
+  }
+
+  .know-more-btn {
+    margin: 20px auto 0;
+  }
+
+  .login-form-section {
+    flex: 1;
+    padding: 60px 20px;
+  }
+
+  .form-footer {
+    position: static;
+    margin-top: 40px;
+    text-align: center;
   }
 }

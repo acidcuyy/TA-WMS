@@ -1,0 +1,208 @@
+/* LAPORAN PERGERAKAN STOK (ADMIN) - PREMIUM DESIGN */
+
+.lpsAdmin__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+}
+
+.lpsAdmin__title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+
+.lpsAdmin__subtitle {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 4px 0 0;
+}
+
+/* STATS ROW */
+.lpsAdmin__stats {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.lpsAdmin__statCard {
+  background: var(--bg);
+  padding: 16px 20px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.lpsAdmin__statIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.lpsAdmin__statLabel {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.lpsAdmin__statValue {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.lpsAdmin__statSub {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.lpsAdmin__statHint {
+  font-size: 11px;
+  font-weight: 700;
+  color: #52c41a;
+  margin-top: 4px;
+}
+
+/* FILTER BAR */
+.lpsAdmin__filterBar {
+  background: var(--bg);
+  padding: 16px 24px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.lpsAdmin__filterGroup {
+  display: flex;
+  gap: 10px;
+  flex: 1;
+}
+
+.lpsAdmin__select {
+  padding: 10px 12px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 12px;
+  color: var(--text);
+  outline: none;
+  min-width: 140px;
+}
+
+/* CHARTS GRID */
+.lpsAdmin__chartsGrid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr 0.5fr;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.lpsAdmin__card {
+  background: var(--bg);
+  padding: 24px;
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+}
+
+.lpsAdmin__cardHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.lpsAdmin__cardHead h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+
+/* TABLES GRID */
+.lpsAdmin__tablesGrid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 24px;
+}
+
+.lpsAdmin__tableCard {
+  background: var(--bg);
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+}
+
+.lpsAdmin__tableWrap {
+  overflow-x: auto;
+}
+
+.lpsAdmin__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.lpsAdmin__table th {
+  background: var(--bg-2);
+  padding: 14px 20px;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.lpsAdmin__table td {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 12px;
+}
+
+.lpsAdmin__typeTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 11px;
+}
+
+.lpsAdmin__typeTag--in { background: #e6f7ed; color: #2e7d32; }
+.lpsAdmin__typeTag--out { background: #fff7e6; color: #fa8c16; }
+.lpsAdmin__typeTag--tr { background: #e6f7ff; color: #1890ff; }
+
+.lpsAdmin__sideStack {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+@media (max-width: 1600px) {
+  .lpsAdmin__chartsGrid { grid-template-columns: 1fr 1fr; }
+  .lpsAdmin__chartsGrid > *:last-child { grid-column: span 2; }
+}
+
+@media (max-width: 1400px) {
+  .lpsAdmin__stats { grid-template-columns: repeat(3, 1fr); }
+  .lpsAdmin__tablesGrid { grid-template-columns: 1fr; }
+}

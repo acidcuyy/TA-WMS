@@ -92,23 +92,11 @@ export default function Topbar({
       <header className="topbar">
         <div className="topbar__inner">
           {/* LEFT */}
-          <div className="topbar__left">
-            <button className="topbar__iconBtn" onClick={() => go(homePath)}>
-              ⌂
-            </button>
-
-            <div className="topbar__search">
-              <span className="topbar__searchIcon">⌕</span>
-              <input placeholder="Search..." />
-            </div>
-          </div>
-
-          {/* CENTER */}
           <button className="topbar__brand" onClick={() => go(homePath)}>
             <img className="topbar__brandLogo" src={currentLogo} alt="ReaStock" />
           </button>
 
-          {/* RIGHT */}
+          {/* CENTER */}
           <div className="topbar__right" ref={wrapRef}>
             {showRequests && (
               <button
@@ -124,6 +112,18 @@ export default function Topbar({
                 Features
               </button>
             )}
+
+          {/* RIGHT */}
+          <div className="topbar__left">
+            <button className="topbar__iconBtn" onClick={() => go(homePath)}>
+              ⌂
+            </button>
+
+            <div className="topbar__search">
+              <span className="topbar__searchIcon">⌕</span>
+              <input placeholder="Search..." />
+            </div>
+          </div>
 
             {/* NOTIFICATION TOGGLE */}
             <button

@@ -13,6 +13,13 @@ import RequestsAdmin from "../pages/admin/RequestsAdmin";
 import ManajemenStok from "../pages/admin/ManajemenStok";
 import ManajemenGudang from "../pages/admin/ManajemenGudang";
 import ManajemenToko from "../pages/admin/ManajemenToko";
+import ManajemenProduk from "../pages/admin/ManajemenProduk";
+import ManajemenOrder from "../pages/admin/ManajemenOrder";
+import LaporanStok from "../pages/admin/LaporanStok";
+import LaporanOrder from "../pages/admin/LaporanOrder";
+import LaporanPergerakanStok from "../pages/admin/LaporanPergerakanStok";
+import LaporanProduksi from "../pages/admin/LaporanProduksi";
+import PenerimaanBarang from "../pages/gudang/PenerimaanBarang";
 
 // Gudang
 import GudangLayout from "../pages/gudang/GudangLayout";
@@ -53,6 +60,12 @@ export const router = createBrowserRouter([
           { path: "stok-gudang", element: <ManajemenStok /> },
           { path: "gudang", element: <ManajemenGudang /> },
           { path: "toko", element: <ManajemenToko /> },
+          { path: "produk", element: <ManajemenProduk /> },
+          { path: "order", element: <ManajemenOrder /> },
+          { path: "laporan-stok", element: <LaporanStok /> },
+          { path: "laporan-order", element: <LaporanOrder /> },
+          { path: "laporan-pergerakan", element: <LaporanPergerakanStok /> },
+          { path: "laporan-produksi", element: <LaporanProduksi /> },
         ],
       },
     ],
@@ -63,6 +76,7 @@ export const router = createBrowserRouter([
     element: <GudangLayout />,
     children: [
       { index: true, element: <GudangDashboard /> },
+      { path: "penerimaan", element: <PenerimaanBarang /> },
       { path: "requests", element: <RequestsGudang /> },
       { path: "profile", element: <ProfileGudang /> },
       { path: "settings", element: <SettingsGudang /> },

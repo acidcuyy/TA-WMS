@@ -55,89 +55,92 @@ export default function Login() {
 
   return (
     <motion.div
-      className="loginScene figmaLogin"
-      initial={{ opacity: 1, filter: "blur(0px)" }}
+      className="reastock-login-container"
+      initial={{ opacity: 1 }}
       animate={{
         opacity: isLeaving ? 0 : 1,
         filter: isLeaving ? "blur(6px)" : "blur(0px)",
       }}
       transition={{ duration: 0.42, ease: easing }}
     >
-      {/* LEFT: form area */}
-      <motion.div
-        className="loginScene__formWrap figmaLogin__left"
-        initial={{ opacity: 0, y: 10, filter: "blur(8px)" }}
-        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-        transition={{ delay: 0.45, duration: 0.5, ease: easing }}
+      {/* LEFT SECTION: BRANDING */}
+      <motion.div 
+        className="login-brand-section"
+        initial={{ x: -100, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ duration: 0.8, ease: easing }}
       >
-        <div className="figmaLogin__title">Welcome to ReaStock!</div>
-        <div className="figmaLogin__subtitle">
-          Enter your Credentials to access your account
-        </div>
-
-        <form className="figmaForm" onSubmit={handleSubmit}>
-          <div className="figmaField">
-            <label className="figmaLabel">Email address</label>
-            <input
-              className="figmaInput"
-              type="email"
-              placeholder="admin@gmail.com / gudang@gmail.com / toko@gmail.com"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="username"
-            />
-          </div>
-
-          <div className="figmaField">
-            <div className="figmaRow">
-              <label className="figmaLabel">Password</label>
-              <button type="button" className="figmaForgot">
-                forgot password
+        <div className="brand-content">
+          <div className="brand-logo-wrapper">
+            <img src={logo} alt="ReaStock Logo" className="brand-logo" />
+            <div className="brand-text-group">
+              <h1 className="brand-name">ReaStock</h1>
+              <p className="brand-tagline">The most popular Warehouse System is here.</p>
+              <button className="know-more-btn">
+                Know More <span>→</span>
               </button>
             </div>
-            <input
-              className="figmaInput"
-              type="password"
-              placeholder="admin / gudang / toko"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
-            />
           </div>
-
-          <label className="figmaCheck">
-            <input type="checkbox" />
-            Remember for 30 days
-          </label>
-
-          {/* ✅ error message */}
-          {error ? <div className="figmaError">{error}</div> : null}
-
-          <div className="figmaBtnWrap">
-            <Button className="figmaBtn" type="submit">
-              Login
-            </Button>
-          </div>
-        </form>
+        </div>
       </motion.div>
 
-      {/* RIGHT: moving panel (tetap sama) */}
-      <motion.div
-        className="loginScene__panel figmaLogin__panel"
-        initial={{ x: 0 }}
-        animate={{ x: "40vw" }}
-        transition={{ duration: 2.0, ease: easing }}
+      {/* RIGHT SECTION: FORM */}
+      <motion.div 
+        className="login-form-section"
+        initial={{ x: 100, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ duration: 0.8, ease: easing }}
       >
-        <motion.div
-          className="loginScene__panelInner figmaLogin__panelInner"
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.45, ease: easing, delay: 0.08 }}
-        >
-          <img className="figmaLogin__logo" src={logo} alt="ReaStock" />
-        </motion.div>
+        <div className="form-container">
+          <header className="form-header">
+            <h2 className="form-title">Hello!</h2>
+            <p className="form-subtitle">Sign in to Get Started</p>
+          </header>
+
+          <form className="auth-form" onSubmit={handleSubmit}>
+            <div className="input-group">
+              <div className="input-icon">
+                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+              </div>
+              <input
+                type="email"
+                placeholder="Username / Email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="auth-input"
+              />
+            </div>
+
+            <div className="input-group">
+              <div className="input-icon">
+                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+              </div>
+              <input
+                type="password"
+                placeholder="Password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="auth-input"
+              />
+            </div>
+
+            {error && <div className="form-error-msg">{error}</div>}
+
+            <button type="submit" className="login-submit-btn">
+              Login
+            </button>
+
+            <div className="form-options">
+              <span className="remember-text">Remember</span>
+            </div>
+          </form>
+
+          <footer className="form-footer">
+            Developed & Maintained By Soori Solutinns
+          </footer>
+        </div>
       </motion.div>
     </motion.div>
   );

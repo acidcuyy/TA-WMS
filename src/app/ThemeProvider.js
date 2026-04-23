@@ -6,19 +6,17 @@ const THEME_KEY = "reastock_theme";
 const ALLOWED = new Set(["warm", "light", "dark"]);
 
 export function ThemeProvider({ children }) {
-  const [theme, setThemeState] = useState("warm");
-
-  // Load theme dari localStorage saat pertama kali
-  useEffect(() => {
+  // Inisialisasi state langsung dari localStorage untuk menghindari flicker
+  const [theme, setThemeState] = useState(() => {
     try {
       const saved = (localStorage.getItem(THEME_KEY) || "").toLowerCase();
-      if (ALLOWED.has(saved)) setThemeState(saved);
+      return ALLOWED.has(saved) ? saved : "warm";
     } catch (e) {
-      // ignore
+      return "warm";
     }
-  }, []);
+  });
 
-  // Apply theme ke <html data-theme="..."> + simpan
+  // Sinkronisasi atribut data-theme ke <html> dan simpan ke localStorage
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
     try {

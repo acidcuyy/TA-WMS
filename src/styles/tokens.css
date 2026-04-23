@@ -3,126 +3,98 @@
    Theme dipilih via: html[data-theme="warm|light|dark"]
    ========================================================= */
 
-/* Default = warm (kalau data-theme belum kepasang) */
-:root{
-  /* Base */
-  --bg: #d3c2b5;
-  --bg-2: #e6d6c6;
-
-  /* Surfaces */
-  --panel: rgba(255,255,255,0.25);
-  --panel-2: rgba(255,255,255,0.18);
-
-  /* Alias untuk komponen yang pakai surface */
-  --surface: rgba(255,255,255,0.18);
-  --surface-2: rgba(255,255,255,0.22);
-
-  /* Text */
-  --text: rgba(0,0,0,0.82);
-  --muted: rgba(0,0,0,0.58);
-
-  /* Brand */
-  --primary: #6a4a3a;
-  --accent: #c56a3b;
-
-  /* Alias brand untuk beberapa komponen */
-  --brand: rgba(87, 60, 39, 0.92);
-  --brand-hover: rgb(71, 47, 27);
-
-  /* Borders & shadow */
-  --border: rgba(0,0,0,0.08);
-  --shadow: 0 18px 40px rgba(0,0,0,0.18);
-  --shadow-soft: 0 10px 24px rgba(0,0,0,0.14);
-
-  /* Radius / blur */
+:root {
+  /* Common Values */
   --radius-lg: 28px;
   --radius-md: 18px;
   --blur: blur(14px);
+  --transition: all 0.3s ease;
 }
 
-/* WARM */
-html[data-theme="warm"]{
-  --bg: #d3c2b5;
-  --bg-2: #e6d6c6;
+/* WARM (Default Premium - Clean with Orange Accents) */
+html[data-theme="warm"], :root {
+  --bg: #ffffff;
+  --bg-2: #fcfcfc;
+  --bg-sidebar: #ffffff;
+  
+  --panel: rgba(255, 255, 255, 0.8);
+  --surface: #fff8f3; /* Light orange tint */
+  --surface-2: #fffcf9;
 
-  --panel: rgba(255,255,255,0.25);
-  --panel-2: rgba(255,255,255,0.18);
+  --text: #333333;
+  --muted: #888888;
+  --subtle: #aaaaaa;
 
-  --surface: rgba(255,255,255,0.18);
-  --surface-2: rgba(255,255,255,0.22);
-
-  --text: rgba(0,0,0,0.82);
-  --muted: rgba(0,0,0,0.58);
-
-  --primary: #6a4a3a;
-  --accent: #c56a3b;
-
-  --brand: rgba(87, 60, 39, 0.92);
-  --brand-hover: rgb(71, 47, 27);
-
-  --border: rgba(0,0,0,0.08);
-  --shadow: 0 18px 40px rgba(0,0,0,0.18);
-  --shadow-soft: 0 10px 24px rgba(0,0,0,0.14);
-
-  --blur: blur(14px);
+  --primary: #e4915a;
+  --primary-hover: #d37b40;
+  --accent: #e4915a;
+  
+  --border: #eeeeee;
+  --border-subtle: #f9f9f9;
+  
+  --shadow: 0 12px 24px rgba(0, 0, 0, 0.05);
+  --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.02);
+  --shadow-hero: 0 8px 20px rgba(228, 145, 90, 0.3);
 }
 
-/* LIGHT */
-html[data-theme="light"]{
-  --bg: #f3f4f6;
-  --bg-2: #ffffff;
+/* LIGHT (Cooler version of warm) */
+html[data-theme="light"] {
+  --bg: #ffffff;
+  --bg-2: #f8f9fa;
+  --bg-sidebar: #ffffff;
 
-  --panel: rgba(255,255,255,0.82);
-  --panel-2: rgba(255,255,255,0.70);
+  --panel: rgba(255, 255, 255, 0.9);
+  --surface: #f0f2f5;
+  --surface-2: #ffffff;
 
-  --surface: rgba(255,255,255,0.72);
-  --surface-2: rgba(255,255,255,0.86);
+  --text: #1a1a1a;
+  --muted: #6b7280;
+  --subtle: #9ca3af;
 
-  --text: rgba(17,24,39,0.92);
-  --muted: rgba(17,24,39,0.55);
+  --primary: #e4915a;
+  --primary-hover: #d37b40;
+  --accent: #1890ff; /* Blue accent for light mode */
+  
+  --border: #e5e7eb;
+  --border-subtle: #f3f4f6;
 
-  --primary: #6a4a3a;
-  --accent: #c56a3b;
-
-  --brand: rgba(87, 60, 39, 0.92);
-  --brand-hover: rgb(71, 47, 27);
-
-  --border: rgba(0,0,0,0.10);
-  --shadow: 0 18px 40px rgba(0,0,0,0.14);
-  --shadow-soft: 0 10px 24px rgba(0,0,0,0.12);
-
-  --blur: blur(10px);
+  --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  --shadow-hero: 0 8px 20px rgba(24, 144, 255, 0.2);
 }
 
-/* DARK */
-html[data-theme="dark"]{
-  --bg: #0f172a;
-  --bg-2: #111827;
+/* DARK (Elegant Dark Mode) */
+html[data-theme="dark"] {
+  --bg: #1a1c1e;
+  --bg-2: #121416;
+  --bg-sidebar: #1a1c1e;
 
-  --panel: rgba(255,255,255,0.08);
-  --panel-2: rgba(255,255,255,0.06);
+  --panel: rgba(30, 32, 35, 0.8);
+  --surface: #2d2f31;
+  --surface-2: #252729;
 
-  --surface: rgba(255,255,255,0.06);
-  --surface-2: rgba(255,255,255,0.09);
+  --text: #eeeeee;
+  --muted: #aaaaaa;
+  --subtle: #666666;
 
-  --text: rgba(255,255,255,0.88);
-  --muted: rgba(255,255,255,0.60);
+  --primary: #e4915a;
+  --primary-hover: #f0a678;
+  --accent: #e4915a;
+  
+  --border: #333333;
+  --border-subtle: #252525;
 
-  /* Brand di dark dibuat lebih “hangat” biar tetep cocok */
-  --primary: #ff9950;
-  --accent: #ffb37a;
-
-  --brand: rgba(255, 153, 80, 0.92);
-  --brand-hover: rgba(255, 153, 80, 0.80);
-
-  --border: rgba(255,255,255,0.14);
-  --shadow: 0 26px 70px rgba(0,0,0,0.50);
-  --shadow-soft: 0 14px 38px rgba(0,0,0,0.40);
-
-  --blur: blur(14px);
+  --shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+  --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-hero: 0 8px 20px rgba(228, 145, 90, 0.2);
 }
 
-/* Transisi halus saat ganti theme */
-html, body{
-  transition: background-color 180ms ease, color 180ms ease;
+/* Global Transitions */
+* {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.1s ease;
+}
+
+body {
+  background-color: var(--bg-2);
+  color: var(--text);
 }

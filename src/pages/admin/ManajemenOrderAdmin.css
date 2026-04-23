@@ -1,0 +1,325 @@
+/* MANAJEMEN ORDER (ADMIN) - PREMIUM DESIGN */
+
+.moAdmin__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+}
+
+.moAdmin__title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+
+.moAdmin__subtitle {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 4px 0 0;
+}
+
+/* STATS */
+.moAdmin__stats {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.moAdmin__statCard {
+  background: var(--bg);
+  padding: 16px 20px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.moAdmin__statIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.moAdmin__statLabel {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.moAdmin__statValue {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.moAdmin__statHint {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* FILTER BAR */
+.moAdmin__filterBar {
+  background: var(--bg);
+  padding: 16px 24px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.moAdmin__searchWrap {
+  flex: 1;
+  position: relative;
+  max-width: 360px;
+}
+
+.moAdmin__searchWrap input {
+  width: 100%;
+  padding: 11px 16px 11px 42px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 13px;
+  outline: none;
+}
+
+.moAdmin__searchIcon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+}
+
+.moAdmin__filterGroup {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.moAdmin__select {
+  padding: 10px 12px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 12px;
+  color: var(--text);
+  outline: none;
+}
+
+.btn-reset-filter {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-create-order {
+  background: #f16a1b;
+  color: #fff;
+  border: none;
+  padding: 11px 18px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(241, 106, 27, 0.35);
+}
+
+/* TABS */
+.moAdmin__tableCard {
+  background: var(--bg);
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+  margin-bottom: 32px;
+}
+
+.moAdmin__tabsHeader {
+  padding: 0 24px;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.moAdmin__tabs {
+  display: flex;
+  gap: 32px;
+}
+
+.moAdmin__tab {
+  padding: 18px 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.moAdmin__tab.active {
+  color: var(--primary);
+}
+
+.moAdmin__tab.active::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--primary);
+  border-radius: 3px 3px 0 0;
+}
+
+.btn-export {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+/* TABLE */
+.moAdmin__tableWrap {
+  overflow-x: auto;
+}
+
+.moAdmin__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.moAdmin__table th {
+  background: var(--bg-2);
+  padding: 14px 24px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.moAdmin__table td {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 13px;
+  color: var(--text);
+}
+
+.id-order-cell {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.order-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--bg-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.order-id { font-weight: 700; }
+.order-type-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+.status-pill--processing { background: #e6f7ff; color: #1890ff; }
+.status-pill--shipped { background: #f6ffed; color: #52c41a; }
+.status-pill--completed { background: #f6ffed; color: #52c41a; }
+.status-pill--cancelled { background: #fff1f0; color: #ff4d4f; }
+
+/* ANALYTICS SECTION */
+.moAdmin__analytics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.moAdmin__analyticCard {
+  background: var(--bg);
+  padding: 20px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.moAdmin__analyticIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: var(--bg-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: var(--primary);
+}
+
+.moAdmin__analyticLabel {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.moAdmin__analyticValue {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text);
+  margin: 4px 0;
+}
+
+.moAdmin__analyticSub {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.moAdmin__analyticSub b { color: #52c41a; }
+
+@media (max-width: 1400px) {
+  .moAdmin__stats { grid-template-columns: repeat(3, 1fr); }
+  .moAdmin__analytics { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 900px) {
+  .moAdmin__stats { grid-template-columns: repeat(2, 1fr); }
+  .moAdmin__filterBar { flex-direction: column; align-items: stretch; }
+  .moAdmin__searchWrap { max-width: none; }
+}

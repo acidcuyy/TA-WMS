@@ -1,206 +1,160 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
-import Card from "../../components/common/Card";
 import "./PageAdmin.css";
 
 export default function ProfileAdmin() {
-  const easing = useMemo(() => [0.22, 1, 0.36, 1], []);
   const [notifStock, setNotifStock] = useState(true);
   const [notifRequests, setNotifRequests] = useState(true);
 
   const stats = [
-    { label: "Requests Baru", value: "12", sub: "Hari ini" },
-    { label: "Stok Menipis", value: "5", sub: "Butuh perhatian" },
-    { label: "Sinkronisasi", value: "Aktif", sub: "Realtime" },
+    { label: "Requests Baru", value: "12", sub: "Hari ini", icon: "🗒️" },
+    { label: "Stok Menipis", value: "5", sub: "Butuh perhatian", icon: "📦" },
+    { label: "Sinkronisasi", value: "Aktif", sub: "Realtime", icon: "🔄" },
   ];
 
   const activities = [
-    { time: "10:12", text: "Request REQ-014 masuk dari Toko A" },
-    { time: "09:40", text: "Stok Barang BRG-002 menipis (Gudang)" },
-    { time: "Kemarin", text: "Update profil admin" },
+    { time: "10:12", text: "Request REQ-014 masuk dari Toko A", icon: "🛍️", color: "#e6f7ff" },
+    { time: "09:40", text: "Stok Barang BRG-002 menipis (Gudang)", icon: "📦", color: "#f6ffed" },
+    { time: "Kemarin", text: "Update profil admin", icon: "👤", color: "#fff7e6" },
   ];
 
   return (
-    <div className="pageAdmin pageAdmin--wide">
-      {/* Header */}
-      <motion.div
-        className="profileHero"
-        initial={{ opacity: 0, y: 10, filter: "blur(8px)" }}
-        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-        transition={{ duration: 0.55, ease: easing }}
-      >
-        <div className="profileHero__left">
-          <div className="profileHero__avatar">A</div>
-
-          <div className="profileHero__meta">
-            <div className="profileHero__titleRow">
-              <h1 className="profileHero__title">Profile Admin</h1>
-              <span className="profileHero__badge">ADMIN</span>
-              <span className="profileHero__status">
-                <span className="profileHero__dot" />
-                Online
-              </span>
-            </div>
-
-            <p className="profileHero__subtitle">
-              Kelola informasi akun, preferensi notifikasi, dan ringkasan aktivitas terbaru.
-            </p>
-
-            <div className="profileHero__quick">
-              <button className="profileBtn profileBtn--primary" type="button">
-                Edit Profil
-              </button>
-              <button className="profileBtn" type="button">
-                Ubah Password
-              </button>
-              <button className="profileBtn profileBtn--ghost" type="button">
-                Lihat Aktivitas
-              </button>
-            </div>
-          </div>
+    <div className="profile-page">
+      {/* TOP HEADER */}
+      <header className="profile-header">
+        <div className="header-info">
+          <h1>Profile Admin</h1>
+          <p>Kelola informasi akun, preferensi notifikasi, dan ringkasan aktivitas terbaru.</p>
         </div>
-
-        <div className="profileHero__right">
-          {stats.map((s, idx) => (
-            <motion.div
-              key={s.label}
-              whileHover={{ y: -2 }}
-              transition={{ duration: 0.18, ease: easing }}
-            >
-              <Card className="profileStat">
-                <div className="profileStat__label">{s.label}</div>
-                <div className="profileStat__value">{s.value}</div>
-                <div className="profileStat__sub">{s.sub}</div>
-              </Card>
-            </motion.div>
+        <div className="header-stats">
+          {stats.map((s, i) => (
+            <div key={i} className="mini-stat-card">
+              <div className="mini-stat-icon">{s.icon}</div>
+              <div className="mini-stat-content">
+                <span className="mini-stat-label">{s.label}</span>
+                <span className="mini-stat-value">{s.value}</span>
+                <span className="mini-stat-sub">{s.sub}</span>
+              </div>
+            </div>
           ))}
         </div>
-      </motion.div>
+      </header>
 
-      {/* Content grid */}
-      <motion.div
-        className="profileGrid"
-        initial={{ opacity: 0, y: 14, filter: "blur(10px)" }}
-        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-        transition={{ delay: 0.06, duration: 0.55, ease: easing }}
-      >
-        {/* Akun */}
-        <Card className="profileCard">
-          <div className="profileCard__head">
-            <h3>Data Akun</h3>
-            <span className="profileCard__hint">Informasi dasar pengguna</span>
+      {/* HERO SECTION */}
+      <section className="profile-hero-section">
+        <div className="hero-main">
+          <div className="hero-avatar">A</div>
+          <div className="hero-details">
+            <div className="hero-name-row">
+              <h2>Admin</h2>
+              <span className="status-badge online"><i className="dot"></i> Online</span>
+            </div>
+            <p className="hero-email">admin@gmail.com <span>Admin</span></p>
+            <p className="hero-role">Admin</p>
           </div>
+        </div>
+        <div className="hero-actions">
+          <button className="btn-primary">Edit Profil</button>
+          <button className="btn-outline">Ubah Password</button>
+          <button className="btn-text">Lihat Aktivitas</button>
+        </div>
+      </section>
 
-          <div className="profileRows">
-            <div className="profileRow">
-              <span>Nama</span>
-              <b>Admin</b>
-            </div>
-            <div className="profileRow">
-              <span>Email</span>
-              <b>admin@gmail.com</b>
-            </div>
-            <div className="profileRow">
-              <span>Role</span>
-              <b>Admin</b>
-            </div>
-            <div className="profileRow">
-              <span>Terakhir Login</span>
-              <b>Hari ini</b>
+      {/* CONTENT GRID */}
+      <div className="profile-content-grid">
+        {/* DATA AKUN */}
+        <section className="profile-card">
+          <div className="card-header">
+            <div className="title-text">
+              <h3>Data Akun</h3>
+              <p>Informasi dasar pengguna</p>
             </div>
           </div>
-
-          <div className="profileActions">
-            <button className="profileBtn profileBtn--primary" type="button">
-              Simpan Perubahan
-            </button>
-            <button className="profileBtn profileBtn--ghost" type="button">
-              Batalkan
-            </button>
+          <div className="info-list">
+            <div className="info-item">
+              <span className="info-label">👤 Nama</span>
+              <span className="info-value">Admin</span>
+            </div>
+            <div className="info-item">
+              <span className="info-label">✉️ Email</span>
+              <span className="info-value">admin@gmail.com</span>
+            </div>
+            <div className="info-item">
+              <span className="info-label">👤 Role</span>
+              <span className="info-value">Admin</span>
+            </div>
+            <div className="info-item">
+              <span className="info-label">🕒 Terakhir Login</span>
+              <span className="info-value">13 Mei 2025, 09:40</span>
+            </div>
+            <div className="info-item">
+              <span className="info-label">📅 Bergabung Sejak</span>
+              <span className="info-value">10 Januari 2025</span>
+            </div>
           </div>
-        </Card>
-
-        {/* Preferensi */}
-        <Card className="profileCard">
-          <div className="profileCard__head">
-            <h3>Preferensi</h3>
-            <span className="profileCard__hint">Pengaturan cepat untuk admin</span>
+          <div className="card-actions">
+            <button className="btn-primary">Simpan Perubahan</button>
+            <button className="btn-outline">Batalkan</button>
           </div>
+        </section>
 
-          <div className="prefList">
-            <label className="prefItem">
-              <div className="prefItem__text">
-                <div className="prefItem__title">Notifikasi stok menipis</div>
-                <div className="prefItem__sub">Muncul ketika stok gudang/toko melewati batas minimum</div>
+        {/* PREFERENSI */}
+        <section className="profile-card">
+          <div className="card-header">
+            <div className="title-text">
+              <h3>Preferensi</h3>
+              <p>Pengaturan cepat untuk admin</p>
+            </div>
+          </div>
+          <div className="pref-list-modern">
+            <div className="settings-row-modern">
+              <div className="row-text">
+                <strong>Notifikasi stok menipis</strong>
+                <span>Muncul ketika stok gudang/toko melewati batas minimum</span>
               </div>
-
-              <span className={`toggle ${notifStock ? "is-on" : ""}`}>
-                <input
-                  type="checkbox"
-                  checked={notifStock}
-                  onChange={(e) => setNotifStock(e.target.checked)}
-                  aria-label="Toggle notifikasi stok menipis"
-                />
-                <span className="toggle__knob" />
-              </span>
-            </label>
-
-            <label className="prefItem">
-              <div className="prefItem__text">
-                <div className="prefItem__title">Notifikasi request masuk</div>
-                <div className="prefItem__sub">Muncul saat toko mengirim permintaan barang</div>
+              <label className="switch">
+                <input type="checkbox" checked={notifStock} onChange={(e) => setNotifStock(e.target.checked)} />
+                <span className="slider"></span>
+              </label>
+            </div>
+            <div className="settings-row-modern">
+              <div className="row-text">
+                <strong>Notifikasi request masuk</strong>
+                <span>Muncul saat toko mengirim permintaan barang</span>
               </div>
-
-              <span className={`toggle ${notifRequests ? "is-on" : ""}`}>
-                <input
-                  type="checkbox"
-                  checked={notifRequests}
-                  onChange={(e) => setNotifRequests(e.target.checked)}
-                  aria-label="Toggle notifikasi request masuk"
-                />
-                <span className="toggle__knob" />
-              </span>
-            </label>
-
-            <div className="prefDivider" />
-
-            <div className="prefCTA">
-              <button className="profileBtn profileBtn--primary" type="button">
-                Terapkan
-              </button>
-              <button className="profileBtn" type="button">
-                Reset
-              </button>
+              <label className="switch">
+                <input type="checkbox" checked={notifRequests} onChange={(e) => setNotifRequests(e.target.checked)} />
+                <span className="slider"></span>
+              </label>
             </div>
           </div>
-        </Card>
-
-        {/* Aktivitas */}
-        <Card className="profileCard profileCard--full">
-          <div className="profileCard__head">
-            <h3>Aktivitas Terbaru</h3>
-            <span className="profileCard__hint">Log ringkas untuk monitoring</span>
+          <div className="card-actions mt-20">
+            <button className="btn-primary">Terapkan</button>
+            <button className="btn-outline">Reset</button>
           </div>
+        </section>
 
-          <div className="activityList">
+        {/* AKTIVITAS TERBARU */}
+        <section className="profile-card full-width">
+          <div className="card-header">
+            <div className="title-text">
+              <h3>Aktivitas Terbaru</h3>
+              <p>Log ringkas untuk monitoring</p>
+            </div>
+            <button className="text-btn-sm">Lihat Semua</button>
+          </div>
+          <div className="activity-list-modern">
             {activities.map((a, i) => (
-              <motion.div
-                key={i}
-                className="activityItem"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.05 + i * 0.05, duration: 0.35, ease: easing }}
-              >
-                <div className="activityItem__time">{a.time}</div>
-                <div className="activityItem__text">{a.text}</div>
-                <button className="activityItem__btn" type="button">
-                  Detail
-                </button>
-              </motion.div>
+              <div key={i} className="activity-row">
+                <div className="activity-icon" style={{ backgroundColor: a.color }}>{a.icon}</div>
+                <span className="activity-time">{a.time}</span>
+                <span className="activity-desc">{a.text}</span>
+                <button className="activity-detail-btn">Detail <span>›</span></button>
+              </div>
             ))}
           </div>
-        </Card>
-      </motion.div>
+        </section>
+      </div>
     </div>
   );
 }
