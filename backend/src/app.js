@@ -12,6 +12,5 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/barang", barangRoutes);
-console.log("Backend WMS jalan 🚀");
 
 export default app;
