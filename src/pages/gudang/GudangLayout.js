@@ -29,7 +29,7 @@ export default function GudangLayout() {
     { label: "Stok & Produk", path: "/gudang/stok", icon: "📦", group: "GUDANG" },
     { label: "Request Masuk", path: "/gudang/requests", icon: "📥", group: "GUDANG" },
     { label: "Order Masuk", path: "/gudang/orders", icon: "🗒", group: "GUDANG" },
-    
+
     { label: "Laporan", path: "/gudang/laporan", icon: "🗒", group: "LAPORAN" },
   ];
 
@@ -44,9 +44,9 @@ export default function GudangLayout() {
         <nav className="sidebar-nav">
           <div className="nav-group">GUDANG</div>
           {menuItems.filter(item => item.group === "GUDANG").map(item => (
-            <Link 
-              key={item.path} 
-              to={item.path} 
+            <Link
+              key={item.path}
+              to={item.path}
               className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
             >
               <span className="nav-icon">{item.icon}</span>
@@ -56,9 +56,9 @@ export default function GudangLayout() {
 
           <div className="nav-group">LAPORAN</div>
           {menuItems.filter(item => item.group === "LAPORAN").map(item => (
-            <Link 
-              key={item.path} 
-              to={item.path} 
+            <Link
+              key={item.path}
+              to={item.path}
               className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
             >
               <span className="nav-icon">{item.icon}</span>
@@ -75,7 +75,7 @@ export default function GudangLayout() {
             <span className="nav-icon">👤</span> <span>Profile</span>
           </Link>
           <button onClick={() => setShowLogoutModal(true)} className="logout-btn">
-             Logout
+            Logout
           </button>
         </div>
       </aside>
@@ -100,18 +100,18 @@ export default function GudangLayout() {
               <span className="status-dot"></span>
               Online
             </div>
-            
+
             <div className="notification-btn">
-               🔔
-               <span className="notification-badge">5</span>
+              🔔
+              <span className="notification-badge">5</span>
             </div>
 
             <div className="user-profile-top">
-               <img src={avatarImg} alt="User" className="user-avatar" />
-               <div className="user-info-text">
-                  <b>Admin Gudang</b>
-                  <span>Gudang Pusat</span>
-               </div>
+              <img src={avatarImg} alt="User" className="user-avatar" />
+              <div className="user-info-text">
+                <b>Admin Gudang</b>
+                <span>Gudang Pusat</span>
+              </div>
             </div>
           </div>
         </header>
@@ -126,7 +126,7 @@ export default function GudangLayout() {
       <AnimatePresence>
         {showLogoutModal && (
           <div className="logout-overlay" onClick={() => setShowLogoutModal(false)}>
-            <motion.div 
+            <motion.div
               className="logout-modal"
               onClick={e => e.stopPropagation()}
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -136,7 +136,7 @@ export default function GudangLayout() {
               <div className="logout-modal__icon">⚠️</div>
               <h3>Keluar Aplikasi</h3>
               <p>Apakah anda yakin ingin keluar?</p>
-              
+
               <div className="logout-modal__actions">
                 <button className="btn-batal" onClick={() => setShowLogoutModal(false)}>Batal</button>
                 <button className="btn-confirm-logout" onClick={handleLogout}>Logout</button>

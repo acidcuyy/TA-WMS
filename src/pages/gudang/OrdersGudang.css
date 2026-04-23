@@ -1,0 +1,78 @@
+/* ORDER MASUK (GUDANG) - PREMIUM DESIGN */
+
+.odGudang__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+}
+
+.odGudang__title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+
+.odGudang__subtitle {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 4px 0 0;
+}
+
+/* STATS */
+.odGudang__stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+/* TABLE */
+.odGudang__tableCard {
+  background: var(--bg);
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+}
+
+.odGudang__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.odGudang__table th {
+  background: var(--bg-2);
+  padding: 14px 20px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.odGudang__table td {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 13px;
+}
+
+/* SEARCH & FILTER */
+.odGudang__filterBar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.status-tag {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.status-tag.new { background: #e6f7ff; color: #1890ff; }
+.status-tag.picking { background: #fff7e6; color: #fa8c16; }
+.status-tag.packed { background: #f6ffed; color: #52c41a; }
+.status-tag.shipped { background: #f9f0ff; color: #722ed1; }
