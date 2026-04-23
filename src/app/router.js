@@ -31,6 +31,8 @@ import StokGudang from "../pages/gudang/StokGudang";
 import PengirimanGudang from "../pages/gudang/PengirimanGudang";
 import PengeluaranBarang from "../pages/gudang/PengeluaranBarang";
 import TransferBarang from "../pages/gudang/TransferBarang";
+import OrdersGudang from "../pages/gudang/OrdersGudang";
+import LaporanGudang from "../pages/gudang/LaporanGudang";
 
 // Toko
 import TokoLayout from "../pages/toko/TokoLayout";
@@ -82,8 +84,10 @@ export const router = createBrowserRouter([
       { path: "pengeluaran", element: <PengeluaranBarang /> },
       { path: "transfer", element: <TransferBarang /> },
       { path: "requests", element: <RequestsGudang /> },
+      { path: "orders", element: <OrdersGudang /> },
       { path: "profile", element: <ProfileGudang /> },
       { path: "settings", element: <SettingsGudang /> },
+      { path: "laporan", element: <LaporanGudang /> },
       { path: "stok", element: <StokGudang /> },
 
       // ✅ Gudang pengiriman (benar)

@@ -37,8 +37,8 @@ export default function SettingsAdmin() {
     syncStatus === "Testing..."
       ? "sa-settings-status is-testing"
       : syncStatus.toLowerCase().includes("connected")
-      ? "sa-settings-status is-connected"
-      : "sa-settings-status";
+        ? "sa-settings-status is-connected"
+        : "sa-settings-status";
 
   return (
     <>
