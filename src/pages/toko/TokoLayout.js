@@ -1,27 +1,160 @@
-import { Outlet, useLocation } from "react-router-dom";
-import { useMemo, useRef } from "react";
-import Topbar from "../../components/layout/Topbar";
+import { Outlet, NavLink, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import "./TokoLayout.css";
 
-export default function TokoLayout() {
-  const featuresRef = useRef(null);
-  const location = useLocation();
+import logoSideDefault from "../../assets/images/LogoSide_default.png";
 
-  const isHome = useMemo(() => {
-    return location.pathname === "/toko" || location.pathname === "/toko/";
-  }, [location.pathname]);
+export default function TokoLayout() {
+  const navigate = useNavigate();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  const handleLogout = () => {
+    localStorage.removeItem("reastock_role");
+    navigate("/login");
+  };
+
+  const menuItems = [
+    { label: "Dashboard", path: "/toko", icon: "⊞" },
+    { label: "Stok & Produk", path: "/toko/stok", icon: "📦" },
+    { label: "Penerimaan Barang", path: "/toko/penerimaan", icon: "📥" },
+    { label: "Pengeluaran Barang", path: "/toko/pengeluaran", icon: "📤" },
+    { label: "Transfer Barang", path: "/toko/transfer", icon: "⇄" },
+    { label: "Penyesuaian Stok", path: "/toko/adj", icon: "⚖" },
+    { label: "Pesanan Penjualan", path: "/toko/pesanan", icon: "🛒" },
+    { label: "Request", path: "/toko/request", icon: "📝" },
+    { label: "Retur Penjualan", path: "/toko/retur", icon: "↩" },
+    { label: "Laporan", path: "/toko/riwayat", icon: "🗒" },
+  ];
+
+  const bottomItems = [
+    { label: "Pengaturan", path: "/toko/settings", icon: "⚙" },
+    { label: "Profil", path: "/toko/profile", icon: "👤" },
+  ];
 
   return (
-    <div className="tokoLayout">
-      <Topbar
-        basePath="/toko"
-        avatarLetter="T"
-        onScrollToFeatures={
-          isHome ? () => featuresRef.current?.scrollIntoView({ behavior: "smooth" }) : undefined
-        }
-      />
+    <div className="toko-layout">
+      {/* SIDEBAR */}
+      <aside className="toko-sidebar">
+        <div className="toko-sidebar__header">
+          <img src={logoSideDefault} alt="ReaStock" className="toko-sidebar__logo" />
+        </div>
 
-      <Outlet context={{ featuresRef }} />
+        <div className="toko-sidebar__role">TOKO</div>
+
+        <nav className="toko-sidebar__nav">
+          {menuItems.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              end={item.path === "/toko"}
+              className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
+            >
+              <span className="nav-icon">{item.icon}</span>
+              {item.label}
+            </NavLink>
+          ))}
+        </nav>
+
+        <div className="toko-sidebar__footer">
+          {bottomItems.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
+            >
+              <span className="nav-icon">{item.icon}</span>
+              {item.label}
+            </NavLink>
+          ))}
+
+          <button className="logout-btn" onClick={() => setShowLogoutModal(true)}>
+            <span className="nav-icon">↪</span>
+            Logout
+          </button>
+        </div>
+      </aside>
+
+      {/* MAIN CONTENT */}
+      <main className="toko-main">
+        {/* TOPBAR */}
+        <header className="toko-topbar">
+          <div className="toko-topbar__left">
+            <div className="store-badge">🏪</div>
+            <div className="store-info">
+              <span className="store-name">Toko Sejahtera</span>
+              <span className="store-role">Toko</span>
+            </div>
+            <div style={{ marginLeft: "8px", fontSize: "10px", color: "#94a3b8" }}>▼</div>
+          </div>
+
+          <div className="toko-topbar__right">
+            <div className="status-indicator">
+              <span className="status-dot"></span>
+              Online
+            </div>
+
+            <button className="notif-btn">
+              🔔
+              <span className="notif-badge">3</span>
+            </button>
+
+            <div className="user-profile" onClick={() => navigate("/toko/profile")}>
+              <div className="user-info">
+                <span className="user-name">Admin Toko</span>
+                <span className="user-detail">Toko Sejahtera</span>
+              </div>
+              <div className="user-avatar">
+                <div style={{ width: "100%", height: "100%", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px" }}>
+                  👤
+                </div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* CONTENT */}
+        <div className="toko-content">
+          <Outlet />
+        </div>
+      </main>
+
+      {/* LOGOUT CONFIRMATION MODAL */}
+      <AnimatePresence>
+        {showLogoutModal && (
+          <div className="logout-overlay" style={{
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000,
+            display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)"
+          }} onClick={() => setShowLogoutModal(false)}>
+            <motion.div 
+              className="logout-modal"
+              style={{
+                background: "white", padding: "32px", borderRadius: "24px", maxWidth: "400px", width: "90%",
+                textAlign: "center", boxShadow: "0 20px 40px rgba(0,0,0,0.2)"
+              }}
+              onClick={e => e.stopPropagation()}
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            >
+              <div style={{ fontSize: "40px", marginBottom: "16px" }}>⚠️</div>
+              <h3 style={{ margin: "0 0 8px", fontSize: "20px", fontWeight: 700 }}>Keluar Aplikasi</h3>
+              <p style={{ margin: "0 0 24px", color: "#64748b" }}>Apakah anda yakin ingin keluar?</p>
+              
+              <div style={{ display: "flex", gap: "12px" }}>
+                <button style={{
+                  flex: 1, padding: "12px", borderRadius: "12px", border: "1px solid #e2e8f0",
+                  background: "white", fontWeight: 600, cursor: "pointer"
+                }} onClick={() => setShowLogoutModal(false)}>Batal</button>
+                <button style={{
+                  flex: 1, padding: "12px", borderRadius: "12px", border: "none",
+                  background: "#f97316", color: "white", fontWeight: 600, cursor: "pointer"
+                }} onClick={handleLogout}>Logout</button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -43,6 +43,12 @@ import RiwayatToko from "../pages/toko/RiwayatToko";
 import ProfileToko from "../pages/toko/ProfileToko";
 import SettingsToko from "../pages/toko/SettingsToko";
 import PengirimanToko from "../pages/toko/PengirimanToko";
+import PenerimaanBarangToko from "../pages/toko/PenerimaanBarangToko";
+import PengeluaranBarangToko from "../pages/toko/PengeluaranBarangToko";
+import TransferBarangToko from "../pages/toko/TransferBarangToko";
+import PenyesuaianStokToko from "../pages/toko/PenyesuaianStokToko";
+import PesananPenjualanToko from "../pages/toko/PesananPenjualanToko";
+import ReturPenjualanToko from "../pages/toko/ReturPenjualanToko";
 
 export const router = createBrowserRouter([
   {
@@ -107,9 +113,14 @@ export const router = createBrowserRouter([
       { index: true, element: <TokoDashboard /> },
 
       { path: "request", element: <RequestToko /> },
-      { path: "requests", element: <RequestToko /> },
+      { path: "pesanan", element: <PesananPenjualanToko /> },
 
       { path: "stok", element: <StokToko /> },
+      { path: "penerimaan", element: <PenerimaanBarangToko /> },
+      { path: "pengeluaran", element: <PengeluaranBarangToko /> },
+      { path: "transfer", element: <TransferBarangToko /> },
+      { path: "adj", element: <PenyesuaianStokToko /> },
+      { path: "retur", element: <ReturPenjualanToko /> },
       { path: "riwayat", element: <RiwayatToko /> },
       { path: "profile", element: <ProfileToko /> },
       { path: "settings", element: <SettingsToko /> },

@@ -2,12 +2,15 @@ import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { useTheme } from "../../app/ThemeProvider";
 
-export default function SettingsAdmin() {
-  const role = "admin"; // admin | gudang | toko
+/**
+ * SettingsPage - Komponen bersama untuk pengaturan akun.
+ * @param {string} role - "admin" | "gudang" | "toko"
+ */
+export default function SettingsPage({ role = "admin" }) {
   const easing = useMemo(() => [0.22, 1, 0.36, 1], []);
   const [saved, setSaved] = useState(false);
 
-  // state lama tetap dipertahankan
+  // State pengaturan
   const [notifStock, setNotifStock] = useState(true);
   const [notifRequests, setNotifRequests] = useState(true);
   const [autoSync, setAutoSync] = useState(true);
@@ -16,7 +19,6 @@ export default function SettingsAdmin() {
   const { theme, setTheme } = useTheme();
   const [compact, setCompact] = useState(false);
 
-  // fungsi lama tetap dipertahankan
   const handleSave = () => {
     setSaved(true);
     setTimeout(() => setSaved(false), 1200);
@@ -40,6 +42,14 @@ export default function SettingsAdmin() {
         ? "sa-settings-status is-connected"
         : "sa-settings-status";
 
+  // Label dinamis berdasarkan role
+  const roleLabel = role.charAt(0).toUpperCase() + role.slice(1);
+  const roleDesc = role === "admin" 
+    ? "admin sistem utama" 
+    : role === "gudang" 
+      ? "petugas operasional gudang" 
+      : "pemilik atau petugas toko";
+
   return (
     <>
       <style>{`
@@ -50,6 +60,7 @@ export default function SettingsAdmin() {
           padding: 28px 20px 64px;
           color: #2f241c;
           box-sizing: border-box;
+          font-family: 'Poppins', sans-serif;
         }
 
         .sa-settings-shell {
@@ -566,10 +577,10 @@ export default function SettingsAdmin() {
         >
           <section className="sa-settings-hero">
             <div className="sa-settings-hero-left">
-              <span className="sa-settings-badge">System Settings</span>
+              <span className="sa-settings-badge">{roleLabel} Settings</span>
               <h1 className="sa-settings-title">Settings</h1>
               <p className="sa-settings-subtitle">
-                Pengaturan aplikasi untuk notifikasi, sinkronisasi, dan tampilan.
+                Pengaturan aplikasi untuk notifikasi, sinkronisasi, dan tampilan untuk {roleDesc}.
                 Semua fungsi tetap sama, hanya tampilannya dibuat lebih rapi,
                 modern, dan nyaman dilihat.
               </p>
@@ -603,7 +614,7 @@ export default function SettingsAdmin() {
                   <div className="sa-card-title-wrap">
                     <h3 className="sa-card-title">Notifikasi</h3>
                     <p className="sa-card-desc">
-                      Atur notifikasi penting yang ingin ditampilkan untuk admin.
+                      Atur notifikasi penting yang ingin ditampilkan untuk {role}.
                     </p>
                   </div>
                   <span className="sa-card-pill">Alerts</span>
@@ -789,8 +800,7 @@ export default function SettingsAdmin() {
                   </div>
 
                   <div className="sa-note">
-                    * Ini dummy UI dulu. Nanti kamu bisa simpan ke database atau
-                    localStorage.
+                    * Pengaturan ini tersimpan secara lokal untuk {role}.
                   </div>
                 </div>
               </div>
