@@ -136,6 +136,8 @@
 .input-icon {
   position: absolute;
   left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
   color: #aaa;
   display: flex;
   align-items: center;
