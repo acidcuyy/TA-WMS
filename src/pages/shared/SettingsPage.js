@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useTheme } from "../../app/ThemeProvider";
 
@@ -9,24 +9,57 @@ import { useTheme } from "../../app/ThemeProvider";
 export default function SettingsPage({ role = "admin" }) {
   const easing = useMemo(() => [0.22, 1, 0.36, 1], []);
   const [saved, setSaved] = useState(false);
+  const { theme, setTheme } = useTheme();
 
-  // State pengaturan
-  const [notifStock, setNotifStock] = useState(true);
-  const [notifRequests, setNotifRequests] = useState(true);
+  // Local state for settings
+  const [notifItems, setNotifItems] = useState([]);
   const [autoSync, setAutoSync] = useState(true);
   const [syncInterval, setSyncInterval] = useState("5");
-  const [syncStatus, setSyncStatus] = useState("Connected (dummy)");
-  const { theme, setTheme } = useTheme();
+  const [syncStatus, setSyncStatus] = useState("Connected");
+  const [tempTheme, setTempTheme] = useState(theme);
   const [compact, setCompact] = useState(false);
 
+  // Initialize notification items based on role
+  useEffect(() => {
+    let initialItems = [];
+    if (role === "admin") {
+      initialItems = [
+        { id: "stock", label: "Stok menipis", desc: "Tampil saat stok gudang/toko melewati batas minimum.", enabled: true },
+        { id: "requests", label: "Permintaan barang", desc: "Tampil saat toko mengirim request kebutuhan barang.", enabled: true },
+      ];
+    } else if (role === "gudang") {
+      initialItems = [
+        { id: "stock", label: "Stok menipis", desc: "Tampil saat stok gudang melewati batas minimum.", enabled: true },
+        { id: "request_in", label: "Request masuk", desc: "Tampil saat toko mengirim permintaan barang ke gudang.", enabled: true },
+        { id: "order_in", label: "Order masuk", desc: "Tampil saat ada order baru yang harus diproses gudang.", enabled: true },
+      ];
+    } else if (role === "toko") {
+      initialItems = [
+        { id: "stock", label: "Stok menipis", desc: "Tampil saat stok produk toko melewati batas minimum.", enabled: true },
+        { id: "new_order", label: "Pesanan baru", desc: "Tampil saat ada pesanan penjualan baru masuk.", enabled: true },
+        { id: "returns", label: "Retur penjualan", desc: "Tampil saat pelanggan mengajukan retur barang.", enabled: true },
+      ];
+    }
+    setNotifItems(initialItems);
+    setTempTheme(theme);
+  }, [role, theme]);
+
+  const handleToggleNotif = (id) => {
+    setNotifItems(prev => prev.map(item =>
+      item.id === id ? { ...item, enabled: !item.enabled } : item
+    ));
+  };
+
   const handleSave = () => {
+    // Apply the theme to global state only on save
+    setTheme(tempTheme);
     setSaved(true);
     setTimeout(() => setSaved(false), 1200);
   };
 
   const testRealtime = () => {
     setSyncStatus("Testing...");
-    setTimeout(() => setSyncStatus("Connected (dummy)"), 900);
+    setTimeout(() => setSyncStatus("Connected"), 900);
   };
 
   const sectionMotion = {
@@ -42,31 +75,26 @@ export default function SettingsPage({ role = "admin" }) {
         ? "sa-settings-status is-connected"
         : "sa-settings-status";
 
-  // Label dinamis berdasarkan role
   const roleLabel = role.charAt(0).toUpperCase() + role.slice(1);
-  const roleDesc = role === "admin" 
-    ? "admin sistem utama" 
-    : role === "gudang" 
-      ? "petugas operasional gudang" 
-      : "pemilik atau petugas toko";
 
   return (
     <>
       <style>{`
         .sa-settings-page {
           width: 100%;
-          max-width: 1180px;
+          max-width: 1200px;
           margin: 0 auto;
-          padding: 28px 20px 64px;
-          color: #2f241c;
+          padding: 32px 40px;
+          color: var(--text);
           box-sizing: border-box;
           font-family: 'Poppins', sans-serif;
+          background-color: transparent;
         }
 
         .sa-settings-shell {
           display: flex;
           flex-direction: column;
-          gap: 24px;
+          gap: 32px;
         }
 
         .sa-settings-hero {
@@ -74,230 +102,157 @@ export default function SettingsPage({ role = "admin" }) {
           justify-content: space-between;
           align-items: flex-start;
           gap: 20px;
-          flex-wrap: wrap;
         }
 
-        .sa-settings-hero-left {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-          min-width: 0;
+        .sa-settings-hero-left h1 {
+          margin: 0 0 8px;
+          font-size: 28px;
+          font-weight: 700;
+          color: var(--text);
         }
 
-        .sa-settings-badge {
-          display: inline-flex;
-          align-items: center;
-          width: fit-content;
-          padding: 8px 14px;
-          border-radius: 999px;
-          background: rgba(109, 79, 47, 0.10);
-          color: #6d4f2f;
-          font-size: 12px;
-          font-weight: 800;
-          letter-spacing: 0.05em;
-          text-transform: uppercase;
-        }
-
-        .sa-settings-title {
+        .sa-settings-hero-left p {
           margin: 0;
-          font-size: clamp(34px, 4vw, 46px);
-          line-height: 1.04;
-          font-weight: 900;
-          letter-spacing: -0.03em;
-          color: #2e231b;
-        }
-
-        .sa-settings-subtitle {
-          margin: 0;
-          max-width: 720px;
-          font-size: 15px;
-          line-height: 1.7;
-          color: #846f5e;
+          font-size: 14px;
+          color: var(--muted);
         }
 
         .sa-settings-actions {
           display: flex;
-          align-items: center;
-          gap: 10px;
-          flex-wrap: wrap;
+          gap: 12px;
         }
 
         .sa-settings-btn {
-          border: none;
-          outline: none;
-          cursor: pointer;
-          border-radius: 14px;
-          padding: 12px 18px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 20px;
+          border-radius: 12px;
           font-size: 14px;
-          font-weight: 800;
-          transition: transform 0.2s ease, box-shadow 0.25s ease, filter 0.2s ease;
-        }
-
-        .sa-settings-btn:hover {
-          transform: translateY(-1px);
-          filter: brightness(1.02);
-        }
-
-        .sa-settings-btn:active {
-          transform: translateY(0);
+          font-weight: 600;
+          cursor: pointer;
+          transition: var(--transition);
+          border: none;
         }
 
         .sa-settings-btn-primary {
-          background: linear-gradient(135deg, #6b4e00, #8a6707);
+          background: var(--primary);
           color: #fff;
-          box-shadow: 0 14px 28px rgba(107, 78, 0, 0.18);
         }
 
         .sa-settings-btn-secondary {
-          background: rgba(255, 255, 255, 0.72);
-          color: #4c392b;
-          box-shadow: inset 0 0 0 1px rgba(92, 68, 46, 0.08);
+          background: var(--bg-2);
+          color: var(--text);
+          border: 1px solid var(--border);
         }
 
-        .sa-settings-saved {
-          display: inline-flex;
-          align-items: center;
-          padding: 11px 14px;
-          border-radius: 14px;
-          background: #eef8f1;
-          color: #287547;
-          font-size: 14px;
-          font-weight: 800;
-          box-shadow: inset 0 0 0 1px rgba(40, 117, 71, 0.08);
+        .sa-settings-btn:hover {
+          filter: brightness(0.95);
+          transform: translateY(-1px);
         }
 
         .sa-settings-grid {
           display: grid;
-          grid-template-columns: repeat(12, minmax(0, 1fr));
-          gap: 22px;
-        }
-
-        .sa-col-6 {
-          grid-column: span 6;
-        }
-
-        .sa-col-12 {
-          grid-column: span 12;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 24px;
         }
 
         .sa-card {
-          position: relative;
-          overflow: hidden;
+          background: var(--bg);
+          border: 1px solid var(--border);
           border-radius: 24px;
           padding: 24px;
-          background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(250,247,243,0.97));
-          border: 1px solid rgba(124, 95, 63, 0.08);
-          box-shadow:
-            0 18px 42px rgba(78, 55, 32, 0.08),
-            inset 0 1px 0 rgba(255,255,255,0.85);
-          box-sizing: border-box;
+          box-shadow: var(--shadow-soft);
         }
 
-        .sa-card::before {
-          content: "";
-          position: absolute;
-          inset: 0;
-          pointer-events: none;
-          background:
-            radial-gradient(circle at top right, rgba(155, 117, 74, 0.09), transparent 24%),
-            radial-gradient(circle at bottom left, rgba(107, 78, 0, 0.05), transparent 20%);
+        .sa-card-full {
+          grid-column: span 2;
         }
 
         .sa-card-head {
-          position: relative;
-          z-index: 1;
           display: flex;
-          align-items: flex-start;
+          align-items: center;
           justify-content: space-between;
-          gap: 16px;
-          margin-bottom: 20px;
+          margin-bottom: 24px;
         }
 
-        .sa-card-title-wrap {
+        .sa-card-title-group {
           display: flex;
-          flex-direction: column;
-          gap: 8px;
+          align-items: center;
+          gap: 16px;
         }
 
-        .sa-card-title {
-          margin: 0;
-          font-size: 22px;
-          font-weight: 900;
-          letter-spacing: -0.02em;
-          color: #30251d;
+        .sa-card-icon {
+          width: 48px;
+          height: 48px;
+          background: var(--surface);
+          border-radius: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 20px;
+          color: var(--primary);
         }
 
-        .sa-card-desc {
+        .sa-card-title h3 {
           margin: 0;
-          color: #917d6b;
-          font-size: 14px;
-          line-height: 1.65;
+          font-size: 18px;
+          font-weight: 700;
+          color: var(--text);
+        }
+
+        .sa-card-title p {
+          margin: 2px 0 0;
+          font-size: 13px;
+          color: var(--muted);
         }
 
         .sa-card-pill {
-          flex-shrink: 0;
-          padding: 8px 12px;
+          font-size: 10px;
+          font-weight: 700;
+          color: #ffffff;
+          background: #22c55e;
+          padding: 4px 12px;
           border-radius: 999px;
-          background: rgba(109, 79, 47, 0.10);
-          color: #6d4f2f;
-          font-size: 12px;
-          font-weight: 800;
+          text-transform: capitalize;
+        }
+
+        .sa-card-pill-orange {
+          color: #ffffff;
+          background: var(--primary);
         }
 
         .sa-stack {
-          position: relative;
-          z-index: 1;
           display: flex;
           flex-direction: column;
-          gap: 16px;
+          gap: 20px;
         }
 
         .sa-row {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          gap: 16px;
-          padding: 14px 0;
-          border-top: 1px solid rgba(124, 95, 63, 0.08);
         }
 
-        .sa-row:first-child {
-          border-top: none;
-          padding-top: 0;
-        }
-
-        .sa-row:last-child {
-          padding-bottom: 0;
-        }
-
-        .sa-row-main {
-          min-width: 0;
-          flex: 1;
-        }
-
-        .sa-row-title {
+        .sa-row-info h4 {
           margin: 0 0 4px;
-          font-size: 16px;
-          font-weight: 800;
-          color: #35291f;
+          font-size: 15px;
+          font-weight: 600;
+          color: var(--text);
         }
 
-        .sa-row-subtitle {
+        .sa-row-info p {
           margin: 0;
           font-size: 13px;
-          line-height: 1.55;
-          color: #92806f;
+          color: var(--muted);
         }
 
-        .sa-control {
-          flex-shrink: 0;
-        }
-
+        /* TOGGLE SWITCH */
         .sa-switch {
           position: relative;
-          width: 54px;
-          height: 30px;
           display: inline-block;
+          width: 44px;
+          height: 24px;
         }
 
         .sa-switch input {
@@ -308,263 +263,206 @@ export default function SettingsPage({ role = "admin" }) {
 
         .sa-slider {
           position: absolute;
-          inset: 0;
           cursor: pointer;
-          border-radius: 999px;
-          background: #e2d8ce;
-          transition: all 0.25s ease;
-          box-shadow: inset 0 0 0 1px rgba(73, 53, 36, 0.06);
+          top: 0; left: 0; right: 0; bottom: 0;
+          background-color: var(--border);
+          transition: .3s;
+          border-radius: 24px;
         }
 
-        .sa-slider::before {
-          content: "";
+        .sa-slider:before {
           position: absolute;
-          width: 22px;
-          height: 22px;
-          left: 4px;
-          top: 4px;
+          content: "";
+          height: 18px; width: 18px;
+          left: 3px; bottom: 3px;
+          background-color: white;
+          transition: .3s;
           border-radius: 50%;
-          background: #ffffff;
-          box-shadow: 0 3px 8px rgba(38, 29, 21, 0.16);
-          transition: transform 0.25s ease;
         }
 
-        .sa-switch input:checked + .sa-slider {
-          background: linear-gradient(135deg, #6b4e00, #8a6a13);
+        input:checked + .sa-slider {
+          background-color: var(--primary);
         }
 
-        .sa-switch input:checked + .sa-slider::before {
-          transform: translateX(24px);
+        input:checked + .sa-slider:before {
+          transform: translateX(20px);
         }
 
-        .sa-switch input:disabled + .sa-slider {
-          opacity: 0.55;
-          cursor: not-allowed;
-        }
-
-        .sa-split {
+        /* SINKRONISASI SPECIFICS */
+        .sa-sync-controls {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 16px;
-          align-items: end;
-        }
-
-        .sa-field {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          min-width: 0;
+          gap: 20px;
+          margin-top: 8px;
         }
 
         .sa-field-label {
+          display: block;
           font-size: 13px;
-          font-weight: 800;
-          color: #6b5847;
+          font-weight: 600;
+          color: var(--text);
+          margin-bottom: 2px;
         }
 
-        .sa-help {
-          margin: 0;
-          color: #8fa0b6;
-          font-size: 12px;
-          line-height: 1.45;
+        .sa-field-subtext {
+          display: block;
+          font-size: 11px;
+          color: var(--subtle);
+          margin-bottom: 8px;
+        }
+
+        .sa-select-wrapper {
+          position: relative;
         }
 
         .sa-select {
           width: 100%;
-          min-height: 46px;
-          border-radius: 14px;
-          border: 1px solid rgba(110, 82, 53, 0.12);
-          background: #fff;
-          color: #33271e;
-          padding: 0 14px;
+          padding: 12px 16px;
+          border-radius: 12px;
+          border: 1px solid var(--border);
+          background: var(--bg);
           font-size: 14px;
-          font-weight: 700;
-          outline: none;
-          transition: border-color 0.2s ease, box-shadow 0.2s ease;
-          box-sizing: border-box;
+          font-weight: 500;
+          color: var(--text);
+          appearance: none;
+          cursor: pointer;
         }
 
-        .sa-select:focus {
-          border-color: rgba(107, 78, 0, 0.35);
-          box-shadow: 0 0 0 4px rgba(107, 78, 0, 0.09);
+        .sa-select-wrapper::after {
+          content: "▼";
+          position: absolute;
+          right: 16px;
+          top: 50%;
+          transform: translateY(-50%);
+          font-size: 10px;
+          color: var(--muted);
+          pointer-events: none;
         }
 
-        .sa-select:disabled {
-          background: #f2ede8;
-          color: #9d8c7d;
-          cursor: not-allowed;
-        }
-
-        .sa-settings-status {
-          display: inline-flex;
+        .sa-status-box {
+          display: flex;
           align-items: center;
           gap: 10px;
-          min-height: 46px;
-          padding: 0 14px;
-          border-radius: 14px;
-          background: #faf7f3;
-          border: 1px solid rgba(124, 95, 63, 0.08);
-          color: #56453a;
-          font-weight: 800;
-          box-sizing: border-box;
-        }
-
-        .sa-settings-status-dot {
-          width: 10px;
-          height: 10px;
-          border-radius: 50%;
-          background: #8c9aab;
-          box-shadow: 0 0 0 4px rgba(140, 154, 171, 0.12);
-        }
-
-        .sa-settings-status.is-connected .sa-settings-status-dot {
-          background: #2fb067;
-          box-shadow: 0 0 0 4px rgba(47, 176, 103, 0.12);
-        }
-
-        .sa-settings-status.is-testing .sa-settings-status-dot {
-          background: #d29b24;
-          box-shadow: 0 0 0 4px rgba(210, 155, 36, 0.12);
-        }
-
-        .sa-wide-btn {
-          width: 100%;
-          border: none;
-          border-radius: 16px;
-          padding: 14px 16px;
+          padding: 12px 16px;
+          background: var(--bg-2);
+          border: 1px solid var(--border);
+          border-radius: 12px;
           font-size: 14px;
-          font-weight: 800;
-          color: #fff;
-          background: linear-gradient(135deg, #5f4500, #7a5b08);
-          box-shadow: 0 14px 26px rgba(95, 69, 0, 0.18);
+          font-weight: 500;
+          color: var(--text);
+        }
+
+        .sa-status-dot {
+          width: 8px;
+          height: 8px;
+          background: #22c55e;
+          border-radius: 50%;
+          box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
+        }
+
+        .sa-tes-btn {
+          width: 100%;
+          padding: 14px;
+          border-radius: 12px;
+          border: 1px solid var(--primary);
+          background: transparent;
+          color: var(--text);
+          font-size: 14px;
+          font-weight: 700;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
           cursor: pointer;
-          transition: transform 0.2s ease, box-shadow 0.25s ease;
+          transition: var(--transition);
         }
 
-        .sa-wide-btn:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 18px 30px rgba(95, 69, 0, 0.22);
+        .sa-tes-btn:hover {
+          background: var(--primary);
+          color: #ffffff;
         }
 
+        /* TAMPILAN SPECIFICS */
         .sa-theme-grid {
           display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 14px;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 20px;
+          margin-top: 12px;
         }
 
-        .sa-theme-btn {
-          border: 1px solid rgba(124, 95, 63, 0.1);
-          background: #fff;
-          border-radius: 18px;
-          padding: 12px;
-          text-align: left;
+        .sa-theme-card {
+          position: relative;
+          border: 1px solid var(--border);
+          border-radius: 20px;
+          padding: 20px;
           cursor: pointer;
-          transition: all 0.22s ease;
-          box-shadow: 0 8px 20px rgba(72, 51, 30, 0.04);
+          transition: var(--transition);
+          background: var(--bg);
         }
 
-        .sa-theme-btn:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 14px 28px rgba(72, 51, 30, 0.09);
+        .sa-theme-card.is-active {
+          border-color: var(--primary);
+          box-shadow: 0 0 0 1px var(--primary);
         }
 
-        .sa-theme-btn.is-active {
-          border-color: rgba(107, 78, 0, 0.22);
-          background: linear-gradient(180deg, #fffdf9, #f5eee4);
-          box-shadow: 0 16px 30px rgba(107, 78, 0, 0.11);
-        }
-
-        .sa-theme-preview {
-          height: 52px;
-          border-radius: 14px;
-          margin-bottom: 10px;
-          border: 1px solid rgba(124, 95, 63, 0.08);
+        .sa-theme-strip {
+          height: 48px;
+          border-radius: 10px;
+          margin-bottom: 16px;
+          display: flex;
           overflow: hidden;
-          display: grid;
-          grid-template-columns: 1fr 1fr 1fr;
         }
 
-        .sa-theme-preview.warm span:nth-child(1) { background: #efe2d3; }
-        .sa-theme-preview.warm span:nth-child(2) { background: #c8a98c; }
-        .sa-theme-preview.warm span:nth-child(3) { background: #6d4f2f; }
+        .sa-theme-strip span { flex: 1; }
+        .sa-theme-strip.warm span:nth-child(1) { background: #fed7aa; }
+        .sa-theme-strip.warm span:nth-child(2) { background: #fb923c; }
+        .sa-theme-strip.warm span:nth-child(3) { background: #ea580c; }
 
-        .sa-theme-preview.light span:nth-child(1) { background: #f5f7fb; }
-        .sa-theme-preview.light span:nth-child(2) { background: #d8e0ea; }
-        .sa-theme-preview.light span:nth-child(3) { background: #73839a; }
+        .sa-theme-strip.dark span:nth-child(1) { background: #1e293b; }
+        .sa-theme-strip.dark span:nth-child(2) { background: #334155; }
+        .sa-theme-strip.dark span:nth-child(3) { background: #94a3b8; }
 
-        .sa-theme-preview.dark span:nth-child(1) { background: #2a2d33; }
-        .sa-theme-preview.dark span:nth-child(2) { background: #424750; }
-        .sa-theme-preview.dark span:nth-child(3) { background: #9096a3; }
-
-        .sa-theme-name {
-          margin: 0 0 3px;
-          font-size: 14px;
-          font-weight: 800;
-          color: #372b22;
+        .sa-theme-info h5 {
+          margin: 0 0 4px;
+          font-size: 15px;
+          font-weight: 700;
+          color: var(--text);
           text-transform: capitalize;
         }
 
-        .sa-theme-desc {
+        .sa-theme-info p {
           margin: 0;
-          font-size: 12px;
-          color: #8d7b6d;
-          line-height: 1.45;
-        }
-
-        .sa-note {
-          margin-top: 4px;
-          padding: 14px 16px;
-          border-radius: 16px;
-          background: rgba(107, 78, 0, 0.05);
-          color: #877565;
           font-size: 13px;
-          line-height: 1.65;
-          border: 1px dashed rgba(107, 78, 0, 0.12);
+          color: var(--muted);
+          line-height: 1.5;
         }
 
-        @media (max-width: 1080px) {
-          .sa-col-6,
-          .sa-col-12 {
-            grid-column: span 12;
-          }
-
-          .sa-split {
-            grid-template-columns: 1fr;
-          }
+        .sa-check-mark {
+          position: absolute;
+          top: -10px;
+          right: -10px;
+          width: 24px;
+          height: 24px;
+          background: var(--primary);
+          color: #fff;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 14px;
+          box-shadow: var(--shadow-hero);
+          border: 2px solid var(--bg);
         }
 
-        @media (max-width: 680px) {
-          .sa-settings-page {
-            padding: 22px 14px 48px;
-          }
+        .sa-compact-row {
+          margin-top: 32px;
+          padding-top: 24px;
+          border-top: 1px solid var(--border);
+        }
 
-          .sa-settings-actions {
-            width: 100%;
-          }
-
-          .sa-settings-btn,
-          .sa-settings-saved {
-            width: 100%;
-            justify-content: center;
-          }
-
-          .sa-card {
-            padding: 18px;
-            border-radius: 20px;
-          }
-
-          .sa-card-head {
-            flex-direction: column;
-            align-items: flex-start;
-          }
-
-          .sa-row {
-            align-items: flex-start;
-          }
-
-          .sa-theme-grid {
-            grid-template-columns: 1fr;
-          }
+        @media (max-width: 1024px) {
+          .sa-settings-grid { grid-template-columns: 1fr; }
+          .sa-card-full { grid-column: span 1; }
         }
       `}</style>
 
@@ -575,237 +473,159 @@ export default function SettingsPage({ role = "admin" }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, ease: easing }}
         >
+          {/* HEADER */}
           <section className="sa-settings-hero">
             <div className="sa-settings-hero-left">
-              <span className="sa-settings-badge">{roleLabel} Settings</span>
-              <h1 className="sa-settings-title">Settings</h1>
-              <p className="sa-settings-subtitle">
-                Pengaturan aplikasi untuk notifikasi, sinkronisasi, dan tampilan untuk {roleDesc}.
-                Semua fungsi tetap sama, hanya tampilannya dibuat lebih rapi,
-                modern, dan nyaman dilihat.
-              </p>
+              <h1>Pengaturan Sistem</h1>
+              <p>Kelola pengaturan aplikasi untuk notifikasi, sinkronisasi, dan tampilan.</p>
             </div>
 
             <div className="sa-settings-actions">
-              <button
-                type="button"
-                className="sa-settings-btn sa-settings-btn-primary"
-                onClick={handleSave}
-              >
-                Simpan
+              <button className="sa-settings-btn sa-settings-btn-primary" onClick={handleSave}>
+                <span>💾</span> Simpan Perubahan
               </button>
-
-              <button
-                type="button"
-                className="sa-settings-btn sa-settings-btn-secondary"
-                onClick={() => window.location.reload()}
-              >
-                Reset
+              <button className="sa-settings-btn sa-settings-btn-secondary" onClick={() => window.location.reload()}>
+                <span>🔄</span> Reset
               </button>
-
-              {saved && <div className="sa-settings-saved">Tersimpan ✓</div>}
             </div>
           </section>
 
-          <section className="sa-settings-grid">
-            <motion.div className="sa-col-6" {...sectionMotion}>
-              <div className="sa-card">
-                <div className="sa-card-head">
-                  <div className="sa-card-title-wrap">
-                    <h3 className="sa-card-title">Notifikasi</h3>
-                    <p className="sa-card-desc">
-                      Atur notifikasi penting yang ingin ditampilkan untuk {role}.
-                    </p>
-                  </div>
-                  <span className="sa-card-pill">Alerts</span>
-                </div>
-
-                <div className="sa-stack">
-                  <div className="sa-row">
-                    <div className="sa-row-main">
-                      <p className="sa-row-title">Stok menipis</p>
-                      <p className="sa-row-subtitle">
-                        Tampil saat stok gudang atau toko melewati batas minimum.
-                      </p>
-                    </div>
-
-                    <div className="sa-control">
-                      <label className="sa-switch">
-                        <input
-                          type="checkbox"
-                          checked={notifStock}
-                          onChange={(e) => setNotifStock(e.target.checked)}
-                        />
-                        <span className="sa-slider" />
-                      </label>
-                    </div>
-                  </div>
-
-                  <div className="sa-row">
-                    <div className="sa-row-main">
-                      <p className="sa-row-title">Permintaan barang</p>
-                      <p className="sa-row-subtitle">
-                        Tampil saat toko mengirim request kebutuhan barang.
-                      </p>
-                    </div>
-
-                    <div className="sa-control">
-                      <label className="sa-switch">
-                        <input
-                          type="checkbox"
-                          checked={notifRequests}
-                          onChange={(e) => setNotifRequests(e.target.checked)}
-                        />
-                        <span className="sa-slider" />
-                      </label>
-                    </div>
+          {/* GRID */}
+          <div className="sa-settings-grid">
+            {/* NOTIFIKASI */}
+            <motion.div className="sa-card" {...sectionMotion}>
+              <div className="sa-card-head">
+                <div className="sa-card-title-group">
+                  <div className="sa-card-icon">🔔</div>
+                  <div className="sa-card-title">
+                    <h3>Notifikasi</h3>
+                    <p>Atur notifikasi penting untuk {role}.</p>
                   </div>
                 </div>
+                <span className="sa-card-pill sa-card-pill-orange">Alerts</span>
+              </div>
+
+              <div className="sa-stack">
+                {notifItems.map(item => (
+                  <div className="sa-row" key={item.id}>
+                    <div className="sa-row-info">
+                      <h4>{item.label}</h4>
+                      <p>{item.desc}</p>
+                    </div>
+                    <label className="sa-switch">
+                      <input type="checkbox" checked={item.enabled} onChange={() => handleToggleNotif(item.id)} />
+                      <span className="sa-slider"></span>
+                    </label>
+                  </div>
+                ))}
               </div>
             </motion.div>
 
-            <motion.div className="sa-col-6" {...sectionMotion}>
-              <div className="sa-card">
-                <div className="sa-card-head">
-                  <div className="sa-card-title-wrap">
-                    <h3 className="sa-card-title">Sinkronisasi</h3>
-                    <p className="sa-card-desc">
-                      Kontrol data realtime dan interval sinkronisasi aplikasi.
-                    </p>
+            {/* SINKRONISASI */}
+            <motion.div className="sa-card" {...sectionMotion}>
+              <div className="sa-card-head">
+                <div className="sa-card-title-group">
+                  <div className="sa-card-icon">🔄</div>
+                  <div className="sa-card-title">
+                    <h3>Sinkronisasi</h3>
+                    <p>Kontrol data realtime and interval sinkronisasi aplikasi.</p>
                   </div>
-                  <span className="sa-card-pill">Realtime</span>
+                </div>
+                <span className="sa-card-pill">Realtime</span>
+              </div>
+
+              <div className="sa-stack">
+                <div className="sa-row">
+                  <div className="sa-row-info">
+                    <h4>Auto Sync</h4>
+                    <p>Sinkronisasi otomatis agar stok selalu update.</p>
+                  </div>
+                  <label className="sa-switch">
+                    <input type="checkbox" checked={autoSync} onChange={(e) => setAutoSync(e.target.checked)} />
+                    <span className="sa-slider"></span>
+                  </label>
                 </div>
 
-                <div className="sa-stack">
-                  <div className="sa-row">
-                    <div className="sa-row-main">
-                      <p className="sa-row-title">Auto Sync</p>
-                      <p className="sa-row-subtitle">
-                        Sinkronisasi otomatis agar stok selalu update.
-                      </p>
-                    </div>
-
-                    <div className="sa-control">
-                      <label className="sa-switch">
-                        <input
-                          type="checkbox"
-                          checked={autoSync}
-                          onChange={(e) => setAutoSync(e.target.checked)}
-                        />
-                        <span className="sa-slider" />
-                      </label>
-                    </div>
-                  </div>
-
-                  <div className="sa-split">
-                    <div className="sa-field">
-                      <label htmlFor="syncInterval" className="sa-field-label">
-                        Interval Sync
-                      </label>
-                      <p className="sa-help">berapa menit sekali (dummy)</p>
-                      <select
-                        id="syncInterval"
-                        className="sa-select"
-                        value={syncInterval}
-                        onChange={(e) => setSyncInterval(e.target.value)}
-                        disabled={!autoSync}
-                      >
+                <div className="sa-sync-controls">
+                  <div className="sa-field">
+                    <label className="sa-field-label">Interval Sync</label>
+                    <span className="sa-field-subtext">berapa menit sekali (dummy)</span>
+                    <div className="sa-select-wrapper">
+                      <select className="sa-select" value={syncInterval} onChange={(e) => setSyncInterval(e.target.value)} disabled={!autoSync}>
                         <option value="1">1 menit</option>
                         <option value="5">5 menit</option>
                         <option value="10">10 menit</option>
                         <option value="30">30 menit</option>
                       </select>
                     </div>
-
-                    <div className="sa-field">
-                      <label className="sa-field-label">Status</label>
-                      <p className="sa-help">contoh status koneksi realtime</p>
-                      <div className={statusClass}>
-                        <span className="sa-settings-status-dot" />
-                        <span>{syncStatus}</span>
-                      </div>
-                    </div>
                   </div>
 
-                  <button
-                    type="button"
-                    className="sa-wide-btn"
-                    onClick={testRealtime}
-                  >
-                    Tes Realtime
-                  </button>
+                  <div className="sa-field">
+                    <label className="sa-field-label">Status</label>
+                    <span className="sa-field-subtext">contoh status koneksi realtime</span>
+                    <div className="sa-status-box">
+                      <span className="sa-status-dot"></span>
+                      <span>{syncStatus} (dummy)</span>
+                    </div>
+                  </div>
                 </div>
+
+                <button className="sa-tes-btn" onClick={testRealtime}>
+                  <span>📡</span> Tes Realtime
+                </button>
               </div>
             </motion.div>
 
-            <motion.div className="sa-col-12" {...sectionMotion}>
-              <div className="sa-card">
-                <div className="sa-card-head">
-                  <div className="sa-card-title-wrap">
-                    <h3 className="sa-card-title">Tampilan</h3>
-                    <p className="sa-card-desc">
-                      Pilih tema dan atur kepadatan tampilan sesuai preferensi.
-                    </p>
+            {/* TAMPILAN */}
+            <motion.div className="sa-card sa-card-full" {...sectionMotion}>
+              <div className="sa-card-head">
+                <div className="sa-card-title-group">
+                  <div className="sa-card-icon">🎨</div>
+                  <div className="sa-card-title">
+                    <h3>Tampilan</h3>
+                    <p>Pilih tema dan atur tampilan sesuai preferensi.</p>
                   </div>
-                  <span className="sa-card-pill">UI</span>
                 </div>
+                <span className="sa-card-pill sa-card-pill-orange">UI</span>
+              </div>
 
-                <div className="sa-stack">
-                  <div className="sa-field">
-                    <label className="sa-field-label">Theme</label>
-                    <p className="sa-help">pilih mode tampilan (dummy)</p>
-
-                    <div className="sa-theme-grid">
-                      {["warm", "light", "dark"].map((t) => (
-                        <button
-                          key={t}
-                          type="button"
-                          className={`sa-theme-btn ${theme === t ? "is-active" : ""}`}
-                          onClick={() => setTheme(t)}
-                        >
-                          <div className={`sa-theme-preview ${t}`}>
-                            <span />
-                            <span />
-                            <span />
-                          </div>
-                          <p className="sa-theme-name">{t}</p>
-                          <p className="sa-theme-desc">
+              <div className="sa-stack">
+                <div className="sa-field">
+                  <h4 style={{ margin: '0 0 4px', fontSize: '15px', fontWeight: 700, color: 'var(--text)' }}>Theme</h4>
+                  <p style={{ fontSize: '13px', color: 'var(--muted)', margin: '0 0 16px' }}>Pilih mode tampilan aplikasi</p>
+                  
+                  <div className="sa-theme-grid">
+                    {["warm", "dark"].map((t) => (
+                      <div key={t} className={`sa-theme-card ${tempTheme === t ? 'is-active' : ''}`} onClick={() => setTempTheme(t)}>
+                        <div className={`sa-theme-strip ${t}`}>
+                          <span /><span /><span />
+                        </div>
+                        <div className="sa-theme-info">
+                          <h5>{t}</h5>
+                          <p>
                             {t === "warm" && "Nuansa hangat, lembut, dan natural."}
-                            {t === "light" && "Tampilan cerah, bersih, dan ringan."}
                             {t === "dark" && "Mode gelap yang fokus dan elegan."}
                           </p>
-                        </button>
-                      ))}
-                    </div>
+                        </div>
+                        {tempTheme === t && <div className="sa-check-mark">✓</div>}
+                      </div>
+                    ))}
                   </div>
+                </div>
 
-                  <div className="sa-row">
-                    <div className="sa-row-main">
-                      <p className="sa-row-title">Compact mode</p>
-                      <p className="sa-row-subtitle">
-                        Tampilan lebih rapat untuk layar kecil.
-                      </p>
-                    </div>
-
-                    <div className="sa-control">
-                      <label className="sa-switch">
-                        <input
-                          type="checkbox"
-                          checked={compact}
-                          onChange={(e) => setCompact(e.target.checked)}
-                        />
-                        <span className="sa-slider" />
-                      </label>
-                    </div>
+                <div className="sa-row sa-compact-row">
+                  <div className="sa-row-info">
+                    <h4>Compact Mode</h4>
+                    <p>Tampilan lebih rapat untuk layar kecil.</p>
                   </div>
-
-                  <div className="sa-note">
-                    * Pengaturan ini tersimpan secara lokal untuk {role}.
-                  </div>
+                  <label className="sa-switch">
+                    <input type="checkbox" checked={compact} onChange={(e) => setCompact(e.target.checked)} />
+                    <span className="sa-slider"></span>
+                  </label>
                 </div>
               </div>
             </motion.div>
-          </section>
+          </div>
         </motion.div>
       </div>
     </>

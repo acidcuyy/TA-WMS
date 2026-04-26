@@ -8,6 +8,8 @@ import logoSideDark from "../../assets/images/LogoSide_dark.png";
 import logoSideDefault from "../../assets/images/LogoSide_default.png";
 import avatarImg from "../../assets/images/stok.jpg"; // Placeholder avatar
 
+import Sidebar from "../../components/layout/Sidebar";
+
 export default function GudangLayout() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -22,63 +24,41 @@ export default function GudangLayout() {
   };
 
   const menuItems = [
-    { label: "Dashboard", path: "/gudang", icon: "⊞", group: "GUDANG" },
-    { label: "Penerimaan Barang", path: "/gudang/penerimaan", icon: "⬇️", group: "GUDANG" },
-    { label: "Pengeluaran Barang", path: "/gudang/pengeluaran", icon: "⬆️", group: "GUDANG" },
-    { label: "Transfer Barang", path: "/gudang/transfer", icon: "⇄", group: "GUDANG" },
-    { label: "Stok & Produk", path: "/gudang/stok", icon: "📦", group: "GUDANG" },
-    { label: "Request Masuk", path: "/gudang/requests", icon: "📥", group: "GUDANG" },
-    { label: "Order Masuk", path: "/gudang/orders", icon: "🗒", group: "GUDANG" },
+    {
+      title: "GUDANG",
+      items: [
+        { label: "Dashboard", path: "/gudang", icon: "⊞" },
+        { label: "Penerimaan Barang", path: "/gudang/penerimaan", icon: "⬇️" },
+        { label: "Pengeluaran Barang", path: "/gudang/pengeluaran", icon: "⬆️" },
+        { label: "Transfer Barang", path: "/gudang/transfer", icon: "⇄" },
+        { label: "Stok & Produk", path: "/gudang/stok", icon: "📦" },
+        { label: "Request Masuk", path: "/gudang/requests", icon: "📥" },
+        { label: "Order Masuk", path: "/gudang/orders", icon: "🗒" },
+      ]
+    },
+    {
+      title: "LAPORAN",
+      items: [
+        { label: "Laporan", path: "/gudang/laporan", icon: "🗒" },
+      ]
+    }
+  ];
 
-    { label: "Laporan", path: "/gudang/laporan", icon: "🗒", group: "LAPORAN" },
+  const bottomItems = [
+    { label: "Pengaturan", path: "/gudang/settings", icon: "⚙" },
+    { label: "Profile", path: "/gudang/profile", icon: "👤" },
   ];
 
   return (
     <div className="gudang-container">
       {/* SIDEBAR */}
-      <aside className="gudang-sidebar">
-        <div className="sidebar-header">
-          <img src={currentLogo} alt="ReaStock" className="sidebar-logo" />
-        </div>
-
-        <nav className="sidebar-nav">
-          <div className="nav-group">GUDANG</div>
-          {menuItems.filter(item => item.group === "GUDANG").map(item => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
-            >
-              <span className="nav-icon">{item.icon}</span>
-              <span>{item.label}</span>
-            </Link>
-          ))}
-
-          <div className="nav-group">LAPORAN</div>
-          {menuItems.filter(item => item.group === "LAPORAN").map(item => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
-            >
-              <span className="nav-icon">{item.icon}</span>
-              <span>{item.label}</span>
-            </Link>
-          ))}
-        </nav>
-
-        <div className="sidebar-footer">
-          <Link to="/gudang/settings" className="nav-item">
-            <span className="nav-icon">⚙</span> <span>Pengaturan</span>
-          </Link>
-          <Link to="/gudang/profile" className="nav-item">
-            <span className="nav-icon">👤</span> <span>Profile</span>
-          </Link>
-          <button onClick={() => setShowLogoutModal(true)} className="logout-btn">
-            Logout
-          </button>
-        </div>
-      </aside>
+      <Sidebar
+        role="GUDANG"
+        logo={currentLogo}
+        menuItems={menuItems}
+        bottomItems={bottomItems}
+        onLogoutClick={() => setShowLogoutModal(true)}
+      />
 
       {/* MAIN AREA */}
       <main className="gudang-main">

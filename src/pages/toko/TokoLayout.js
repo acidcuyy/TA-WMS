@@ -2,12 +2,18 @@ import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import "./TokoLayout.css";
-
+import { useTheme } from "../../app/ThemeProvider";
+import logoSideDark from "../../assets/images/LogoSide_dark.png";
 import logoSideDefault from "../../assets/images/LogoSide_default.png";
+
+import Sidebar from "../../components/layout/Sidebar";
 
 export default function TokoLayout() {
   const navigate = useNavigate();
+  const { theme } = useTheme();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  const currentLogo = theme === "dark" ? logoSideDark : logoSideDefault;
 
   const handleLogout = () => {
     localStorage.removeItem("reastock_role");
@@ -15,16 +21,21 @@ export default function TokoLayout() {
   };
 
   const menuItems = [
-    { label: "Dashboard", path: "/toko", icon: "⊞" },
-    { label: "Stok & Produk", path: "/toko/stok", icon: "📦" },
-    { label: "Penerimaan Barang", path: "/toko/penerimaan", icon: "📥" },
-    { label: "Pengeluaran Barang", path: "/toko/pengeluaran", icon: "📤" },
-    { label: "Transfer Barang", path: "/toko/transfer", icon: "⇄" },
-    { label: "Penyesuaian Stok", path: "/toko/adj", icon: "⚖" },
-    { label: "Pesanan Penjualan", path: "/toko/pesanan", icon: "🛒" },
-    { label: "Request", path: "/toko/request", icon: "📝" },
-    { label: "Retur Penjualan", path: "/toko/retur", icon: "↩" },
-    { label: "Laporan", path: "/toko/riwayat", icon: "🗒" },
+    {
+      title: "TOKO",
+      items: [
+        { label: "Dashboard", path: "/toko", icon: "⊞" },
+        { label: "Stok & Produk", path: "/toko/stok", icon: "📦" },
+        { label: "Penerimaan Barang", path: "/toko/penerimaan", icon: "📥" },
+        { label: "Pengeluaran Barang", path: "/toko/pengeluaran", icon: "📤" },
+        { label: "Transfer Barang", path: "/toko/transfer", icon: "⇄" },
+        { label: "Penyesuaian Stok", path: "/toko/adj", icon: "⚖" },
+        { label: "Pesanan Penjualan", path: "/toko/pesanan", icon: "🛒" },
+        { label: "Request", path: "/toko/request", icon: "📝" },
+        { label: "Retur Penjualan", path: "/toko/retur", icon: "↩" },
+        { label: "Laporan", path: "/toko/riwayat", icon: "🗒" },
+      ]
+    }
   ];
 
   const bottomItems = [
@@ -35,45 +46,13 @@ export default function TokoLayout() {
   return (
     <div className="toko-layout">
       {/* SIDEBAR */}
-      <aside className="toko-sidebar">
-        <div className="toko-sidebar__header">
-          <img src={logoSideDefault} alt="ReaStock" className="toko-sidebar__logo" />
-        </div>
-
-        <div className="toko-sidebar__role">TOKO</div>
-
-        <nav className="toko-sidebar__nav">
-          {menuItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              end={item.path === "/toko"}
-              className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
-            >
-              <span className="nav-icon">{item.icon}</span>
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
-
-        <div className="toko-sidebar__footer">
-          {bottomItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
-            >
-              <span className="nav-icon">{item.icon}</span>
-              {item.label}
-            </NavLink>
-          ))}
-
-          <button className="logout-btn" onClick={() => setShowLogoutModal(true)}>
-            <span className="nav-icon">↪</span>
-            Logout
-          </button>
-        </div>
-      </aside>
+      <Sidebar
+        role="TOKO"
+        logo={currentLogo}
+        menuItems={menuItems}
+        bottomItems={bottomItems}
+        onLogoutClick={() => setShowLogoutModal(true)}
+      />
 
       {/* MAIN CONTENT */}
       <main className="toko-main">
@@ -126,7 +105,7 @@ export default function TokoLayout() {
             position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000,
             display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)"
           }} onClick={() => setShowLogoutModal(false)}>
-            <motion.div 
+            <motion.div
               className="logout-modal"
               style={{
                 background: "white", padding: "32px", borderRadius: "24px", maxWidth: "400px", width: "90%",
@@ -140,7 +119,7 @@ export default function TokoLayout() {
               <div style={{ fontSize: "40px", marginBottom: "16px" }}>⚠️</div>
               <h3 style={{ margin: "0 0 8px", fontSize: "20px", fontWeight: 700 }}>Keluar Aplikasi</h3>
               <p style={{ margin: "0 0 24px", color: "#64748b" }}>Apakah anda yakin ingin keluar?</p>
-              
+
               <div style={{ display: "flex", gap: "12px" }}>
                 <button style={{
                   flex: 1, padding: "12px", borderRadius: "12px", border: "1px solid #e2e8f0",
