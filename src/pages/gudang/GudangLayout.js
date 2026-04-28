@@ -105,21 +105,34 @@ export default function GudangLayout() {
       {/* LOGOUT CONFIRMATION MODAL */}
       <AnimatePresence>
         {showLogoutModal && (
-          <div className="logout-overlay" onClick={() => setShowLogoutModal(false)}>
+          <div className="logout-overlay" style={{
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 9999,
+            display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)"
+          }} onClick={() => setShowLogoutModal(false)}>
             <motion.div
               className="logout-modal"
+              style={{
+                background: "var(--surface, #fff)", padding: "32px", borderRadius: "24px", maxWidth: "360px", width: "90%",
+                textAlign: "center", boxShadow: "0 20px 40px rgba(0,0,0,0.2)"
+              }}
               onClick={e => e.stopPropagation()}
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
             >
-              <div className="logout-modal__icon">⚠️</div>
-              <h3>Keluar Aplikasi</h3>
-              <p>Apakah anda yakin ingin keluar?</p>
+              <div style={{ width: "72px", height: "72px", background: "#fff1f0", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "32px", margin: "0 auto 20px" }}>⚠️</div>
+              <h3 style={{ margin: "0 0 8px", fontSize: "20px", fontWeight: 700, color: "var(--text, #1e293b)" }}>Keluar Aplikasi</h3>
+              <p style={{ margin: "0 0 24px", color: "var(--muted, #64748b)", fontSize: "14px" }}>Apakah anda yakin ingin keluar?</p>
 
-              <div className="logout-modal__actions">
-                <button className="btn-batal" onClick={() => setShowLogoutModal(false)}>Batal</button>
-                <button className="btn-confirm-logout" onClick={handleLogout}>Logout</button>
+              <div style={{ display: "flex", gap: "12px" }}>
+                <button style={{
+                  flex: 1, padding: "12px", borderRadius: "12px", border: "1px solid var(--border, #e2e8f0)",
+                  background: "transparent", color: "var(--text, #1e293b)", fontWeight: 600, cursor: "pointer"
+                }} onClick={() => setShowLogoutModal(false)}>Batal</button>
+                <button style={{
+                  flex: 1, padding: "12px", borderRadius: "12px", border: "none",
+                  background: "#ff4d4f", color: "white", fontWeight: 600, cursor: "pointer"
+                }} onClick={handleLogout}>Logout</button>
               </div>
             </motion.div>
           </div>

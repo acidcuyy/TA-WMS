@@ -108,11 +108,94 @@ export default function LaporanProduksi() {
               ))}
             </div>
           </div>
-          <div style={{ height: '220px', display: 'flex', alignItems: 'flex-end', gap: '20px', padding: '0 10px' }}>
-             <svg width="100%" height="100%" viewBox="0 0 800 200">
-                <path d="M0,150 L100,130 L200,140 L300,100 L400,130 L500,110 L600,140 L700,120 L800,110" fill="none" stroke="#52c41a" strokeWidth="3" />
-                <path d="M0,180 L100,170 L200,175 L300,165 L400,180 L500,170 L600,185 L700,175 L800,170" fill="none" stroke="#e4915a" strokeWidth="3" />
-             </svg>
+          <div className="chart-area" style={{ height: '240px' }}>
+            <div className="chart-y-axis">
+              <span>250</span>
+              <span>200</span>
+              <span>150</span>
+              <span>100</span>
+              <span>50</span>
+              <span>0</span>
+            </div>
+            <div className="chart-main">
+               <svg width="100%" height="100%" viewBox="0 0 800 200" preserveAspectRatio="none" className="svg-chart">
+                  <defs>
+                    <linearGradient id="gradAktual" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#52c41a" stopOpacity="0.25" />
+                      <stop offset="100%" stopColor="#52c41a" stopOpacity="0.02" />
+                    </linearGradient>
+                    <linearGradient id="gradTarget" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#e4915a" stopOpacity="0.2" />
+                      <stop offset="100%" stopColor="#e4915a" stopOpacity="0.02" />
+                    </linearGradient>
+                  </defs>
+                  
+                  {/* Horizontal Grid Lines */}
+                  {[0, 40, 80, 120, 160, 200].map(y => (
+                    <line key={y} x1="0" y1={y} x2="800" y2={y} stroke="var(--border-subtle)" strokeWidth="0.5" />
+                  ))}
+
+                  {/* Area Fills */}
+                  <motion.path 
+                    d="M0,150 C50,150 50,130 100,130 C150,130 150,140 200,140 C250,140 250,100 300,100 C350,100 350,130 400,130 C450,130 450,110 500,110 C550,110 550,140 600,140 C650,140 650,120 700,120 C750,120 750,110 800,110 L800,200 L0,200 Z" 
+                    fill="url(#gradAktual)" 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 1, delay: 0.8 }}
+                  />
+                  <motion.path 
+                    d="M0,180 C50,180 50,170 100,170 C150,170 150,175 200,175 C250,175 250,165 300,165 C350,165 350,180 400,180 C450,180 450,170 500,170 C550,170 550,185 600,185 C650,185 650,175 700,175 C750,175 750,170 800,170 L800,200 L0,200 Z" 
+                    fill="url(#gradTarget)" 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 1, delay: 1 }}
+                  />
+
+                  {/* Animated Lines */}
+                  <motion.path 
+                    d="M0,150 C50,150 50,130 100,130 C150,130 150,140 200,140 C250,140 250,100 300,100 C350,100 350,130 400,130 C450,130 450,110 500,110 C550,110 550,140 600,140 C650,140 650,120 700,120 C750,120 750,110 800,110" 
+                    fill="none" 
+                    stroke="#52c41a" 
+                    strokeWidth="3" 
+                    strokeLinecap="round"
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: 1 }}
+                    transition={{ duration: 1.5, ease: "easeOut" }}
+                  />
+                  <motion.path 
+                    d="M0,180 C50,180 50,170 100,170 C150,170 150,175 200,175 C250,175 250,165 300,165 C350,165 350,180 400,180 C450,180 450,170 500,170 C550,170 550,185 600,185 C650,185 650,175 700,175 C750,175 750,170 800,170" 
+                    fill="none" 
+                    stroke="#e4915a" 
+                    strokeWidth="3" 
+                    strokeLinecap="round"
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: 1 }}
+                    transition={{ duration: 1.5, ease: "easeOut", delay: 0.2 }}
+                  />
+
+                  {/* Data Points */}
+                  <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 1.5 }}>
+                    <circle cx="100" cy="130" r="4.5" fill="var(--bg)" stroke="#52c41a" strokeWidth="2" />
+                    <circle cx="200" cy="140" r="4.5" fill="var(--bg)" stroke="#52c41a" strokeWidth="2" />
+                    <circle cx="300" cy="100" r="4.5" fill="var(--bg)" stroke="#52c41a" strokeWidth="2" />
+                    <circle cx="400" cy="130" r="4.5" fill="var(--bg)" stroke="#52c41a" strokeWidth="2" />
+                    <circle cx="500" cy="110" r="4.5" fill="var(--bg)" stroke="#52c41a" strokeWidth="2" />
+                    <circle cx="600" cy="140" r="4.5" fill="var(--bg)" stroke="#52c41a" strokeWidth="2" />
+                    <circle cx="700" cy="120" r="4.5" fill="var(--bg)" stroke="#52c41a" strokeWidth="2" />
+                    
+                    <circle cx="100" cy="170" r="4.5" fill="var(--bg)" stroke="#e4915a" strokeWidth="2" />
+                    <circle cx="200" cy="175" r="4.5" fill="var(--bg)" stroke="#e4915a" strokeWidth="2" />
+                    <circle cx="300" cy="165" r="4.5" fill="var(--bg)" stroke="#e4915a" strokeWidth="2" />
+                    <circle cx="400" cy="180" r="4.5" fill="var(--bg)" stroke="#e4915a" strokeWidth="2" />
+                    <circle cx="500" cy="170" r="4.5" fill="var(--bg)" stroke="#e4915a" strokeWidth="2" />
+                    <circle cx="600" cy="185" r="4.5" fill="var(--bg)" stroke="#e4915a" strokeWidth="2" />
+                    <circle cx="700" cy="175" r="4.5" fill="var(--bg)" stroke="#e4915a" strokeWidth="2" />
+                  </motion.g>
+               </svg>
+               <div className="chart-x-axis">
+                  <span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span><span>Min</span>
+               </div>
+            </div>
           </div>
           <div style={{ display: 'flex', gap: '20px', marginTop: '16px', fontSize: '11px', fontWeight: 600 }}>
              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><span style={{ width: '12px', height: '3px', background: '#52c41a' }}></span> Produksi Aktual</div>
