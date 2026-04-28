@@ -109,12 +109,123 @@ export default function LaporanPergerakanStok() {
               ))}
             </div>
           </div>
-          <div style={{ height: '220px', display: 'flex', alignItems: 'flex-end', gap: '20px', padding: '0 10px' }}>
-             <svg width="100%" height="100%" viewBox="0 0 800 200">
-                <path d="M0,150 L100,130 L200,140 L300,100 L400,130 L500,110 L600,140 L700,120 L800,110" fill="none" stroke="#52c41a" strokeWidth="3" />
-                <path d="M0,180 L100,160 L200,170 L300,150 L400,170 L500,160 L600,180 L700,160 L800,150" fill="none" stroke="#e4915a" strokeWidth="3" />
-                <path d="M0,195 L100,185 L200,190 L300,175 L400,190 L500,185 L600,195 L700,185 L800,175" fill="none" stroke="#1890ff" strokeWidth="3" />
-             </svg>
+          <div className="chart-area" style={{ height: '240px' }}>
+            <div className="chart-y-axis">
+              <span>500</span>
+              <span>400</span>
+              <span>300</span>
+              <span>200</span>
+              <span>100</span>
+              <span>0</span>
+            </div>
+            <div className="chart-main">
+               <svg width="100%" height="100%" viewBox="0 0 800 200" preserveAspectRatio="none" className="svg-chart">
+                  <defs>
+                    <linearGradient id="gradMasuk" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#52c41a" stopOpacity="0.25" />
+                      <stop offset="100%" stopColor="#52c41a" stopOpacity="0.02" />
+                    </linearGradient>
+                    <linearGradient id="gradKeluar" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#e4915a" stopOpacity="0.2" />
+                      <stop offset="100%" stopColor="#e4915a" stopOpacity="0.02" />
+                    </linearGradient>
+                    <linearGradient id="gradTrf" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#1890ff" stopOpacity="0.2" />
+                      <stop offset="100%" stopColor="#1890ff" stopOpacity="0.02" />
+                    </linearGradient>
+                  </defs>
+                  
+                  {/* Horizontal Grid Lines */}
+                  {[0, 40, 80, 120, 160, 200].map(y => (
+                    <line key={y} x1="0" y1={y} x2="800" y2={y} stroke="var(--border-subtle)" strokeWidth="0.5" />
+                  ))}
+
+                  {/* Area Fills */}
+                  <motion.path 
+                    d="M0,150 C50,150 50,130 100,130 C150,130 150,140 200,140 C250,140 250,100 300,100 C350,100 350,130 400,130 C450,130 450,110 500,110 C550,110 550,140 600,140 C650,140 650,120 700,120 C750,120 750,110 800,110 L800,200 L0,200 Z" 
+                    fill="url(#gradMasuk)" 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 1, delay: 0.8 }}
+                  />
+                  <motion.path 
+                    d="M0,180 C50,180 50,160 100,160 C150,160 150,170 200,170 C250,170 250,150 300,150 C350,150 350,170 400,170 C450,170 450,160 500,160 C550,160 550,180 600,180 C650,180 650,160 700,160 C750,160 750,150 800,150 L800,200 L0,200 Z" 
+                    fill="url(#gradKeluar)" 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 1, delay: 1 }}
+                  />
+                  <motion.path 
+                    d="M0,195 C50,195 50,185 100,185 C150,185 150,190 200,190 C250,190 250,175 300,175 C350,175 350,190 400,190 C450,190 450,185 500,185 C550,185 550,195 600,195 C650,195 650,185 700,185 C750,185 750,175 800,175 L800,200 L0,200 Z" 
+                    fill="url(#gradTrf)" 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 1, delay: 1.2 }}
+                  />
+
+                  {/* Animated Lines */}
+                  <motion.path 
+                    d="M0,150 C50,150 50,130 100,130 C150,130 150,140 200,140 C250,140 250,100 300,100 C350,100 350,130 400,130 C450,130 450,110 500,110 C550,110 550,140 600,140 C650,140 650,120 700,120 C750,120 750,110 800,110" 
+                    fill="none" 
+                    stroke="#52c41a" 
+                    strokeWidth="3" 
+                    strokeLinecap="round"
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: 1 }}
+                    transition={{ duration: 1.5, ease: "easeOut" }}
+                  />
+                  <motion.path 
+                    d="M0,180 C50,180 50,160 100,160 C150,160 150,170 200,170 C250,170 250,150 300,150 C350,150 350,170 400,170 C450,170 450,160 500,160 C550,160 550,180 600,180 C650,180 650,160 700,160 C750,160 750,150 800,150" 
+                    fill="none" 
+                    stroke="#e4915a" 
+                    strokeWidth="3" 
+                    strokeLinecap="round"
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: 1 }}
+                    transition={{ duration: 1.5, ease: "easeOut", delay: 0.2 }}
+                  />
+                  <motion.path 
+                    d="M0,195 C50,195 50,185 100,185 C150,185 150,190 200,190 C250,190 250,175 300,175 C350,175 350,190 400,190 C450,190 450,185 500,185 C550,185 550,195 600,195 C650,195 650,185 700,185 C750,185 750,175 800,175" 
+                    fill="none" 
+                    stroke="#1890ff" 
+                    strokeWidth="3" 
+                    strokeLinecap="round"
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: 1 }}
+                    transition={{ duration: 1.5, ease: "easeOut", delay: 0.4 }}
+                  />
+
+                  {/* Data Points */}
+                  <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 1.5 }}>
+                    <circle cx="100" cy="130" r="4.5" fill="var(--bg)" stroke="#52c41a" strokeWidth="2" />
+                    <circle cx="200" cy="140" r="4.5" fill="var(--bg)" stroke="#52c41a" strokeWidth="2" />
+                    <circle cx="300" cy="100" r="4.5" fill="var(--bg)" stroke="#52c41a" strokeWidth="2" />
+                    <circle cx="400" cy="130" r="4.5" fill="var(--bg)" stroke="#52c41a" strokeWidth="2" />
+                    <circle cx="500" cy="110" r="4.5" fill="var(--bg)" stroke="#52c41a" strokeWidth="2" />
+                    <circle cx="600" cy="140" r="4.5" fill="var(--bg)" stroke="#52c41a" strokeWidth="2" />
+                    <circle cx="700" cy="120" r="4.5" fill="var(--bg)" stroke="#52c41a" strokeWidth="2" />
+                    
+                    <circle cx="100" cy="160" r="4.5" fill="var(--bg)" stroke="#e4915a" strokeWidth="2" />
+                    <circle cx="200" cy="170" r="4.5" fill="var(--bg)" stroke="#e4915a" strokeWidth="2" />
+                    <circle cx="300" cy="150" r="4.5" fill="var(--bg)" stroke="#e4915a" strokeWidth="2" />
+                    <circle cx="400" cy="170" r="4.5" fill="var(--bg)" stroke="#e4915a" strokeWidth="2" />
+                    <circle cx="500" cy="160" r="4.5" fill="var(--bg)" stroke="#e4915a" strokeWidth="2" />
+                    <circle cx="600" cy="180" r="4.5" fill="var(--bg)" stroke="#e4915a" strokeWidth="2" />
+                    <circle cx="700" cy="160" r="4.5" fill="var(--bg)" stroke="#e4915a" strokeWidth="2" />
+
+                    <circle cx="100" cy="185" r="4.5" fill="var(--bg)" stroke="#1890ff" strokeWidth="2" />
+                    <circle cx="200" cy="190" r="4.5" fill="var(--bg)" stroke="#1890ff" strokeWidth="2" />
+                    <circle cx="300" cy="175" r="4.5" fill="var(--bg)" stroke="#1890ff" strokeWidth="2" />
+                    <circle cx="400" cy="190" r="4.5" fill="var(--bg)" stroke="#1890ff" strokeWidth="2" />
+                    <circle cx="500" cy="185" r="4.5" fill="var(--bg)" stroke="#1890ff" strokeWidth="2" />
+                    <circle cx="600" cy="195" r="4.5" fill="var(--bg)" stroke="#1890ff" strokeWidth="2" />
+                    <circle cx="700" cy="185" r="4.5" fill="var(--bg)" stroke="#1890ff" strokeWidth="2" />
+                  </motion.g>
+               </svg>
+               <div className="chart-x-axis">
+                  <span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span><span>Min</span>
+               </div>
+            </div>
           </div>
           <div style={{ display: 'flex', gap: '20px', marginTop: '16px', fontSize: '11px', fontWeight: 600 }}>
              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><span style={{ width: '12px', height: '3px', background: '#52c41a' }}></span> Stok Masuk</div>

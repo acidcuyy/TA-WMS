@@ -72,7 +72,7 @@ export default function ProfileToko() {
               <span className="status-badge online"><span className="dot"></span>Online</span>
             </div>
             <p className="hero-email">
-              toko@reastock.com <span style={{background: '#f3f4f6', color: '#4b5563', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', marginLeft: '8px', fontWeight: '600'}}>Toko</span>
+              toko@reastock.com <span>Toko</span>
             </p>
             <p className="hero-role">Toko Sejahtera</p>
           </div>
@@ -166,7 +166,7 @@ export default function ProfileToko() {
               <h3>Aktivitas Terbaru</h3>
               <p>Log ringkas untuk monitoring</p>
             </div>
-            <button className="btn-text" style={{fontSize: '13px', marginLeft: 'auto', color: '#888'}}>Lihat Semua</button>
+            <button className="btn-text" style={{fontSize: '13px', marginLeft: 'auto'}}>Lihat Semua</button>
           </div>
           <div className="activity-list-modern">
             <div className="activity-row">
