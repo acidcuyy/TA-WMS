@@ -31,6 +31,8 @@ import StokGudang from "../pages/gudang/StokGudang";
 import PengirimanGudang from "../pages/gudang/PengirimanGudang";
 import PengeluaranBarang from "../pages/gudang/PengeluaranBarang";
 import TransferBarang from "../pages/gudang/TransferBarang";
+import OrdersGudang from "../pages/gudang/OrdersGudang";
+import LaporanGudang from "../pages/gudang/LaporanGudang";
 
 // Toko
 import TokoLayout from "../pages/toko/TokoLayout";
@@ -41,6 +43,12 @@ import RiwayatToko from "../pages/toko/RiwayatToko";
 import ProfileToko from "../pages/toko/ProfileToko";
 import SettingsToko from "../pages/toko/SettingsToko";
 import PengirimanToko from "../pages/toko/PengirimanToko";
+import PenerimaanBarangToko from "../pages/toko/PenerimaanBarangToko";
+import PengeluaranBarangToko from "../pages/toko/PengeluaranBarangToko";
+import TransferBarangToko from "../pages/toko/TransferBarangToko";
+import PenyesuaianStokToko from "../pages/toko/PenyesuaianStokToko";
+import PesananPenjualanToko from "../pages/toko/PesananPenjualanToko";
+import ReturPenjualanToko from "../pages/toko/ReturPenjualanToko";
 
 export const router = createBrowserRouter([
   {
@@ -82,8 +90,10 @@ export const router = createBrowserRouter([
       { path: "pengeluaran", element: <PengeluaranBarang /> },
       { path: "transfer", element: <TransferBarang /> },
       { path: "requests", element: <RequestsGudang /> },
+      { path: "orders", element: <OrdersGudang /> },
       { path: "profile", element: <ProfileGudang /> },
       { path: "settings", element: <SettingsGudang /> },
+      { path: "laporan", element: <LaporanGudang /> },
       { path: "stok", element: <StokGudang /> },
 
       // ✅ Gudang pengiriman (benar)
@@ -103,9 +113,14 @@ export const router = createBrowserRouter([
       { index: true, element: <TokoDashboard /> },
 
       { path: "request", element: <RequestToko /> },
-      { path: "requests", element: <RequestToko /> },
+      { path: "pesanan", element: <PesananPenjualanToko /> },
 
       { path: "stok", element: <StokToko /> },
+      { path: "penerimaan", element: <PenerimaanBarangToko /> },
+      { path: "pengeluaran", element: <PengeluaranBarangToko /> },
+      { path: "transfer", element: <TransferBarangToko /> },
+      { path: "adj", element: <PenyesuaianStokToko /> },
+      { path: "retur", element: <ReturPenjualanToko /> },
       { path: "riwayat", element: <RiwayatToko /> },
       { path: "profile", element: <ProfileToko /> },
       { path: "settings", element: <SettingsToko /> },

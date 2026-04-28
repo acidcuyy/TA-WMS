@@ -8,6 +8,8 @@ import logoSideDefault from "../../assets/images/LogoSide_default.png";
 
 import { useTheme } from "../../app/ThemeProvider";
 
+import Sidebar from "../../components/layout/Sidebar";
+
 export default function AdminLayout() {
   const featuresRef = useRef(null);
   const location = useLocation();
@@ -23,66 +25,44 @@ export default function AdminLayout() {
   };
 
   const menuItems = [
-    { label: "Dashboard", path: "/admin", icon: "⊞", group: "MAIN" },
-    { label: "Manajemen Stok Gudang", path: "/admin/stok-gudang", icon: "⛃", group: "MAIN" },
-    { label: "Manajemen Gudang", path: "/admin/gudang", icon: "⌂", group: "MAIN" },
-    { label: "Manajemen Toko", path: "/admin/toko", icon: "🛒", group: "MAIN" },
-    { label: "Manajemen Produk", path: "/admin/produk", icon: "📦", group: "MAIN" },
-    { label: "Manajemen Order", path: "/admin/order", icon: "🗒", group: "MAIN" },
-    { label: "Request", path: "/admin/requests", icon: "🚚", group: "MAIN" },
-    
-    { label: "Laporan Stok", path: "/admin/laporan-stok", icon: "🗒", group: "LAPORAN" },
-    { label: "Laporan Order", path: "/admin/laporan-order", icon: "🗒", group: "LAPORAN" },
-    { label: "Laporan Pergerakan Stok", path: "/admin/laporan-pergerakan", icon: "🗒", group: "LAPORAN" },
-    { label: "Laporan Produksi", path: "/admin/laporan-produksi", icon: "🗒", group: "LAPORAN" },
+    {
+      title: "MAIN",
+      items: [
+        { label: "Dashboard", path: "/admin", icon: "⊞" },
+        { label: "Manajemen Stok Gudang", path: "/admin/stok-gudang", icon: "⛃" },
+        { label: "Manajemen Gudang", path: "/admin/gudang", icon: "⌂" },
+        { label: "Manajemen Toko", path: "/admin/toko", icon: "🛒" },
+        { label: "Manajemen Produk", path: "/admin/produk", icon: "📦" },
+        { label: "Manajemen Order", path: "/admin/order", icon: "🗒" },
+        { label: "Request", path: "/admin/requests", icon: "🚚" },
+      ]
+    },
+    {
+      title: "LAPORAN",
+      items: [
+        { label: "Laporan Stok", path: "/admin/laporan-stok", icon: "🗒" },
+        { label: "Laporan Order", path: "/admin/laporan-order", icon: "🗒" },
+        { label: "Laporan Pergerakan Stok", path: "/admin/laporan-pergerakan", icon: "🗒" },
+        { label: "Laporan Produksi", path: "/admin/laporan-produksi", icon: "🗒" },
+      ]
+    }
+  ];
+
+  const bottomItems = [
+    { label: "Profile", path: "/admin/profile", icon: "👤" },
+    { label: "Pengaturan", path: "/admin/settings", icon: "⚙", hasArrow: true },
   ];
 
   return (
     <div className="admin-container">
       {/* SIDEBAR */}
-      <aside className="admin-sidebar">
-        <div className="sidebar-header">
-          <img src={currentLogo} alt="ReaStock" className="sidebar-logo" />
-        </div>
-
-        <nav className="sidebar-nav">
-          <div className="nav-group">MAIN</div>
-          {menuItems.filter(item => item.group === "MAIN").map(item => (
-            <Link 
-              key={item.path} 
-              to={item.path} 
-              className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
-            >
-              <span className="nav-icon">{item.icon}</span>
-              {item.label}
-            </Link>
-          ))}
-
-          <div className="nav-group">LAPORAN</div>
-          {menuItems.filter(item => item.group === "LAPORAN").map(item => (
-            <Link 
-              key={item.path} 
-              to={item.path} 
-              className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
-            >
-              <span className="nav-icon">{item.icon}</span>
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="sidebar-footer">
-          <Link to="/admin/profile" className="nav-item">
-            <span className="nav-icon">👤</span> Profile
-          </Link>
-          <Link to="/admin/settings" className="nav-item">
-            <span className="nav-icon">⚙</span> Setting <span className="nav-arrow">›</span>
-          </Link>
-          <button onClick={() => setShowLogoutModal(true)} className="logout-btn">
-             Logout
-          </button>
-        </div>
-      </aside>
+      <Sidebar
+        role="ADMIN"
+        logo={currentLogo}
+        menuItems={menuItems}
+        bottomItems={bottomItems}
+        onLogoutClick={() => setShowLogoutModal(true)}
+      />
 
       {/* MAIN CONTENT */}
       <main className="admin-main">
@@ -93,7 +73,7 @@ export default function AdminLayout() {
       <AnimatePresence>
         {showLogoutModal && (
           <div className="logout-overlay" onClick={() => setShowLogoutModal(false)}>
-            <motion.div 
+            <motion.div
               className="logout-modal"
               onClick={e => e.stopPropagation()}
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -103,7 +83,7 @@ export default function AdminLayout() {
               <div className="logout-modal__icon">⚠️</div>
               <h3>Keluar Aplikasi</h3>
               <p>Apakah anda yakin ingin keluar?</p>
-              
+
               <div className="logout-modal__actions">
                 <button className="btn-batal" onClick={() => setShowLogoutModal(false)}>Batal</button>
                 <button className="btn-confirm-logout" onClick={handleLogout}>Logout</button>

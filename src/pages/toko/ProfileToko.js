@@ -1,208 +1,200 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import Card from "../../components/common/Card";
 import "../admin/PageAdmin.css";
+
+const IconDoc = () => (<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{color: '#a855f7'}}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>);
+const IconBox = () => (<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{color: '#d97706'}}><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>);
+const IconSync = () => (<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{color: '#3b82f6'}}><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>);
+
+const IconUser = () => (<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{color: '#6366f1'}}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>);
+const IconMail = () => (<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{color: '#a855f7'}}><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>);
+const IconShield = () => (<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{color: '#6366f1'}}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>);
+const IconClock = () => (<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{color: '#6366f1'}}><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>);
+const IconCalendar = () => (<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{color: '#6366f1'}}><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>);
+const IconChevronRight = () => (<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>);
 
 export default function ProfileToko() {
   const easing = useMemo(() => [0.22, 1, 0.36, 1], []);
-
   const [notifStock, setNotifStock] = useState(true);
   const [notifRequests, setNotifRequests] = useState(true);
 
-  const stats = [
-    { label: "Requests Baru", value: "12", sub: "Hari ini" },
-    { label: "Stok Menipis", value: "5", sub: "Butuh perhatian" },
-    { label: "Sinkronisasi", value: "Aktif", sub: "Realtime" },
-  ];
-
-  const activities = [
-    { time: "10:12", text: "Request REQ-014 dibuat untuk Gudang" },
-    { time: "09:40", text: "Stok BRG-002 menipis (Toko)" },
-    { time: "Kemarin", text: "Cek status pengiriman" },
-  ];
-
   return (
-    <div className="pageAdmin pageAdmin--wide">
+    <div className="pageAdmin-container profile-page">
       <motion.div
-        className="profileHero"
-        initial={{ opacity: 0, y: 10, filter: "blur(8px)" }}
-        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-        transition={{ duration: 0.55, ease: easing }}
+        className="profile-header"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: easing }}
       >
-        <div className="profileHero__left">
-          <div className="profileHero__avatar">T</div>
-
-          <div className="profileHero__meta">
-            <div className="profileHero__titleRow">
-              {/* ✅ FIX: bukan Gudang */}
-              <h1 className="profileHero__title">Profile Toko</h1>
-              <span className="profileHero__badge">TOKO</span>
-
-              <span className="profileHero__status">
-                <span className="profileHero__dot" />
-                Online
-              </span>
-            </div>
-
-            {/* ✅ FIX: subtitle toko */}
-            <p className="profileHero__subtitle">
-              Kelola informasi akun toko, preferensi notifikasi, dan aktivitas operasional.
-            </p>
-
-            <div className="profileHero__quick">
-              <button className="profileBtn profileBtn--primary" type="button">
-                Edit Profil
-              </button>
-              <button className="profileBtn" type="button">
-                Ubah Password
-              </button>
-              <button className="profileBtn profileBtn--ghost" type="button">
-                Lihat Aktivitas
-              </button>
+        <div className="header-info">
+          <h1>Profile Toko</h1>
+          <p>Kelola informasi akun, preferensi notifikasi, dan ringkasan aktivitas terbaru.</p>
+        </div>
+        <div className="header-stats">
+          <div className="mini-stat-card">
+            <div className="mini-stat-icon" style={{background: '#f3e8ff'}}><IconDoc /></div>
+            <div className="mini-stat-content">
+              <span className="mini-stat-label">Pesanan Baru</span>
+              <span className="mini-stat-value">12</span>
+              <span className="mini-stat-sub">Hari ini</span>
             </div>
           </div>
-        </div>
-
-        <div className="profileHero__right">
-          {stats.map((s) => (
-            <motion.div
-              key={s.label}
-              whileHover={{ y: -2 }}
-              transition={{ duration: 0.18, ease: easing }}
-            >
-              <Card className="profileStat">
-                <div className="profileStat__label">{s.label}</div>
-                <div className="profileStat__value">{s.value}</div>
-                <div className="profileStat__sub">{s.sub}</div>
-              </Card>
-            </motion.div>
-          ))}
+          <div className="mini-stat-card">
+            <div className="mini-stat-icon" style={{background: '#fef3c7'}}><IconBox /></div>
+            <div className="mini-stat-content">
+              <span className="mini-stat-label">Stok Menipis</span>
+              <span className="mini-stat-value">6</span>
+              <span className="mini-stat-sub">Butuh perhatian</span>
+            </div>
+          </div>
+          <div className="mini-stat-card">
+            <div className="mini-stat-icon" style={{background: '#dbeafe'}}><IconSync /></div>
+            <div className="mini-stat-content">
+              <span className="mini-stat-label">Sinkronisasi</span>
+              <span className="mini-stat-value">Aktif</span>
+              <span className="mini-stat-sub">Realtime</span>
+            </div>
+          </div>
         </div>
       </motion.div>
 
       <motion.div
-        className="profileGrid"
-        initial={{ opacity: 0, y: 14, filter: "blur(10px)" }}
-        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-        transition={{ delay: 0.06, duration: 0.55, ease: easing }}
+        className="profile-hero-section"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.55, delay: 0.1, ease: easing }}
       >
-        <Card className="profileCard">
-          <div className="profileCard__head">
-            <h3>Data Akun</h3>
-            <span className="profileCard__hint">Informasi dasar pengguna</span>
-          </div>
-
-          <div className="profileRows">
-            <div className="profileRow">
-              <span>Nama</span>
-              <b>Toko</b>
+        <div className="hero-main">
+          <div className="hero-avatar">T</div>
+          <div className="hero-info">
+            <div className="hero-name-row">
+              <h2>Admin Toko</h2>
+              <span className="status-badge online"><span className="dot"></span>Online</span>
             </div>
+            <p className="hero-email">
+              toko@reastock.com <span style={{background: '#f3f4f6', color: '#4b5563', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', marginLeft: '8px', fontWeight: '600'}}>Toko</span>
+            </p>
+            <p className="hero-role">Toko Sejahtera</p>
+          </div>
+        </div>
+        <div className="hero-actions">
+          <button className="btn-primary">Edit Profil</button>
+          <button className="btn-outline">Ubah Password</button>
+          <button className="btn-text" style={{color: '#e4915a'}}>Lihat Aktivitas</button>
+        </div>
+      </motion.div>
 
-            {/* ✅ FIX: email toko */}
-            <div className="profileRow">
-              <span>Email</span>
-              <b>toko@gmail.com</b>
-            </div>
-
-            {/* ✅ FIX: role toko */}
-            <div className="profileRow">
-              <span>Role</span>
-              <b>Toko</b>
-            </div>
-
-            <div className="profileRow">
-              <span>Terakhir Login</span>
-              <b>Hari ini</b>
+      <motion.div
+        className="profile-content-grid"
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.55, delay: 0.2, ease: easing }}
+      >
+        <div className="profile-card">
+          <div className="card-header">
+            <div>
+              <h3>Data Akun</h3>
+              <p>Informasi dasar pengguna</p>
             </div>
           </div>
-
-          <div className="profileActions">
-            <button className="profileBtn profileBtn--primary" type="button">
-              Simpan Perubahan
-            </button>
-            <button className="profileBtn profileBtn--ghost" type="button">
-              Batalkan
-            </button>
+          <div className="info-list">
+            <div className="info-item">
+              <span className="info-label" style={{display: 'flex', alignItems: 'center', gap: '10px'}}><IconUser /> Nama</span>
+              <span className="info-value">Admin Toko</span>
+            </div>
+            <div className="info-item">
+              <span className="info-label" style={{display: 'flex', alignItems: 'center', gap: '10px'}}><IconMail /> Email</span>
+              <span className="info-value">toko@reastock.com</span>
+            </div>
+            <div className="info-item">
+              <span className="info-label" style={{display: 'flex', alignItems: 'center', gap: '10px'}}><IconShield /> Role</span>
+              <span className="info-value">Toko</span>
+            </div>
+            <div className="info-item">
+              <span className="info-label" style={{display: 'flex', alignItems: 'center', gap: '10px'}}><IconClock /> Terakhir Login</span>
+              <span className="info-value">13 Mei 2025, 09:40</span>
+            </div>
+            <div className="info-item">
+              <span className="info-label" style={{display: 'flex', alignItems: 'center', gap: '10px'}}><IconCalendar /> Bergabung Sejak</span>
+              <span className="info-value">10 Januari 2025</span>
+            </div>
           </div>
-        </Card>
-
-        <Card className="profileCard">
-          <div className="profileCard__head">
-            <h3>Preferensi</h3>
-            <span className="profileCard__hint">Pengaturan cepat</span>
+          <div className="card-actions">
+            <button className="btn-primary">Simpan Perubahan</button>
+            <button className="btn-outline">Batalkan</button>
           </div>
+        </div>
 
-          <div className="prefList">
-            <label className="prefItem">
-              <div className="prefItem__text">
-                <div className="prefItem__title">Notifikasi stok menipis</div>
-                <div className="prefItem__sub">
-                  Muncul ketika stok toko melewati batas minimum
-                </div>
+        <div className="profile-card">
+          <div className="card-header">
+            <div>
+              <h3>Preferensi</h3>
+              <p>Pengaturan cepat untuk toko</p>
+            </div>
+          </div>
+          <div className="settings-list" style={{display: 'flex', flexDirection: 'column'}}>
+            <div className="settings-row-modern">
+              <div className="row-text">
+                <strong>Notifikasi stok menipis</strong>
+                <span>Muncul ketika stok produk toko melewati batas minimum</span>
               </div>
-
-              <span className={`toggle ${notifStock ? "is-on" : ""}`}>
-                <input
-                  type="checkbox"
-                  checked={notifStock}
-                  onChange={(e) => setNotifStock(e.target.checked)}
-                />
-                <span className="toggle__knob" />
-              </span>
-            </label>
-
-            <label className="prefItem">
-              <div className="prefItem__text">
-                <div className="prefItem__title">Notifikasi status permintaan</div>
-                <div className="prefItem__sub">
-                  Muncul saat status request/pengiriman berubah
-                </div>
+              <label className="switch">
+                <input type="checkbox" checked={notifStock} onChange={(e) => setNotifStock(e.target.checked)} />
+                <span className="slider"></span>
+              </label>
+            </div>
+            <div className="settings-row-modern">
+              <div className="row-text">
+                <strong>Notifikasi pesanan baru</strong>
+                <span>Muncul saat ada pesanan penjualan baru masuk</span>
               </div>
-
-              <span className={`toggle ${notifRequests ? "is-on" : ""}`}>
-                <input
-                  type="checkbox"
-                  checked={notifRequests}
-                  onChange={(e) => setNotifRequests(e.target.checked)}
-                />
-                <span className="toggle__knob" />
-              </span>
-            </label>
-
-            <div className="prefDivider" />
-
-            <div className="prefCTA">
-              <button className="profileBtn profileBtn--primary" type="button">
-                Terapkan
-              </button>
-              <button className="profileBtn" type="button">
-                Reset
-              </button>
+              <label className="switch">
+                <input type="checkbox" checked={notifRequests} onChange={(e) => setNotifRequests(e.target.checked)} />
+                <span className="slider"></span>
+              </label>
             </div>
           </div>
-        </Card>
-
-        <Card className="profileCard profileCard--span2">
-          <div className="profileCard__head">
-            <h3>Aktivitas Terbaru</h3>
-            <span className="profileCard__hint">Log ringkas untuk monitoring</span>
+          <div className="card-actions" style={{marginTop: '32px'}}>
+            <button className="btn-primary">Terapkan</button>
+            <button className="btn-outline">Reset</button>
           </div>
+        </div>
 
-          <div className="activityList">
-            {activities.map((a, idx) => (
-              <motion.div
-                key={idx}
-                className="activityItem"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.05 + idx * 0.04, duration: 0.35, ease: easing }}
-              >
-                <span className="activityTime">{a.time}</span>
-                <span className="activityText">{a.text}</span>
-              </motion.div>
-            ))}
+        <div className="profile-card full-width">
+          <div className="card-header" style={{ alignItems: 'center' }}>
+            <div>
+              <h3>Aktivitas Terbaru</h3>
+              <p>Log ringkas untuk monitoring</p>
+            </div>
+            <button className="btn-text" style={{fontSize: '13px', marginLeft: 'auto', color: '#888'}}>Lihat Semua</button>
           </div>
-        </Card>
+          <div className="activity-list-modern">
+            <div className="activity-row">
+              <div className="activity-icon" style={{background: '#e0f2fe', color: '#3b82f6'}}>
+                <IconDoc />
+              </div>
+              <div className="activity-time">10:12</div>
+              <div className="activity-desc">Pesanan SO-014 dibuat oleh Admin Toko</div>
+              <button className="activity-detail-btn">Detail <IconChevronRight /></button>
+            </div>
+            <div className="activity-row">
+              <div className="activity-icon" style={{background: '#fef3c7', color: '#d97706'}}>
+                <IconBox />
+              </div>
+              <div className="activity-time">09:40</div>
+              <div className="activity-desc">Stok Produk PRD-002 menipis (Toko)</div>
+              <button className="activity-detail-btn">Detail <IconChevronRight /></button>
+            </div>
+            <div className="activity-row">
+              <div className="activity-icon" style={{background: '#f3e8ff', color: '#a855f7'}}>
+                <IconUser />
+              </div>
+              <div className="activity-time">Kemarin</div>
+              <div className="activity-desc">Update profil toko</div>
+              <button className="activity-detail-btn">Detail <IconChevronRight /></button>
+            </div>
+          </div>
+        </div>
       </motion.div>
     </div>
   );
