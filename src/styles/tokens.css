@@ -12,13 +12,15 @@
 }
 
 /* WARM (Default Premium - Clean with Orange Accents) */
-html[data-theme="warm"], :root {
+html[data-theme="warm"],
+:root {
   --bg: #ffffff;
   --bg-2: #fcfcfc;
   --bg-sidebar: #ffffff;
-  
+
   --panel: rgba(255, 255, 255, 0.8);
-  --surface: #fff8f3; /* Light orange tint */
+  --surface: #fff8f3;
+  /* Light orange tint */
   --surface-2: #fffcf9;
 
   --text: #333333;
@@ -28,65 +30,40 @@ html[data-theme="warm"], :root {
   --primary: #e4915a;
   --primary-hover: #d37b40;
   --accent: #e4915a;
-  
-  --border: #eeeeee;
-  --border-subtle: #f9f9f9;
-  
+
+  --border: #d5d5d5;
+  --border-subtle: #e8e8e8;
+
   --shadow: 0 12px 24px rgba(0, 0, 0, 0.05);
   --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.02);
   --shadow-hero: 0 8px 20px rgba(228, 145, 90, 0.3);
 }
 
-/* LIGHT (Cooler version of warm) */
-html[data-theme="light"] {
-  --bg: #ffffff;
-  --bg-2: #f8f9fa;
-  --bg-sidebar: #ffffff;
-
-  --panel: rgba(255, 255, 255, 0.9);
-  --surface: #f0f2f5;
-  --surface-2: #ffffff;
-
-  --text: #1a1a1a;
-  --muted: #6b7280;
-  --subtle: #9ca3af;
-
-  --primary: #e4915a;
-  --primary-hover: #d37b40;
-  --accent: #1890ff; /* Blue accent for light mode */
-  
-  --border: #e5e7eb;
-  --border-subtle: #f3f4f6;
-
-  --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-  --shadow-hero: 0 8px 20px rgba(24, 144, 255, 0.2);
-}
-
-/* DARK (Elegant Dark Mode) */
+/* DARK (Elegant Dark Slate Mode) */
 html[data-theme="dark"] {
-  --bg: #1a1c1e;
-  --bg-2: #121416;
-  --bg-sidebar: #1a1c1e;
+  --bg: #1e293b;
+  --bg-2: #0f172a;
+  --bg-sidebar: #1e293b;
 
-  --panel: rgba(30, 32, 35, 0.8);
-  --surface: #2d2f31;
-  --surface-2: #252729;
+  --panel: rgba(30, 41, 59, 0.8);
+  --surface: #334155;
+  --surface-2: #1e293b;
 
-  --text: #eeeeee;
-  --muted: #aaaaaa;
-  --subtle: #666666;
+  --text: #ffffff;
+  --muted: #cbd5e1;
+  --subtle: #94a3b8;
 
   --primary: #e4915a;
-  --primary-hover: #f0a678;
+  /* Keeping orange accent for contrast, or change to slate? I'll stick to a vibrant orange for call-to-actions */
+  --primary-hover: #f97316;
   --accent: #e4915a;
-  
-  --border: #333333;
-  --border-subtle: #252525;
+
+  --border: #334155;
+  --border-subtle: #1e293b;
 
   --shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
   --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.3);
-  --shadow-hero: 0 8px 20px rgba(228, 145, 90, 0.2);
+  --shadow-hero: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
 /* Global Transitions */

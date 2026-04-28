@@ -3,7 +3,7 @@ import React, { createContext, useContext, useEffect, useMemo, useState } from "
 const ThemeContext = createContext(null);
 
 const THEME_KEY = "reastock_theme";
-const ALLOWED = new Set(["warm", "light", "dark"]);
+const ALLOWED = new Set(["warm", "dark"]);
 
 export function ThemeProvider({ children }) {
   // Inisialisasi state langsung dari localStorage untuk menghindari flicker

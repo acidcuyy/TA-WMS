@@ -8,6 +8,8 @@ import logoSideDark from "../../assets/images/LogoSide_dark.png";
 import logoSideDefault from "../../assets/images/LogoSide_default.png";
 import avatarImg from "../../assets/images/stok.jpg"; // Placeholder avatar
 
+import Sidebar from "../../components/layout/Sidebar";
+
 export default function GudangLayout() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -22,63 +24,41 @@ export default function GudangLayout() {
   };
 
   const menuItems = [
-    { label: "Dashboard", path: "/gudang", icon: "⊞", group: "GUDANG" },
-    { label: "Penerimaan Barang", path: "/gudang/penerimaan", icon: "⬇️", group: "GUDANG" },
-    { label: "Pengeluaran Barang", path: "/gudang/pengeluaran", icon: "⬆️", group: "GUDANG" },
-    { label: "Transfer Barang", path: "/gudang/transfer", icon: "⇄", group: "GUDANG" },
-    { label: "Stok & Produk", path: "/gudang/stok", icon: "📦", group: "GUDANG" },
-    { label: "Request Masuk", path: "/gudang/requests", icon: "📥", group: "GUDANG" },
-    { label: "Order Masuk", path: "/gudang/orders", icon: "🗒", group: "GUDANG" },
-    
-    { label: "Laporan", path: "/gudang/laporan", icon: "🗒", group: "LAPORAN" },
+    {
+      title: "GUDANG",
+      items: [
+        { label: "Dashboard", path: "/gudang", icon: "⊞" },
+        { label: "Penerimaan Barang", path: "/gudang/penerimaan", icon: "⬇️" },
+        { label: "Pengeluaran Barang", path: "/gudang/pengeluaran", icon: "⬆️" },
+        { label: "Transfer Barang", path: "/gudang/transfer", icon: "⇄" },
+        { label: "Stok & Produk", path: "/gudang/stok", icon: "📦" },
+        { label: "Request Masuk", path: "/gudang/requests", icon: "📥" },
+        { label: "Order Masuk", path: "/gudang/orders", icon: "🗒" },
+      ]
+    },
+    {
+      title: "LAPORAN",
+      items: [
+        { label: "Laporan", path: "/gudang/laporan", icon: "🗒" },
+      ]
+    }
+  ];
+
+  const bottomItems = [
+    { label: "Pengaturan", path: "/gudang/settings", icon: "⚙" },
+    { label: "Profile", path: "/gudang/profile", icon: "👤" },
   ];
 
   return (
     <div className="gudang-container">
       {/* SIDEBAR */}
-      <aside className="gudang-sidebar">
-        <div className="sidebar-header">
-          <img src={currentLogo} alt="ReaStock" className="sidebar-logo" />
-        </div>
-
-        <nav className="sidebar-nav">
-          <div className="nav-group">GUDANG</div>
-          {menuItems.filter(item => item.group === "GUDANG").map(item => (
-            <Link 
-              key={item.path} 
-              to={item.path} 
-              className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
-            >
-              <span className="nav-icon">{item.icon}</span>
-              <span>{item.label}</span>
-            </Link>
-          ))}
-
-          <div className="nav-group">LAPORAN</div>
-          {menuItems.filter(item => item.group === "LAPORAN").map(item => (
-            <Link 
-              key={item.path} 
-              to={item.path} 
-              className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
-            >
-              <span className="nav-icon">{item.icon}</span>
-              <span>{item.label}</span>
-            </Link>
-          ))}
-        </nav>
-
-        <div className="sidebar-footer">
-          <Link to="/gudang/settings" className="nav-item">
-            <span className="nav-icon">⚙</span> <span>Pengaturan</span>
-          </Link>
-          <Link to="/gudang/profile" className="nav-item">
-            <span className="nav-icon">👤</span> <span>Profile</span>
-          </Link>
-          <button onClick={() => setShowLogoutModal(true)} className="logout-btn">
-             Logout
-          </button>
-        </div>
-      </aside>
+      <Sidebar
+        role="GUDANG"
+        logo={currentLogo}
+        menuItems={menuItems}
+        bottomItems={bottomItems}
+        onLogoutClick={() => setShowLogoutModal(true)}
+      />
 
       {/* MAIN AREA */}
       <main className="gudang-main">
@@ -100,18 +80,18 @@ export default function GudangLayout() {
               <span className="status-dot"></span>
               Online
             </div>
-            
+
             <div className="notification-btn">
-               🔔
-               <span className="notification-badge">5</span>
+              🔔
+              <span className="notification-badge">5</span>
             </div>
 
             <div className="user-profile-top">
-               <img src={avatarImg} alt="User" className="user-avatar" />
-               <div className="user-info-text">
-                  <b>Admin Gudang</b>
-                  <span>Gudang Pusat</span>
-               </div>
+              <img src={avatarImg} alt="User" className="user-avatar" />
+              <div className="user-info-text">
+                <b>Admin Gudang</b>
+                <span>Gudang Pusat</span>
+              </div>
             </div>
           </div>
         </header>
@@ -125,21 +105,34 @@ export default function GudangLayout() {
       {/* LOGOUT CONFIRMATION MODAL */}
       <AnimatePresence>
         {showLogoutModal && (
-          <div className="logout-overlay" onClick={() => setShowLogoutModal(false)}>
-            <motion.div 
+          <div className="logout-overlay" style={{
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 9999,
+            display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)"
+          }} onClick={() => setShowLogoutModal(false)}>
+            <motion.div
               className="logout-modal"
+              style={{
+                background: "var(--surface, #fff)", padding: "32px", borderRadius: "24px", maxWidth: "360px", width: "90%",
+                textAlign: "center", boxShadow: "0 20px 40px rgba(0,0,0,0.2)"
+              }}
               onClick={e => e.stopPropagation()}
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
             >
-              <div className="logout-modal__icon">⚠️</div>
-              <h3>Keluar Aplikasi</h3>
-              <p>Apakah anda yakin ingin keluar?</p>
-              
-              <div className="logout-modal__actions">
-                <button className="btn-batal" onClick={() => setShowLogoutModal(false)}>Batal</button>
-                <button className="btn-confirm-logout" onClick={handleLogout}>Logout</button>
+              <div style={{ width: "72px", height: "72px", background: "#fff1f0", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "32px", margin: "0 auto 20px" }}>⚠️</div>
+              <h3 style={{ margin: "0 0 8px", fontSize: "20px", fontWeight: 700, color: "var(--text, #1e293b)" }}>Keluar Aplikasi</h3>
+              <p style={{ margin: "0 0 24px", color: "var(--muted, #64748b)", fontSize: "14px" }}>Apakah anda yakin ingin keluar?</p>
+
+              <div style={{ display: "flex", gap: "12px" }}>
+                <button style={{
+                  flex: 1, padding: "12px", borderRadius: "12px", border: "1px solid var(--border, #e2e8f0)",
+                  background: "transparent", color: "var(--text, #1e293b)", fontWeight: 600, cursor: "pointer"
+                }} onClick={() => setShowLogoutModal(false)}>Batal</button>
+                <button style={{
+                  flex: 1, padding: "12px", borderRadius: "12px", border: "none",
+                  background: "#ff4d4f", color: "white", fontWeight: 600, cursor: "pointer"
+                }} onClick={handleLogout}>Logout</button>
               </div>
             </motion.div>
           </div>
