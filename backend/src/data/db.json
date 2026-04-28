@@ -1,137 +1,45 @@
 {
   "users": [
-    { "email": "admin@gmail.com", "pass": "admin", "role": "admin", "path": "/admin" },
-    { "email": "gudang@gmail.com", "pass": "gudang", "role": "gudang", "path": "/gudang" },
-    { "email": "toko@gmail.com", "pass": "toko", "role": "toko", "path": "/toko" }
+    { "email": "admin@gmail.com", "pass": "admin", "role": "admin", "path": "/admin", "name": "Super Admin" },
+    { "email": "gudang@gmail.com", "pass": "gudang", "role": "gudang", "path": "/gudang", "name": "Admin Gudang" },
+    { "email": "toko@gmail.com", "pass": "toko", "role": "toko", "path": "/toko", "name": "Admin Toko" }
   ],
   "products": [
-    {
-      "id": 1,
-      "name": "Lampu LED 12W",
-      "variant": "Putih - 12W",
-      "sku": "LED-12W",
-      "barcode": "8991234567890",
-      "category": "Elektronik",
-      "price": 25000,
-      "stock": 150,
-      "stockStatus": "Aman",
-      "status": "Aktif",
-      "toko": ["Toko A", "Toko B"]
-    },
-    {
-      "id": 2,
-      "name": "Kabel NYM 3x1.5mm",
-      "variant": "Roll 50m",
-      "sku": "KBL-NYM-31.5",
-      "barcode": "8991234567891",
-      "category": "Elektronik",
-      "price": 450000,
-      "stock": 8,
-      "stockStatus": "Stok rendah",
-      "status": "Aktif",
-      "toko": ["Toko A"]
-    }
-  ],
-  "categories": [
-    { "id": 1, "label": "Elektronik", "color": "#4a90e2" },
-    { "id": 2, "label": "Plumbing", "color": "#52c41a" },
-    { "id": 3, "label": "Bahan Bangunan", "color": "#e4915a" },
-    { "id": 4, "label": "Lainnya", "color": "#8c8c8c" }
-  ],
-  "stores": [
-    { "id": 1, "name": "Toko A" },
-    { "id": 2, "name": "Toko B" },
-    { "id": 3, "name": "Toko C" }
-  ],
-  "warehouses": [
-    { "id": 1, "name": "Gudang Pusat" },
-    { "id": 2, "name": "Gudang Cabang A" }
+    { "id": 1, "name": "Pipa PVC 1/2 Inch", "sku": "PPI-001", "cat": "Plumbing", "unit": "Pcs", "rack": "PLB-01", "stock": 450, "price": 100000, "status": "Aman", "active": true, "image": "" },
+    { "id": 2, "name": "Kabel NYM 3x1.5mm", "sku": "KAB-001", "cat": "Elektrikal", "unit": "Meter", "rack": "ELK-02", "stock": 380, "price": 300000, "status": "Aman", "active": true, "image": "" },
+    { "id": 3, "name": "Lampu LED 12W Putih", "sku": "LED-012", "cat": "Elektrikal", "unit": "Pcs", "rack": "ELK-01", "stock": 240, "price": 85000, "status": "Aman", "active": true, "image": "" },
+    { "id": 4, "name": "Stop Kontak Arde", "sku": "SKA-001", "cat": "Elektrikal", "unit": "Pcs", "rack": "ELK-05", "stock": 60, "price": 60000, "status": "Menipis", "active": true, "image": "" },
+    { "id": 5, "name": "Semen Portland 40kg", "sku": "SEM-001", "cat": "Bahan Bangunan", "unit": "Zak", "rack": "BAK-03", "stock": 0, "price": 65000, "status": "Habis", "active": false, "image": "" }
   ],
   "stock_requests": [
-    {
-      "id": "ADD-001",
-      "tanggal": "02 Feb 2026, 09:12",
-      "barang": "BRG-002 (Lampu LED)",
-      "kategori": "Elektronik",
-      "jumlah": 50,
-      "catatan": "Tambah stok untuk promo akhir pekan",
-      "status": "Selesai"
+    { "id": "REQ-014", "fromName": "Toko A", "fromRole": "toko", "status": "Pending", "date": "07 Feb 2026", "items": [{ "sku": "PPI-001", "qty": 10 }, { "sku": "KAB-001", "qty": 5 }], "decision": "Pending" },
+    { "id": "REQ-013", "fromName": "Toko B", "fromRole": "toko", "status": "Diproses", "date": "07 Feb 2026", "items": [{ "sku": "LED-012", "qty": 20 }], "decision": "Accepted" },
+    { "id": "RST-001", "fromName": "Gudang Pusat", "fromRole": "gudang", "status": "Pending", "date": "07 Feb 2026", "items": [{ "sku": "SEM-001", "qty": 100 }], "decision": "Pending" }
+  ],
+  "gudang_transfers": [
+    { "id": "TR-2026-00125", "date": "07 Feb 2026 10:15", "from": "Gudang Pusat", "to": "Toko A", "items": 45, "value": 125450000, "status": "Dalam Pengiriman", "est": "08 Feb 2026" },
+    { "id": "TR-2026-00124", "date": "07 Feb 2026 09:30", "from": "Gudang Pusat", "to": "Gudang Timur", "items": 30, "value": 68250000, "status": "Menunggu", "est": "08 Feb 2026" },
+    { "id": "TR-2026-00123", "date": "06 Feb 2026 16:20", "from": "Gudang Barat", "to": "Gudang Pusat", "items": 25, "value": 45600000, "status": "Disetujui", "est": "07 Feb 2026" }
+  ],
+  "shipment_details": [
+    { 
+      "id": "REQ-013", 
+      "startedAt": 1739000000000, 
+      "durationMs": 1080000,
+      "start": { "lat": -6.2000, "lng": 106.8166 },
+      "end": { "lat": -6.1754, "lng": 106.8272 }
     }
   ],
-  "activities": [
-    { "id": 1, "type": "order", "message": "PO-20250513-001 diselesaikan", "sub": "Order dari Toko Surabaya", "time": "2 menit lalu", "icon": "📝" },
-    { "id": 2, "type": "stock", "message": "Stock In - 320 item", "sub": "Red Carpet di Gudang Pusat", "time": "25 menit lalu", "icon": "📥" }
+  "gudang_orders": [
+    { "id": "ORD-99012", "customer": "Budi Santoso", "items": "Pipa PVC 1/2 (x10)", "total": 550000, "status": "Picking", "time": "10:20" }
   ],
-  "orders": [
-    { "id": "SO-2026-00248", "type": "Sales Order", "date": "03 Feb 2026, 09:15", "party": "Toko A", "city": "Jakarta", "items": 15, "value": 3250000, "status": "Pending", "ship": "Belum dikirim", "icon": "🛒", "iconColor": "#52c41a", "createdBy": "Admin" },
-    { "id": "SO-2026-00247", "type": "Sales Order", "date": "03 Feb 2026, 08:40", "party": "Toko B", "city": "Surabaya", "items": 8, "value": 1750000, "status": "Processing", "ship": "Sedang diproses", "icon": "🛒", "iconColor": "#52c41a", "createdBy": "Admin" },
-    { "id": "PO-2026-00078", "type": "Purchase Order", "date": "02 Feb 2026, 14:30", "party": "Supplier Jaya Abadi", "city": "Bandung", "items": 23, "value": 12500000, "status": "Processing", "ship": "Partial", "icon": "📦", "iconColor": "#1890ff", "createdBy": "Admin" },
-    { "id": "TR-2026-00056", "type": "Transfer Order", "date": "02 Feb 2026, 11:10", "party": "Gudang Pusat → Toko C", "city": "", "items": 12, "value": 980000, "status": "Shipped", "ship": "Dalam pengiriman Resi: JT123456789", "icon": "⇄", "iconColor": "#fa8c16", "createdBy": "Admin" },
-    { "id": "SO-2026-00246", "type": "Sales Order", "date": "01 Feb 2026, 17:05", "party": "Toko C", "city": "Semarang", "items": 5, "value": 650000, "status": "Completed", "ship": "Selesai 03 Feb 2026", "icon": "🛒", "iconColor": "#52c41a", "createdBy": "Admin" }
+  "gudang_receipts": [
+    { "id": "GR-2026-00078", "po": "PO-2026-00078", "supplier": "Supplier Jaya Abadi", "date": "07 Feb 2026 09:15", "items": 45, "value": 125450000, "status": "Menunggu" }
   ],
-  "warehouse_summary": [
-    { "name": "Gudang Pusat", "stock": 1240, "status": "Normal" },
-    { "name": "Gudang Barat", "stock": 620, "status": "Normal" },
-    { "name": "Gudang Timur", "stock": 180, "status": "Low Stock" },
-    { "name": "Gudang Selatan", "stock": 64, "status": "Critical" }
-  ],
-  "reports": [
-    { "id": 1, "date": "03", "month": "Feb 2026", "title": "Laporan Harian • Gudang", "desc": "Stok masuk: 120, keluar: 78", "status": "Tersedia" },
-    { "id": 2, "date": "02", "month": "Feb 2026", "title": "Laporan Harian • Gudang", "desc": "Audit rak A2 • koreksi 3 item", "status": "Tersedia" },
-    { "id": 3, "date": "01", "month": "Feb 2026", "title": "Laporan Harian • Gudang", "desc": "—", "status": "Belum upload" }
-  ],
-  "shipments": [
-    { "id": "SHP-201", "to": "Toko A", "driver": "Kurir 01", "eta": "Selesai", "status": "Terkirim", "progress": 100, "route": "Gudang → Jl. Melati → Toko A" },
-    { "id": "SHP-200", "to": "Toko B", "driver": "Kurir 02", "eta": "Selesai", "status": "Terkirim", "progress": 100, "route": "Gudang → Ringroad → Toko B" }
-  ],
-  "stores": [
-    { "id": "STR-001", "name": "Toko A", "city": "Jakarta", "status": "Aktif" },
-    { "id": "STR-002", "name": "Toko B", "city": "Surabaya", "status": "Aktif" },
-    { "id": "STR-003", "name": "Toko C", "city": "Bandung", "status": "Aktif" }
-  ],
-  "store_reports": [
-    { "id": 1, "date": "03", "month": "Feb 2026", "toko": "Toko A", "desc": "Pengiriman: 45 transaksi • Keluar: 1 • Stok kritis: 2 item", "status": "Tersedia" },
-    { "id": 2, "date": "02", "month": "Feb 2026", "toko": "Toko B", "desc": "Pengiriman: 32 transaksi • Stok kritis: 1 item", "status": "Tersedia" }
-  ],
-  "store_transactions": [
-    { "id": "TRX-301", "toko": "Toko A", "tanggal": "02 Feb 2026", "tipe": "Pengiriman", "item": 14, "nilai": 3250000, "status": "Diproses", "tracking": "Sedang diproses gudang" },
-    { "id": "TRX-300", "toko": "Toko B", "tanggal": "02 Feb 2026", "tipe": "Pengiriman", "item": 9, "nilai": 1750000, "status": "Dalam perjalanan", "tracking": "Terkirim - 100% - ETA: Selesai" }
-  ],
-  "productions": [
-    { "id": "PRD-2026-00029", "product": "Produk A", "sub": "Kran Air Stainless 1/2\"", "wc": "Perakitan 1", "date": "07 Feb 2026", "shift": "Shift Pagi", "target": 200, "output": 195, "reject": 5, "status": "Selesai" },
-    { "id": "PRD-2026-00028", "product": "Produk B", "sub": "Stop Kontak Arde", "wc": "Perakitan 2", "date": "07 Feb 2026", "shift": "Shift Pagi", "target": 150, "output": 148, "reject": 2, "status": "Selesai" }
-  ],
-  "movements": [
-    { "date": "07 Feb 2026", "time": "14:35", "type": "Stok Masuk", "ref": "PO-2026-00078", "product": "Lampu LED 12W Putih", "sku": "LED-12W-PUTIH", "loc": "Gudang Pusat", "in": 150, "out": 0, "balance": 1250, "unit": "pcs", "note": "Purchase Order dari Supplier Jaya Abadi" },
-    { "date": "07 Feb 2026", "time": "11:20", "type": "Stok Keluar", "ref": "SO-2026-00248", "product": "Kabel NYM 3x1.5mm", "sku": "KBL-NYM-315", "loc": "Toko A", "in": 0, "out": 20, "balance": 180, "unit": "roll", "note": "Sales Order ke Toko A" }
+  "gudang_dispatches": [
+    { "id": "DO-2026-00125", "ref": "SO-2026-00078", "destination": "Toko A", "date": "07 Feb 2026 10:15", "items": 45, "value": 125450000, "status": "Menunggu" }
   ],
   "user_settings": [
-    {
-      "role": "admin",
-      "notifStock": true,
-      "notifRequests": true,
-      "autoSync": true,
-      "syncInterval": "5",
-      "theme": "warm",
-      "compact": false
-    },
-    {
-      "role": "gudang",
-      "notifStock": true,
-      "notifRequests": true,
-      "autoSync": true,
-      "syncInterval": "5",
-      "theme": "warm",
-      "compact": false
-    },
-    {
-      "role": "toko",
-      "notifStock": true,
-      "notifRequests": false,
-      "autoSync": true,
-      "syncInterval": "5",
-      "theme": "warm",
-      "compact": false
-    }
+    { "role": "gudang", "notifStock": true, "notifRequests": true, "autoSync": true }
   ]
 }

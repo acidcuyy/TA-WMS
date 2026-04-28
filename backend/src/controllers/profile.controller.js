@@ -85,3 +85,68 @@ export const updateAdminProfile = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+// GET Profile Gudang
+export const getGudangProfile = async (req, res) => {
+  try {
+    const db = await readDB();
+    const user = db.users?.find(u => u.role === 'gudang') || {};
+    
+    // Stats for ProfileGudang.js
+    const products = db.products || [];
+    const stockRequests = db.stock_requests || [];
+
+    const profile = {
+      name: user.name || "Admin Gudang",
+      email: user.email || "gudang@reastock.com",
+      role: "Gudang",
+      lastLogin: user.lastLogin || "13 Mei 2025, 09:40",
+      joinedSince: user.joinedSince || "10 Januari 2025",
+      preferences: (db.user_settings || []).find(s => s.role === 'gudang') || { notifStock: true, notifRequests: true }
+    };
+
+    const stats = [
+      { label: "Request Baru", value: stockRequests.filter(r => r.status === "Pending").length.toString(), sub: "Hari ini", icon: "📄" },
+      { label: "Stok Menipis", value: products.filter(p => p.status === "Menipis").length.toString(), sub: "Butuh perhatian", icon: "📦" },
+      { label: "Sinkronisasi", value: "Aktif", sub: "Realtime", icon: "🔄" },
+    ];
+
+    // Mock activities for ProfileGudang.js
+    const activities = [
+      { time: "10:12", desc: "Request REQ-014 masuk dari Toko A", type: "request" },
+      { time: "09:40", desc: "Stok Barang SKA-001 menipis", type: "stock" },
+      { time: "Kemarin", desc: "Update profil gudang", type: "profile" }
+    ];
+
+    res.status(200).json({ profile, stats, activities });
+  } catch (error) {
+    console.error("Error getGudangProfile:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// PUT Update Profile Gudang
+export const updateGudangProfile = async (req, res) => {
+  try {
+    const db = await readDB();
+    const idx = db.users?.findIndex(u => u.role === 'gudang');
+    if (idx === -1) return res.status(404).json({ message: "Gudang user not found" });
+
+    const { name, email, preferences } = req.body;
+    if (name) db.users[idx].name = name;
+    if (email) db.users[idx].email = email;
+
+    if (preferences) {
+      const sIdx = db.user_settings?.findIndex(s => s.role === 'gudang');
+      if (sIdx !== -1) {
+        db.user_settings[sIdx] = { ...db.user_settings[sIdx], ...preferences };
+      }
+    }
+
+    await writeDB(db);
+    res.status(200).json({ message: "Profil gudang diperbarui", user: db.users[idx] });
+  } catch (error) {
+    console.error("Error updateGudangProfile:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
