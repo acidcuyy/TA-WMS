@@ -57,5 +57,52 @@
       "catatan": "Tambah stok untuk promo akhir pekan",
       "status": "Selesai"
     }
+  ],
+  "activities": [
+    { "id": 1, "type": "order", "message": "PO-20250513-001 diselesaikan", "sub": "Order dari Toko Surabaya", "time": "2 menit lalu", "icon": "📝" },
+    { "id": 2, "type": "stock", "message": "Stock In - 320 item", "sub": "Red Carpet di Gudang Pusat", "time": "25 menit lalu", "icon": "📥" }
+  ],
+  "orders": [
+    { "id": "SO-2026-00248", "type": "Sales Order", "date": "03 Feb 2026, 09:15", "party": "Toko A", "city": "Jakarta", "items": 15, "value": 3250000, "status": "Pending", "ship": "Belum dikirim", "icon": "🛒", "iconColor": "#52c41a", "createdBy": "Admin" },
+    { "id": "SO-2026-00247", "type": "Sales Order", "date": "03 Feb 2026, 08:40", "party": "Toko B", "city": "Surabaya", "items": 8, "value": 1750000, "status": "Processing", "ship": "Sedang diproses", "icon": "🛒", "iconColor": "#52c41a", "createdBy": "Admin" },
+    { "id": "PO-2026-00078", "type": "Purchase Order", "date": "02 Feb 2026, 14:30", "party": "Supplier Jaya Abadi", "city": "Bandung", "items": 23, "value": 12500000, "status": "Processing", "ship": "Partial", "icon": "📦", "iconColor": "#1890ff", "createdBy": "Admin" },
+    { "id": "TR-2026-00056", "type": "Transfer Order", "date": "02 Feb 2026, 11:10", "party": "Gudang Pusat → Toko C", "city": "", "items": 12, "value": 980000, "status": "Shipped", "ship": "Dalam pengiriman Resi: JT123456789", "icon": "⇄", "iconColor": "#fa8c16", "createdBy": "Admin" },
+    { "id": "SO-2026-00246", "type": "Sales Order", "date": "01 Feb 2026, 17:05", "party": "Toko C", "city": "Semarang", "items": 5, "value": 650000, "status": "Completed", "ship": "Selesai 03 Feb 2026", "icon": "🛒", "iconColor": "#52c41a", "createdBy": "Admin" }
+  ],
+  "warehouse_summary": [
+    { "name": "Gudang Pusat", "stock": 1240, "status": "Normal" },
+    { "name": "Gudang Barat", "stock": 620, "status": "Normal" },
+    { "name": "Gudang Timur", "stock": 180, "status": "Low Stock" },
+    { "name": "Gudang Selatan", "stock": 64, "status": "Critical" }
+  ],
+  "reports": [
+    { "id": 1, "date": "03", "month": "Feb 2026", "title": "Laporan Harian • Gudang", "desc": "Stok masuk: 120, keluar: 78", "status": "Tersedia" },
+    { "id": 2, "date": "02", "month": "Feb 2026", "title": "Laporan Harian • Gudang", "desc": "Audit rak A2 • koreksi 3 item", "status": "Tersedia" },
+    { "id": 3, "date": "01", "month": "Feb 2026", "title": "Laporan Harian • Gudang", "desc": "—", "status": "Belum upload" }
+  ],
+  "shipments": [
+    { "id": "SHP-201", "to": "Toko A", "driver": "Kurir 01", "eta": "Selesai", "status": "Terkirim", "progress": 100, "route": "Gudang → Jl. Melati → Toko A" },
+    { "id": "SHP-200", "to": "Toko B", "driver": "Kurir 02", "eta": "Selesai", "status": "Terkirim", "progress": 100, "route": "Gudang → Ringroad → Toko B" }
+  ],
+  "stores": [
+    { "id": "STR-001", "name": "Toko A", "city": "Jakarta", "status": "Aktif" },
+    { "id": "STR-002", "name": "Toko B", "city": "Surabaya", "status": "Aktif" },
+    { "id": "STR-003", "name": "Toko C", "city": "Bandung", "status": "Aktif" }
+  ],
+  "store_reports": [
+    { "id": 1, "date": "03", "month": "Feb 2026", "toko": "Toko A", "desc": "Pengiriman: 45 transaksi • Keluar: 1 • Stok kritis: 2 item", "status": "Tersedia" },
+    { "id": 2, "date": "02", "month": "Feb 2026", "toko": "Toko B", "desc": "Pengiriman: 32 transaksi • Stok kritis: 1 item", "status": "Tersedia" }
+  ],
+  "store_transactions": [
+    { "id": "TRX-301", "toko": "Toko A", "tanggal": "02 Feb 2026", "tipe": "Pengiriman", "item": 14, "nilai": 3250000, "status": "Diproses", "tracking": "Sedang diproses gudang" },
+    { "id": "TRX-300", "toko": "Toko B", "tanggal": "02 Feb 2026", "tipe": "Pengiriman", "item": 9, "nilai": 1750000, "status": "Dalam perjalanan", "tracking": "Terkirim - 100% - ETA: Selesai" }
+  ],
+  "productions": [
+    { "id": "PRD-2026-00029", "product": "Produk A", "sub": "Kran Air Stainless 1/2\"", "wc": "Perakitan 1", "date": "07 Feb 2026", "shift": "Shift Pagi", "target": 200, "output": 195, "reject": 5, "status": "Selesai" },
+    { "id": "PRD-2026-00028", "product": "Produk B", "sub": "Stop Kontak Arde", "wc": "Perakitan 2", "date": "07 Feb 2026", "shift": "Shift Pagi", "target": 150, "output": 148, "reject": 2, "status": "Selesai" }
+  ],
+  "movements": [
+    { "date": "07 Feb 2026", "time": "14:35", "type": "Stok Masuk", "ref": "PO-2026-00078", "product": "Lampu LED 12W Putih", "sku": "LED-12W-PUTIH", "loc": "Gudang Pusat", "in": 150, "out": 0, "balance": 1250, "unit": "pcs", "note": "Purchase Order dari Supplier Jaya Abadi" },
+    { "date": "07 Feb 2026", "time": "11:20", "type": "Stok Keluar", "ref": "SO-2026-00248", "product": "Kabel NYM 3x1.5mm", "sku": "KBL-NYM-315", "loc": "Toko A", "in": 0, "out": 20, "balance": 180, "unit": "roll", "note": "Sales Order ke Toko A" }
   ]
 }
