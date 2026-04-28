@@ -72,7 +72,7 @@ export default function ProfileGudang() {
               <span className="status-badge online"><span className="dot"></span>Online</span>
             </div>
             <p className="hero-email">
-              gudang@reastock.com <span style={{background: '#f3f4f6', color: '#4b5563', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', marginLeft: '8px', fontWeight: '600'}}>Gudang</span>
+              gudang@reastock.com <span>Gudang</span>
             </p>
             <p className="hero-role">Gudang Pusat</p>
           </div>

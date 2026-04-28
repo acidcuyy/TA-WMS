@@ -102,19 +102,97 @@ export default function LaporanStok() {
               ))}
             </div>
           </div>
-          <div style={{ height: '200px', display: 'flex', alignItems: 'flex-end', gap: '20px', padding: '0 10px' }}>
-             {/* Simple Line Chart Simulation */}
-             <svg width="100%" height="100%" viewBox="0 0 800 200">
-                <path d="M0,150 L100,130 L200,160 L300,110 L400,140 L500,120 L600,150 L700,130 L800,140" fill="none" stroke="#52c41a" strokeWidth="3" />
-                <path d="M0,180 L100,170 L200,190 L300,160 L400,180 L500,170 L600,190 L700,170 L800,180" fill="none" stroke="#e4915a" strokeWidth="3" />
-                <circle cx="100" cy="130" r="4" fill="#52c41a" />
-                <circle cx="200" cy="160" r="4" fill="#52c41a" />
-                <circle cx="300" cy="110" r="4" fill="#52c41a" />
-                <circle cx="400" cy="140" r="4" fill="#52c41a" />
-                <circle cx="500" cy="120" r="4" fill="#52c41a" />
-                <circle cx="600" cy="150" r="4" fill="#52c41a" />
-                <circle cx="700" cy="130" r="4" fill="#52c41a" />
-             </svg>
+          <div className="chart-area" style={{ height: '240px' }}>
+            <div className="chart-y-axis">
+              <span>500</span>
+              <span>400</span>
+              <span>300</span>
+              <span>200</span>
+              <span>100</span>
+              <span>0</span>
+            </div>
+            <div className="chart-main">
+               <svg width="100%" height="100%" viewBox="0 0 800 200" preserveAspectRatio="none" className="svg-chart">
+                  <defs>
+                    <linearGradient id="gradIn" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#52c41a" stopOpacity="0.25" />
+                      <stop offset="100%" stopColor="#52c41a" stopOpacity="0.02" />
+                    </linearGradient>
+                    <linearGradient id="gradOut" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#e4915a" stopOpacity="0.2" />
+                      <stop offset="100%" stopColor="#e4915a" stopOpacity="0.02" />
+                    </linearGradient>
+                  </defs>
+                  {/* Horizontal Grid Lines */}
+                  {[0, 40, 80, 120, 160, 200].map(y => (
+                    <line key={y} x1="0" y1={y} x2="800" y2={y} stroke="var(--border-subtle)" strokeWidth="0.5" />
+                  ))}
+
+                  {/* Area Fill - Stok Masuk */}
+                  <motion.path 
+                    d="M0,150 C50,150 50,130 100,130 C150,130 150,160 200,160 C250,160 250,110 300,110 C350,110 350,140 400,140 C450,140 450,120 500,120 C550,120 550,150 600,150 C650,150 650,130 700,130 C750,130 750,140 800,140 L800,200 L0,200 Z" 
+                    fill="url(#gradIn)" 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 1, delay: 0.8 }}
+                  />
+                  
+                  {/* Area Fill - Stok Keluar */}
+                  <motion.path 
+                    d="M0,180 C50,180 50,170 100,170 C150,170 150,190 200,190 C250,190 250,160 300,160 C350,160 350,180 400,180 C450,180 450,170 500,170 C550,170 550,190 600,190 C650,190 650,170 700,170 C750,170 750,180 800,180 L800,200 L0,200 Z" 
+                    fill="url(#gradOut)" 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 1, delay: 1 }}
+                  />
+
+                  {/* Animated Line - Stok Masuk */}
+                  <motion.path 
+                    d="M0,150 C50,150 50,130 100,130 C150,130 150,160 200,160 C250,160 250,110 300,110 C350,110 350,140 400,140 C450,140 450,120 500,120 C550,120 550,150 600,150 C650,150 650,130 700,130 C750,130 750,140 800,140" 
+                    fill="none" 
+                    stroke="#52c41a" 
+                    strokeWidth="3" 
+                    strokeLinecap="round"
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: 1 }}
+                    transition={{ duration: 1.5, ease: "easeOut" }}
+                  />
+
+                  {/* Animated Line - Stok Keluar */}
+                  <motion.path 
+                    d="M0,180 C50,180 50,170 100,170 C150,170 150,190 200,190 C250,190 250,160 300,160 C350,160 350,180 400,180 C450,180 450,170 500,170 C550,170 550,190 600,190 C650,190 650,170 700,170 C750,170 750,180 800,180" 
+                    fill="none" 
+                    stroke="#e4915a" 
+                    strokeWidth="3" 
+                    strokeLinecap="round"
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: 1 }}
+                    transition={{ duration: 1.5, ease: "easeOut", delay: 0.3 }}
+                  />
+
+                  {/* Data Points */}
+                  <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 1.5 }}>
+                    <circle cx="100" cy="130" r="4.5" fill="var(--bg)" stroke="#52c41a" strokeWidth="2" />
+                    <circle cx="200" cy="160" r="4.5" fill="var(--bg)" stroke="#52c41a" strokeWidth="2" />
+                    <circle cx="300" cy="110" r="4.5" fill="var(--bg)" stroke="#52c41a" strokeWidth="2" />
+                    <circle cx="400" cy="140" r="4.5" fill="var(--bg)" stroke="#52c41a" strokeWidth="2" />
+                    <circle cx="500" cy="120" r="4.5" fill="var(--bg)" stroke="#52c41a" strokeWidth="2" />
+                    <circle cx="600" cy="150" r="4.5" fill="var(--bg)" stroke="#52c41a" strokeWidth="2" />
+                    <circle cx="700" cy="130" r="4.5" fill="var(--bg)" stroke="#52c41a" strokeWidth="2" />
+
+                    <circle cx="100" cy="170" r="4.5" fill="var(--bg)" stroke="#e4915a" strokeWidth="2" />
+                    <circle cx="200" cy="190" r="4.5" fill="var(--bg)" stroke="#e4915a" strokeWidth="2" />
+                    <circle cx="300" cy="160" r="4.5" fill="var(--bg)" stroke="#e4915a" strokeWidth="2" />
+                    <circle cx="400" cy="180" r="4.5" fill="var(--bg)" stroke="#e4915a" strokeWidth="2" />
+                    <circle cx="500" cy="170" r="4.5" fill="var(--bg)" stroke="#e4915a" strokeWidth="2" />
+                    <circle cx="600" cy="190" r="4.5" fill="var(--bg)" stroke="#e4915a" strokeWidth="2" />
+                    <circle cx="700" cy="170" r="4.5" fill="var(--bg)" stroke="#e4915a" strokeWidth="2" />
+                  </motion.g>
+               </svg>
+               <div className="chart-x-axis">
+                  <span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span><span>Min</span>
+               </div>
+            </div>
           </div>
           <div style={{ display: 'flex', gap: '20px', marginTop: '16px', fontSize: '11px', fontWeight: 600 }}>
              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><span style={{ width: '12px', height: '3px', background: '#52c41a' }}></span> Stok Masuk</div>

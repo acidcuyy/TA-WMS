@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import "./AdminDashboard.css";
 
 export default function AdminDashboard() {
@@ -6,11 +6,11 @@ export default function AdminDashboard() {
 
   const stats = [
     { label: "Total Inventory Value", value: "Rp 2.450.000.000", trend: "+12.5%", sub: "vs minggu lalu", icon: "💰", color: "#e4915a" },
-    { label: "Total Orders", value: "1.248", trend: "+8.2%", sub: "vs minggu lalu", icon: "🛍️", color: "#e4915a" },
-    { label: "Fulfillment Rate", value: "98.5%", trend: "+2.1%", sub: "vs minggu lalu", icon: "🎯", color: "#e4915a" },
-    { label: "Out of Stock Items", value: "23", trend: "↑ 4", sub: "vs minggu lalu", icon: "📦", color: "#e4915a", danger: true },
-    { label: "Low Stock Alerts", value: "47", trend: "↑ 6", sub: "vs minggu lalu", icon: "⚠️", color: "#e4915a", danger: true },
-    { label: "Stock Turnover", value: "6.2x", trend: "↑ 1.1x", sub: "vs minggu lalu", icon: "🔄", color: "#e4915a" },
+    { label: "Total Orders", value: "1.248", trend: "+8.2%", sub: "vs minggu lalu", icon: "🛍️", color: "#3b82f6" },
+    { label: "Fulfillment Rate", value: "98.5%", trend: "+2.1%", sub: "vs minggu lalu", icon: "🎯", color: "#22c55e" },
+    { label: "Out of Stock Items", value: "23", trend: "↑ 4", sub: "vs minggu lalu", icon: "📦", color: "#ef4444", danger: true },
+    { label: "Low Stock Alerts", value: "47", trend: "↑ 6", sub: "vs minggu lalu", icon: "⚠️", color: "#f97316", danger: true },
+    { label: "Stock Turnover", value: "6.2x", trend: "↑ 1.1x", sub: "vs minggu lalu", icon: "🔄", color: "#8b5cf6" },
   ];
 
   return (
@@ -59,16 +59,71 @@ export default function AdminDashboard() {
             <h3>Pergerakan Stok (Stock In vs Stock Out)</h3>
             <select><option>Mingguan</option></select>
           </div>
-          <div className="chart-placeholder line-chart">
-            {/* Simple SVG Chart Representation */}
-            <svg viewBox="0 0 400 150" className="svg-chart">
-              <path d="M0,100 Q50,60 100,80 T200,40 T300,90 T400,60" fill="none" stroke="#4a90e2" strokeWidth="3" />
-              <path d="M0,120 Q50,100 100,110 T200,80 T300,100 T400,90" fill="none" stroke="#e4915a" strokeWidth="3" />
-            </svg>
-            <div className="chart-legend">
-              <span><i className="dot blue"></i> Stock In</span>
-              <span><i className="dot orange"></i> Stock Out</span>
+          <div className="chart-area">
+            <div className="chart-y-axis">
+              <span>500</span>
+              <span>400</span>
+              <span>300</span>
+              <span>200</span>
+              <span>100</span>
+              <span>0</span>
             </div>
+            <div className="chart-main">
+              <svg viewBox="0 0 500 200" preserveAspectRatio="none" className="svg-chart">
+                <defs>
+                  <linearGradient id="gradBlue" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#4a90e2" stopOpacity="0.25" />
+                    <stop offset="100%" stopColor="#4a90e2" stopOpacity="0.02" />
+                  </linearGradient>
+                  <linearGradient id="gradOrange" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#e4915a" stopOpacity="0.2" />
+                    <stop offset="100%" stopColor="#e4915a" stopOpacity="0.02" />
+                  </linearGradient>
+                </defs>
+                {/* Grid lines */}
+                <line x1="0" y1="0" x2="500" y2="0" stroke="var(--border-subtle)" strokeWidth="0.5" />
+                <line x1="0" y1="40" x2="500" y2="40" stroke="var(--border-subtle)" strokeWidth="0.5" />
+                <line x1="0" y1="80" x2="500" y2="80" stroke="var(--border-subtle)" strokeWidth="0.5" />
+                <line x1="0" y1="120" x2="500" y2="120" stroke="var(--border-subtle)" strokeWidth="0.5" />
+                <line x1="0" y1="160" x2="500" y2="160" stroke="var(--border-subtle)" strokeWidth="0.5" />
+                <line x1="0" y1="200" x2="500" y2="200" stroke="var(--border-subtle)" strokeWidth="0.5" />
+                {/* Stock In - Area Fill */}
+                <path d="M0,120 C40,100 60,60 100,70 C140,80 160,40 200,50 C240,60 280,30 320,45 C360,60 400,35 450,40 L500,55 L500,200 L0,200 Z" fill="url(#gradBlue)" />
+                {/* Stock In - Line */}
+                <path d="M0,120 C40,100 60,60 100,70 C140,80 160,40 200,50 C240,60 280,30 320,45 C360,60 400,35 450,40 L500,55" fill="none" stroke="#4a90e2" strokeWidth="2.5" strokeLinecap="round" />
+                {/* Stock Out - Area Fill */}
+                <path d="M0,150 C40,140 60,110 100,120 C140,130 160,95 200,100 C240,105 280,80 320,90 C360,100 400,85 450,80 L500,95 L500,200 L0,200 Z" fill="url(#gradOrange)" />
+                {/* Stock Out - Line */}
+                <path d="M0,150 C40,140 60,110 100,120 C140,130 160,95 200,100 C240,105 280,80 320,90 C360,100 400,85 450,80 L500,95" fill="none" stroke="#e4915a" strokeWidth="2.5" strokeLinecap="round" />
+                {/* Data points - Stock In */}
+                <circle cx="0" cy="120" r="3" fill="#4a90e2" />
+                <circle cx="100" cy="70" r="3" fill="#4a90e2" />
+                <circle cx="200" cy="50" r="3" fill="#4a90e2" />
+                <circle cx="320" cy="45" r="3" fill="#4a90e2" />
+                <circle cx="450" cy="40" r="3" fill="#4a90e2" />
+                <circle cx="500" cy="55" r="3" fill="#4a90e2" />
+                {/* Data points - Stock Out */}
+                <circle cx="0" cy="150" r="3" fill="#e4915a" />
+                <circle cx="100" cy="120" r="3" fill="#e4915a" />
+                <circle cx="200" cy="100" r="3" fill="#e4915a" />
+                <circle cx="320" cy="90" r="3" fill="#e4915a" />
+                <circle cx="450" cy="80" r="3" fill="#e4915a" />
+                <circle cx="500" cy="95" r="3" fill="#e4915a" />
+              </svg>
+              <div className="chart-x-axis">
+                <span>Sen</span>
+                <span>Sel</span>
+                <span>Rab</span>
+                <span>Kam</span>
+                <span>Jum</span>
+                <span>Sab</span>
+                <span>Min</span>
+              </div>
+            </div>
+          </div>
+          <div className="chart-legend">
+            <span><i className="dot blue"></i> Stock In</span>
+            <span><i className="dot orange"></i> Stock Out</span>
           </div>
         </div>
 
@@ -80,7 +135,7 @@ export default function AdminDashboard() {
           <div className="donut-container">
             <div className="donut-chart">
               <svg viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="40" fill="transparent" stroke="#eee" strokeWidth="10" />
+                <circle cx="50" cy="50" r="40" fill="transparent" stroke="var(--border)" strokeWidth="10" />
                 <circle cx="50" cy="50" r="40" fill="transparent" stroke="#4a90e2" strokeWidth="10" strokeDasharray="150 251" />
                 <circle cx="50" cy="50" r="40" fill="transparent" stroke="#e4915a" strokeWidth="10" strokeDasharray="80 251" strokeDashoffset="-150" />
               </svg>
@@ -105,7 +160,7 @@ export default function AdminDashboard() {
           </div>
           <table className="compact-table">
             <thead>
-              <tr><th>Gudang</th><th>Stok (Item)</th><th>Status</th></tr>
+              <tr><th>Gudang</th><th>Stok</th><th>Status</th></tr>
             </thead>
             <tbody>
               <tr><td>Gudang Pusat</td><td>1.240</td><td><span className="badge success">Normal</span></td></tr>
@@ -229,10 +284,10 @@ export default function AdminDashboard() {
               </tr>
             </tbody>
           </table>
-          <div className="floating-action-btn">+</div>
         </div>
       </section>
+
+      <div className="floating-action-btn">+</div>
     </div>
   );
 }
-
