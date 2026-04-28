@@ -104,5 +104,34 @@
   "movements": [
     { "date": "07 Feb 2026", "time": "14:35", "type": "Stok Masuk", "ref": "PO-2026-00078", "product": "Lampu LED 12W Putih", "sku": "LED-12W-PUTIH", "loc": "Gudang Pusat", "in": 150, "out": 0, "balance": 1250, "unit": "pcs", "note": "Purchase Order dari Supplier Jaya Abadi" },
     { "date": "07 Feb 2026", "time": "11:20", "type": "Stok Keluar", "ref": "SO-2026-00248", "product": "Kabel NYM 3x1.5mm", "sku": "KBL-NYM-315", "loc": "Toko A", "in": 0, "out": 20, "balance": 180, "unit": "roll", "note": "Sales Order ke Toko A" }
+  ],
+  "user_settings": [
+    {
+      "role": "admin",
+      "notifStock": true,
+      "notifRequests": true,
+      "autoSync": true,
+      "syncInterval": "5",
+      "theme": "warm",
+      "compact": false
+    },
+    {
+      "role": "gudang",
+      "notifStock": true,
+      "notifRequests": true,
+      "autoSync": true,
+      "syncInterval": "5",
+      "theme": "warm",
+      "compact": false
+    },
+    {
+      "role": "toko",
+      "notifStock": true,
+      "notifRequests": false,
+      "autoSync": true,
+      "syncInterval": "5",
+      "theme": "warm",
+      "compact": false
+    }
   ]
 }
