@@ -309,7 +309,15 @@
 }
 
 @media (max-width: 1400px) {
-  .gdash__stats { grid-template-columns: repeat(3, 1fr); }
-  .gdash__dataGrid { grid-template-columns: 1fr; }
-  .gdash__actionsGrid { grid-template-columns: repeat(3, 1fr); }
+  .gdash__stats {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .gdash__dataGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .gdash__actionsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }

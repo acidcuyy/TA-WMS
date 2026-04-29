@@ -5,6 +5,8 @@ import "./Login.css";
 
 import Button from "../../components/common/Button";
 import logo from "../../assets/images/logo.png";
+import SplitText from "../../components/animations/SplitText";
+import DotField from "../../components/animations/DotField";
 
 export default function Login() {
   const nav = useNavigate();
@@ -70,12 +72,41 @@ export default function Login() {
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.8, ease: easing }}
       >
+        <DotField
+          dotRadius={1.8}
+          dotSpacing={16}
+          cursorRadius={250}
+          bulgeStrength={40}
+          gradientFrom="#a66e2d"
+          gradientTo="#e67e22"
+          glowColor="rgba(255, 255, 255, 0.2)"
+        />
         <div className="brand-content">
           <div className="brand-logo-wrapper">
             <img src={logo} alt="ReaStock Logo" className="brand-logo" />
             <div className="brand-text-group">
-              <h1 className="brand-name">ReaStock</h1>
-              <p className="brand-tagline">The most popular Warehouse System is here.</p>
+              <SplitText
+                tag="h1"
+                text="ReaStock"
+                className="brand-name"
+                delay={300}
+                from={{ opacity: 0, y: 40 }}
+                to={{ opacity: 1, y: 0 }}
+                ease="back.out(2)"
+                threshold={0.1}
+                textAlign="left"
+              />
+              <SplitText
+                tag="p"
+                text="The most popular Warehouse System is here."
+                className="brand-tagline"
+                delay={500}
+                from={{ opacity: 0, y: 20 }}
+                to={{ opacity: 1, y: 0 }}
+                ease="power2.out"
+                threshold={0.1}
+                textAlign="left"
+              />
               <button className="know-more-btn">
                 Know More <span>→</span>
               </button>
@@ -93,8 +124,28 @@ export default function Login() {
       >
         <div className="form-container">
           <header className="form-header">
-            <h2 className="form-title">Hello!</h2>
-            <p className="form-subtitle">Sign in to Get Started</p>
+            <SplitText
+              tag="h2"
+              text="Hello!"
+              className="form-title"
+              delay={400}
+              from={{ opacity: 0, x: 20 }}
+              to={{ opacity: 1, x: 0 }}
+              ease="power3.out"
+              threshold={0.1}
+              textAlign="left"
+            />
+            <SplitText
+              tag="p"
+              text="Sign in to Get Started"
+              className="form-subtitle"
+              delay={600}
+              from={{ opacity: 0, y: 10 }}
+              to={{ opacity: 1, y: 0 }}
+              ease="power2.out"
+              threshold={0.1}
+              textAlign="left"
+            />
           </header>
 
           <form className="auth-form" onSubmit={handleSubmit}>

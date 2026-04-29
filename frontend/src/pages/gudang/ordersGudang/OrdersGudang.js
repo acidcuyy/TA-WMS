@@ -24,71 +24,73 @@ export default function OrdersGudang() {
   ];
 
   return (
-    <div className="odGudang">
-      <header className="odGudang__head">
-        <div>
-          <h1 className="odGudang__title">Order Masuk</h1>
-          <p className="odGudang__subtitle">Kelola pesanan dari pelanggan yang harus diproses di gudang.</p>
+    <div className="gdash">
+      <div className="odGudang">
+        <header className="odGudang__head">
+          <div>
+            <h1 className="odGudang__title">Order Masuk</h1>
+            <p className="odGudang__subtitle">Kelola pesanan dari pelanggan yang harus diproses di gudang.</p>
+          </div>
+        </header>
+
+        <div className="odGudang__stats">
+          {stats.map((s, i) => (
+            <Card key={i} className="rqGudang__statCard">
+              <div className="rqGudang__statIcon" style={{ background: s.bg, color: s.color }}>{s.icon}</div>
+              <div className="rqGudang__statMain">
+                <p className="rqGudang__statLabel">{s.label}</p>
+                <h3 className="rqGudang__statValue">{s.value} <span style={{ fontSize: '11px', color: '#888', fontWeight: 500 }}>{s.sub}</span></h3>
+              </div>
+            </Card>
+          ))}
         </div>
-      </header>
 
-      <div className="odGudang__stats">
-        {stats.map((s, i) => (
-          <Card key={i} className="rqGudang__statCard">
-            <div className="rqGudang__statIcon" style={{ background: s.bg, color: s.color }}>{s.icon}</div>
-            <div className="rqGudang__statMain">
-              <p className="rqGudang__statLabel">{s.label}</p>
-              <h3 className="rqGudang__statValue">{s.value} <span style={{ fontSize: '11px', color: '#888', fontWeight: 500 }}>{s.sub}</span></h3>
-            </div>
-          </Card>
-        ))}
-      </div>
-
-      <div className="odGudang__filterBar">
-        <div className="moAdmin__searchWrap" style={{ flex: 1 }}>
-          <span className="moAdmin__searchIcon">🔍</span>
-          <input placeholder="Cari ID Order, pelanggan, atau kurir..." style={{ padding: '10px 12px 10px 32px' }} />
+        <div className="odGudang__filterBar">
+          <div className="moAdmin__searchWrap" style={{ flex: 1 }}>
+            <span className="moAdmin__searchIcon">🔍</span>
+            <input placeholder="Cari ID Order, pelanggan, atau kurir..." style={{ padding: '10px 12px 10px 32px' }} />
+          </div>
+          <select className="moAdmin__select"><option>Status Order</option></select>
+          <button className="btn-reset-filter">Reset</button>
         </div>
-        <select className="moAdmin__select"><option>Status Order</option></select>
-        <button className="btn-reset-filter">Reset</button>
-      </div>
 
-      <div className="odGudang__tableCard">
-        <table className="odGudang__table">
-          <thead>
-            <tr>
-              <th>ID Order</th>
-              <th>Waktu</th>
-              <th>Pelanggan</th>
-              <th>Detail Item</th>
-              <th>Total (Rp)</th>
-              <th>Status</th>
-              <th>Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orders.map(o => (
-              <tr key={o.id}>
-                <td style={{ fontWeight: 700 }}>{o.id}</td>
-                <td>{o.time}</td>
-                <td><b>{o.customer}</b></td>
-                <td style={{ fontSize: '12px', color: '#666' }}>{o.items}</td>
-                <td style={{ fontWeight: 700 }}>Rp {fmtIDR(o.total)}</td>
-                <td>
-                  <span className={`status-tag ${o.status.toLowerCase()}`}>
-                    {o.status}
-                  </span>
-                </td>
-                <td>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button className="pageAdmin__btnSmall">Proses</button>
-                    <button className="btn-icon">👁️</button>
-                  </div>
-                </td>
+        <div className="odGudang__tableCard">
+          <table className="odGudang__table">
+            <thead>
+              <tr>
+                <th>ID Order</th>
+                <th>Waktu</th>
+                <th>Pelanggan</th>
+                <th>Detail Item</th>
+                <th>Total (Rp)</th>
+                <th>Status</th>
+                <th>Aksi</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {orders.map(o => (
+                <tr key={o.id}>
+                  <td style={{ fontWeight: 700 }}>{o.id}</td>
+                  <td>{o.time}</td>
+                  <td><b>{o.customer}</b></td>
+                  <td style={{ fontSize: '12px', color: '#666' }}>{o.items}</td>
+                  <td style={{ fontWeight: 700 }}>Rp {fmtIDR(o.total)}</td>
+                  <td>
+                    <span className={`status-tag ${o.status.toLowerCase()}`}>
+                      {o.status}
+                    </span>
+                  </td>
+                  <td>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button className="pageAdmin__btnSmall">Proses</button>
+                      <button className="btn-icon">👁️</button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

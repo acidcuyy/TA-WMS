@@ -62,8 +62,8 @@ export default function PengirimanGudang() {
         <p>
           {req
             ? `Dari Gudang • Tujuan: ${req.fromName} • Items: ${(req.items || [])
-                .map((it) => `${it.sku} (${it.qty})`)
-                .join(", ")}`
+              .map((it) => `${it.sku} (${it.qty})`)
+              .join(", ")}`
             : "Detail pengiriman"}
         </p>
       </div>

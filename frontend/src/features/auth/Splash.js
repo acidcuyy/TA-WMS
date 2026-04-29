@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "./Splash.css";
 
 import logo from "../../assets/images/logo.png";
+import DotField from "../../components/animations/DotField";
 
 export default function Splash() {
   const nav = useNavigate();
@@ -14,6 +15,15 @@ export default function Splash() {
 
   return (
     <div className="splash">
+      <DotField
+        dotRadius={1.8}
+        dotSpacing={16}
+        cursorRadius={250}
+        bulgeStrength={40}
+        gradientFrom="#a66e2d"
+        gradientTo="#e67e22"
+        glowColor="rgba(255, 255, 255, 0.2)"
+      />
       <img className="splash__logo" src={logo} alt="ReaStock" />
 
       {/* ✅ loader melingkar */}

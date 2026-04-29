@@ -1,5 +1,20 @@
 /* TRANSFER BARANG (GUDANG) - PREMIUM DESIGN */
 
+.gdash {
+  position: relative;
+  flex: 1;
+  background: var(--bg);
+}
+
+.gdash-dotfield {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 0;
+}
+
 .trBarang__head {
   display: flex;
   justify-content: space-between;
