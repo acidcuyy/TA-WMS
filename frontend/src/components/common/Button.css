@@ -1,0 +1,29 @@
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  height: 42px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 0;
+  cursor: pointer;
+  transition: transform 120ms ease, opacity 120ms ease, filter 120ms ease;
+  user-select: none;
+}
+.btn:active{ transform: scale(0.98); }
+
+.btn--full{ width: 100%; }
+
+.btn--primary{
+  background: var(--primary);
+  color: #fff;
+  box-shadow: var(--shadow-soft);
+}
+.btn--primary:hover{ filter: brightness(1.04); }
+
+.btn--ghost{
+  background: rgba(255,255,255,0.22);
+  color: rgba(0,0,0,0.7);
+  border: 1px solid rgba(255,255,255,0.35);
+}
+.btn--ghost:hover{ filter: brightness(1.03); }
