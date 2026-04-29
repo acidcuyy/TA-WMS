@@ -150,3 +150,48 @@ export const updateGudangProfile = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+/**
+ * GET /api/profile/toko
+ */
+export const getTokoProfile = async (req, res) => {
+  try {
+    const db = await readDB();
+    const user = db.users.find(u => u.role === "toko");
+    const products = db.products || [];
+    const orders = db.toko_orders || [];
+    const activities = db.toko_activities || [];
+
+    const stats = {
+      pesananBaru: orders.filter(o => o.status === "Menunggu" || o.status === "Diproses").length,
+      stokMenipis: products.filter(p => p.status === "Menipis").length,
+      syncStatus: "Aktif"
+    };
+
+    res.status(200).json({ profile: user, stats, activities });
+  } catch (error) {
+    console.error("Error getTokoProfile:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+/**
+ * PUT /api/profile/toko
+ */
+export const updateTokoProfile = async (req, res) => {
+  try {
+    const { name, email } = req.body;
+    let db = await readDB();
+    const userIndex = db.users.findIndex(u => u.role === "toko");
+
+    if (userIndex === -1) return res.status(404).json({ message: "User not found" });
+
+    db.users[userIndex] = { ...db.users[userIndex], name, email };
+    await writeDB(db);
+
+    res.status(200).json({ message: "Profile updated successfully", profile: db.users[userIndex] });
+  } catch (error) {
+    console.error("Error updateTokoProfile:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};

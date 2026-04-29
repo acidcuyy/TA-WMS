@@ -11,6 +11,7 @@ import reportRoutes from "./routes/report.routes.js";
 import profileRoutes from "./routes/profile.routes.js";
 import settingsRoutes from "./routes/settings.routes.js";
 import gudangRoutes from "./routes/gudang.routes.js";
+import tokoRoutes from "./routes/toko.routes.js";
 
 const app = express();
 
@@ -32,5 +33,6 @@ app.use("/api/reports", reportRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/gudang", gudangRoutes);
+app.use("/api/toko", tokoRoutes);
 
 export default app;
