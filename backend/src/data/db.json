@@ -1,0 +1,70 @@
+{
+  "users": [
+    { "email": "admin@gmail.com", "pass": "admin", "role": "admin", "path": "/admin", "name": "Super Admin" },
+    { "email": "gudang@gmail.com", "pass": "gudang", "role": "gudang", "path": "/gudang", "name": "Admin Gudang" },
+    { "email": "toko@gmail.com", "pass": "toko", "role": "toko", "path": "/toko", "name": "Admin Toko" }
+  ],
+  "products": [
+    { "id": 1, "name": "Pipa PVC 1/2 Inch", "sku": "PPI-001", "cat": "Plumbing", "unit": "Pcs", "rack": "PLB-01", "stock": 450, "price": 100000, "status": "Aman", "active": true, "image": "", "sold": 180, "icon": "🚿" },
+    { "id": 2, "name": "Elbow PVC 1/2 Inch", "sku": "ELB-001", "cat": "Plumbing", "unit": "Pcs", "rack": "PLB-01", "stock": 320, "price": 40000, "status": "Menipis", "active": true, "image": "", "sold": 150, "icon": "🔧" },
+    { "id": 3, "name": "Fitting T 1/2 Inch", "sku": "FIT-001", "cat": "Plumbing", "unit": "Pcs", "rack": "PLB-01", "stock": 120, "price": 40000, "status": "Menipis", "active": true, "image": "", "sold": 120, "icon": "⚙️" },
+    { "id": 4, "name": "Lem PVC 100ml", "sku": "LEM-001", "cat": "Plumbing", "unit": "Pcs", "rack": "PLB-02", "stock": 85, "price": 20000, "status": "Aman", "active": true, "image": "", "sold": 100, "icon": "🧴" },
+    { "id": 5, "name": "Kabel NYM 3x1.5mm", "sku": "KAB-001", "cat": "Elektrikal", "unit": "Mtr", "rack": "ELK-01", "stock": 380, "price": 50000, "status": "Aman", "active": true, "image": "", "sold": 90, "icon": "🔌" },
+    { "id": 6, "name": "Lampu LED 12W Putih", "sku": "LAM-001", "cat": "Elektrikal", "unit": "Pcs", "rack": "ELK-02", "stock": 250, "price": 25000, "status": "Aman", "active": true, "image": "", "sold": 45, "icon": "💡" },
+    { "id": 7, "name": "Stop Kontak Arde", "sku": "SKA-001", "cat": "Elektrikal", "unit": "Pcs", "rack": "ELK-05", "stock": 80, "price": 20000, "status": "Menipis", "active": true, "image": "", "sold": 120, "icon": "🔌" },
+    { "id": 8, "name": "Semen Portland 40kg", "sku": "SEM-001", "cat": "Bahan Bangunan", "unit": "Zak", "rack": "BAK-03", "stock": 45, "price": 200000, "status": "Menipis", "active": true, "image": "", "sold": 10, "icon": "🧱" },
+    { "id": 9, "name": "Cat Tembok Putih 5kg", "sku": "CAT-001", "cat": "Bahan Bangunan", "unit": "Zak", "rack": "BAK-03", "stock": 30, "price": 80000, "status": "Aman", "active": true, "image": "", "sold": 5, "icon": "🎨" },
+    { "id": 10, "name": "Baut M8 x 40mm", "sku": "BAU-001", "cat": "Hardware", "unit": "Pcs", "rack": "HDW-01", "stock": 0, "price": 1000, "status": "Habis", "active": false, "image": "", "sold": 0, "icon": "🔩" }
+  ],
+  "toko_orders": [
+    { "id": "SO-2025-0056", "client": "Pelanggan Umum", "channel": "Kasir Toko", "date": "24 Mei 2025, 10:15", "items": "8 item", "total": 1450000, "payment": "Lunas", "status": "Selesai" },
+    { "id": "SO-2025-0055", "client": "Toko Maju", "channel": "WhatsApp", "date": "24 Mei 2025, 09:40", "items": "12 item", "total": 980000, "payment": "DP", "status": "Diproses" },
+    { "id": "SO-2025-0054", "client": "CV Sejahtera", "channel": "Marketplace", "date": "23 Mei 2025, 16:20", "items": "15 item", "total": 5620000, "payment": "Belum Bayar", "status": "Dikemas" },
+    { "id": "SO-2025-0053", "client": "Kasir Toko", "channel": "Kasir Toko", "date": "23 Mei 2025, 13:05", "items": "6 item", "total": 720000, "payment": "Lunas", "status": "Diproses" }
+  ],
+  "toko_receipts": [
+    { "id": "IN-2025-0042", "ref": "TR-2025-0031", "source": "Gudang Pusat", "date": "24 Mei 2025 09:15", "items": "45 item", "value": 12450000, "status": "Diterima" },
+    { "id": "IN-2025-0041", "ref": "SO-2025-0054", "source": "Gudang Cabang", "date": "23 Mei 2025 16:20", "items": "30 item", "value": 8250000, "status": "Proses" }
+  ],
+  "toko_dispatches": [
+    { "id": "OUT-2025-0042", "ref": "INV/KS/0524/042", "target": "Pelanggan - Toko Maju", "date": "24 Mei 2025, 10:30", "items": "25", "value": 1750000, "status": "Dikeluarkan" }
+  ],
+  "toko_transfers": [
+    { "id": "TRF-2025-0042", "ref": "TF/GD/0524/042", "from": "Gudang Pusat", "to": "Toko Sejahtera", "date": "24 Mei 2025, 10:15", "items": "20 item", "value": 2450000, "status": "Dikirim" },
+    { "id": "TRF-2025-0041", "ref": "TF/CB/0524/041", "from": "Toko Cabang A", "to": "Toko Sejahtera", "date": "24 Mei 2025, 08:40", "items": "12 item", "value": 980000, "status": "Selesai" }
+  ],
+  "toko_adjustments": [
+    { "id": "ADJ-2025-0012", "ref": "OP/0524/012", "type": "Stock Opname", "date": "24 Mei 2025, 11:30", "items": "10 item", "value": "-Rp 120.000", "status": "Selesai" }
+  ],
+  "toko_returns": [
+    { "id": "RET-2025-0008", "ref": "SO-2025-0045", "client": "Pelanggan Umum", "date": "24 Mei 2025, 14:15", "items": "2 item", "value": "Rp 250.000", "status": "Diproses" }
+  ],
+  "toko_history": [
+    { "id": "LOG-2025-0156", "type": "Penjualan", "user": "Admin Toko", "desc": "Transaksi penjualan #SO-2025-0056", "date": "24 Mei 2025, 10:15", "status": "Selesai" }
+  ],
+  "toko_sales": [
+    { "date": "18 Mei", "total": 2500000 },
+    { "date": "20 Mei", "total": 3800000 },
+    { "date": "22 Mei", "total": 4200000 },
+    { "date": "24 Mei", "total": 3450000 }
+  ],
+  "toko_expenses": [
+    { "date": "24 Mei", "total": 1250000 }
+  ],
+  "toko_activities": [
+    { "id": 1, "type": "order", "text": "Pesanan penjualan #SO-2025-0056 telah dibuat", "user": "oleh Admin Toko", "time": "10:30 WIB", "icon": "📝", "iconClass": "activity-icon--purple" },
+    { "id": 2, "type": "payment", "text": "Pembayaran diterima untuk SO-2025-0055 sebesar Rp 500.000", "user": "oleh Kasir Toko", "time": "09:42 WIB", "icon": "💰", "iconClass": "activity-icon--green" },
+    { "id": 3, "type": "receive", "text": "Penerimaan barang dari Gudang Pusat", "user": "#IN-2025-0042", "time": "09:15 WIB", "icon": "📥", "iconClass": "activity-icon--blue" },
+    { "id": 4, "type": "alert", "text": "Stok menipis: Pipa PVC 1/2 Inch", "user": "Stok tersisa 15 Pcs", "time": "Kemarin, 14:20", "icon": "⚠️", "iconClass": "activity-icon--red" }
+  ],
+  "stock_requests": [
+    { "id": "REQ-2025-0014", "toko": "Toko Utama", "date": "24 Mei 2025", "items": "10 item", "status": "Menunggu", "priority": "Tinggi" },
+    { "id": "REQ-2025-0013", "toko": "Toko Utama", "date": "23 Mei 2025", "items": "5 item", "status": "Disetujui", "priority": "Normal" }
+  ],
+  "gudang_transfers": [],
+  "shipment_details": [],
+  "gudang_orders": [],
+  "gudang_receipts": [],
+  "gudang_dispatches": [],
+  "user_settings": []
+}
