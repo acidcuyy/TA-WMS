@@ -1,0 +1,45 @@
+{
+  "users": [
+    { "email": "admin@gmail.com", "pass": "admin", "role": "admin", "path": "/admin", "name": "Super Admin" },
+    { "email": "gudang@gmail.com", "pass": "gudang", "role": "gudang", "path": "/gudang", "name": "Admin Gudang" },
+    { "email": "toko@gmail.com", "pass": "toko", "role": "toko", "path": "/toko", "name": "Admin Toko" }
+  ],
+  "products": [
+    { "id": 1, "name": "Pipa PVC 1/2 Inch", "sku": "PPI-001", "cat": "Plumbing", "unit": "Pcs", "rack": "PLB-01", "stock": 450, "price": 100000, "status": "Aman", "active": true, "image": "" },
+    { "id": 2, "name": "Kabel NYM 3x1.5mm", "sku": "KAB-001", "cat": "Elektrikal", "unit": "Meter", "rack": "ELK-02", "stock": 380, "price": 300000, "status": "Aman", "active": true, "image": "" },
+    { "id": 3, "name": "Lampu LED 12W Putih", "sku": "LED-012", "cat": "Elektrikal", "unit": "Pcs", "rack": "ELK-01", "stock": 240, "price": 85000, "status": "Aman", "active": true, "image": "" },
+    { "id": 4, "name": "Stop Kontak Arde", "sku": "SKA-001", "cat": "Elektrikal", "unit": "Pcs", "rack": "ELK-05", "stock": 60, "price": 60000, "status": "Menipis", "active": true, "image": "" },
+    { "id": 5, "name": "Semen Portland 40kg", "sku": "SEM-001", "cat": "Bahan Bangunan", "unit": "Zak", "rack": "BAK-03", "stock": 0, "price": 65000, "status": "Habis", "active": false, "image": "" }
+  ],
+  "stock_requests": [
+    { "id": "REQ-014", "fromName": "Toko A", "fromRole": "toko", "status": "Pending", "date": "07 Feb 2026", "items": [{ "sku": "PPI-001", "qty": 10 }, { "sku": "KAB-001", "qty": 5 }], "decision": "Pending" },
+    { "id": "REQ-013", "fromName": "Toko B", "fromRole": "toko", "status": "Diproses", "date": "07 Feb 2026", "items": [{ "sku": "LED-012", "qty": 20 }], "decision": "Accepted" },
+    { "id": "RST-001", "fromName": "Gudang Pusat", "fromRole": "gudang", "status": "Pending", "date": "07 Feb 2026", "items": [{ "sku": "SEM-001", "qty": 100 }], "decision": "Pending" }
+  ],
+  "gudang_transfers": [
+    { "id": "TR-2026-00125", "date": "07 Feb 2026 10:15", "from": "Gudang Pusat", "to": "Toko A", "items": 45, "value": 125450000, "status": "Dalam Pengiriman", "est": "08 Feb 2026" },
+    { "id": "TR-2026-00124", "date": "07 Feb 2026 09:30", "from": "Gudang Pusat", "to": "Gudang Timur", "items": 30, "value": 68250000, "status": "Menunggu", "est": "08 Feb 2026" },
+    { "id": "TR-2026-00123", "date": "06 Feb 2026 16:20", "from": "Gudang Barat", "to": "Gudang Pusat", "items": 25, "value": 45600000, "status": "Disetujui", "est": "07 Feb 2026" }
+  ],
+  "shipment_details": [
+    { 
+      "id": "REQ-013", 
+      "startedAt": 1739000000000, 
+      "durationMs": 1080000,
+      "start": { "lat": -6.2000, "lng": 106.8166 },
+      "end": { "lat": -6.1754, "lng": 106.8272 }
+    }
+  ],
+  "gudang_orders": [
+    { "id": "ORD-99012", "customer": "Budi Santoso", "items": "Pipa PVC 1/2 (x10)", "total": 550000, "status": "Picking", "time": "10:20" }
+  ],
+  "gudang_receipts": [
+    { "id": "GR-2026-00078", "po": "PO-2026-00078", "supplier": "Supplier Jaya Abadi", "date": "07 Feb 2026 09:15", "items": 45, "value": 125450000, "status": "Menunggu" }
+  ],
+  "gudang_dispatches": [
+    { "id": "DO-2026-00125", "ref": "SO-2026-00078", "destination": "Toko A", "date": "07 Feb 2026 10:15", "items": 45, "value": 125450000, "status": "Menunggu" }
+  ],
+  "user_settings": [
+    { "role": "gudang", "notifStock": true, "notifRequests": true, "autoSync": true }
+  ]
+}
