@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Mosaic } from "react-loading-indicators";
 import "./Splash.css";
 
 import logo from "../../assets/images/logo.png";
@@ -26,10 +27,9 @@ export default function Splash() {
       />
       <img className="splash__logo" src={logo} alt="ReaStock" />
 
-      {/* ✅ loader melingkar */}
+      {/* ✅ loader mosaic */}
       <div className="splash__spinnerWrap">
-        <div className="splash__spinner" />
-        <div className="splash__text">Loading...</div>
+        <Mosaic color="#D48854" size="small" text="" textColor="" speedPlus={2} />
       </div>
     </div>
   );

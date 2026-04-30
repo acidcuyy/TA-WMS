@@ -34,29 +34,6 @@
   z-index: 1;
 }
 
-.splash__spinner {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 2px solid rgba(211, 123, 64, 0.15);
-  border-top-color: #d37b40;
-  animation: splashSpin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-}
-
-.splash__text {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.8px;
-  color: rgba(60, 40, 25, 0.6);
-  text-transform: capitalize;
-}
-
-@keyframes splashSpin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 @keyframes fadeInDown {
   from {
     opacity: 0;

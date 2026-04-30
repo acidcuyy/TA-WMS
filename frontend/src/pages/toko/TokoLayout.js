@@ -1,4 +1,4 @@
-import { Outlet, NavLink, useNavigate } from "react-router-dom";
+import { Outlet, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import "./TokoLayout.css";
@@ -7,9 +7,11 @@ import logoSideDark from "../../assets/images/LogoSide_dark.png";
 import logoSideDefault from "../../assets/images/LogoSide_default.png";
 
 import Sidebar from "../../components/layout/Sidebar";
+import NotificationSystem from "../../components/layout/NotificationSystem";
 
 export default function TokoLayout() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { theme } = useTheme();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
@@ -73,10 +75,7 @@ export default function TokoLayout() {
               Online
             </div>
 
-            <button className="notif-btn">
-              🔔
-              <span className="notif-badge">3</span>
-            </button>
+            <NotificationSystem role="TOKO" />
 
             <div className="user-profile" onClick={() => navigate("/toko/profile")}>
               <div className="user-info">
@@ -94,7 +93,21 @@ export default function TokoLayout() {
 
         {/* CONTENT */}
         <div className="toko-content">
-          <Outlet />
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, y: 10, scale: 0.99 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.99 }}
+              transition={{ 
+                duration: 0.35, 
+                ease: [0.22, 1, 0.36, 1] 
+              }}
+              style={{ height: "100%", width: "100%" }}
+            >
+              <Outlet />
+            </motion.div>
+          </AnimatePresence>
         </div>
       </main>
 

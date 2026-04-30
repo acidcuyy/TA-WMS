@@ -2,8 +2,6 @@ import { useState } from "react";
 import "./AdminDashboard.css";
 
 export default function AdminDashboard() {
-  const [currentTime] = useState("7 Mei 2025 - 13 Mei 2025");
-
   const stats = [
     { label: "Total Inventory Value", value: "Rp 2.450.000.000", trend: "+12.5%", sub: "vs minggu lalu", icon: "💰", color: "#e4915a" },
     { label: "Total Orders", value: "1.248", trend: "+8.2%", sub: "vs minggu lalu", icon: "🛍️", color: "#3b82f6" },
@@ -20,16 +18,6 @@ export default function AdminDashboard() {
         <div className="header-left">
           <h1>Selamat Datang Admin!</h1>
           <p>Berikut ringkasan performa warehouse hari ini.</p>
-        </div>
-        <div className="header-right">
-          <div className="date-picker">{currentTime} 📅</div>
-          <div className="search-box">
-            <span>⌕</span>
-            <input type="text" placeholder="Search..." />
-          </div>
-          <button className="filter-btn">⚙</button>
-          <button className="export-btn">📤 Export</button>
-          <div className="notif-bell">🔔 <span className="badge">3</span></div>
         </div>
       </header>
 

@@ -10,6 +10,206 @@
   flex: 1;
   background-color: var(--bg-2);
   overflow-x: hidden;
+  transition: background-color 0.3s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-topbar {
+  height: 80px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  flex-shrink: 0;
+}
+
+.admin-topbar__left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-badge {
+  font-size: 24px;
+}
+
+.admin-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.admin-role {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.admin-topbar__right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.admin-topbar__controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-right: 12px;
+  padding-right: 20px;
+  border-right: 1px solid var(--border);
+}
+
+.date-picker {
+  background: var(--bg-2);
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.date-picker:hover {
+  border-color: var(--primary);
+}
+
+.search-box {
+  position: relative;
+  background: var(--bg-2);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.search-box:focus-within {
+  border-color: var(--primary);
+  background: var(--bg);
+  box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.1);
+}
+
+.search-box span {
+  color: var(--subtle);
+  font-size: 16px;
+}
+
+.search-box input {
+  border: none;
+  outline: none;
+  font-size: 13px;
+  width: 140px;
+  background: transparent;
+  color: var(--text);
+}
+
+.filter-btn,
+.export-btn {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.filter-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.export-btn {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.export-btn:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #10b981;
+  font-weight: 600;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 6px 12px;
+  border-radius: 99px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  background: #10b981;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.5; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  background: var(--primary);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.admin-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Custom Scrollbar for Admin Main */
+.admin-main::-webkit-scrollbar {
+  width: 6px;
+}
+.admin-main::-webkit-scrollbar-track {
+  background: transparent;
+}
+.admin-main::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 10px;
+}
+.admin-main::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
 }
 
 /* LOGOUT MODAL */

@@ -82,9 +82,9 @@ export default function SettingsPage({ role = "admin" }) {
       <style>{`
         .sa-settings-page {
           width: 100%;
-          max-width: 1200px;
+          max-width: 1500px;
           margin: 0 auto;
-          padding: 32px 40px;
+          padding: 24px 40px;
           color: var(--text);
           box-sizing: border-box;
           font-family: 'Poppins', sans-serif;

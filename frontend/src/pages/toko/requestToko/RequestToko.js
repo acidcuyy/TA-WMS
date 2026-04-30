@@ -137,7 +137,7 @@ export default function RequestToko() {
                 </div>
               </div>
 
-              <div className="input-group" style={{ marginTop: "16px" }}>
+              <div className="input-group">
                 <label>Catatan (Opsional)</label>
                 <input
                   className="input-field"
@@ -147,7 +147,7 @@ export default function RequestToko() {
                 />
               </div>
 
-              <button className="btn-submit" onClick={sendRequest} style={{ width: "100%", marginTop: "24px" }}>
+              <button className="btn-submit" onClick={sendRequest}>
                 Kirim Request ke Gudang
               </button>
             </section>

@@ -9,9 +9,9 @@ import logoSideDefault from "../../assets/images/LogoSide_default.png";
 import { useTheme } from "../../app/ThemeProvider";
 
 import Sidebar from "../../components/layout/Sidebar";
+import NotificationSystem from "../../components/layout/NotificationSystem";
 
 export default function AdminLayout() {
-  const featuresRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
   const { theme } = useTheme();
@@ -66,15 +66,57 @@ export default function AdminLayout() {
 
       {/* MAIN CONTENT */}
       <main className="admin-main">
-        <motion.div
-          key={location.pathname}
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          style={{ height: "100%", width: "100%" }}
-        >
-          <Outlet context={{ featuresRef }} />
-        </motion.div>
+        {/* TOPBAR */}
+        <header className="admin-topbar">
+          <div className="admin-topbar__left">
+            <div className="admin-badge">🛡️</div>
+            <div className="admin-info">
+              <span className="admin-name">Super Admin</span>
+              <span className="admin-role">Administrator</span>
+            </div>
+          </div>
+
+          <div className="admin-topbar__right">
+            <div className="admin-topbar__controls">
+              <div className="date-picker">7 Mei 2025 - 13 Mei 2025 📅</div>
+              <div className="search-box">
+                <span>⌕</span>
+                <input type="text" placeholder="Search..." />
+              </div>
+              <button className="filter-btn">⚙</button>
+              <button className="export-btn">📤 Export</button>
+            </div>
+
+            <div className="status-indicator">
+              <span className="status-dot"></span>
+              System Online
+            </div>
+
+            <NotificationSystem role="ADMIN" />
+
+            <div className="user-profile" onClick={() => navigate("/admin/profile")}>
+              <div className="user-avatar">A</div>
+            </div>
+          </div>
+        </header>
+
+        <div className="admin-content" style={{ padding: "24px" }}>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, y: 10, scale: 0.99 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.99 }}
+              transition={{ 
+                duration: 0.35, 
+                ease: [0.22, 1, 0.36, 1] 
+              }}
+              style={{ height: "100%", width: "100%" }}
+            >
+              <Outlet />
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </main>
 
       {/* LOGOUT CONFIRMATION MODAL */}

@@ -16,11 +16,13 @@ export default function App() {
   const routeName =
     location.pathname === "/" ? "splash" : location.pathname.replace("/", "");
 
+  const rootKey = location.pathname.split('/')[1] || 'root';
+
   return (
     <div className="routeShell">
       <TransitionGroup component={null}>
         <CSSTransition
-          key={location.pathname}
+          key={rootKey}
           nodeRef={nodeRef}
           classNames="route"
           timeout={350}

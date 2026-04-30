@@ -64,6 +64,25 @@ export function getNotifications() {
   return dbLoad().notifications || [];
 }
 
+export function markNotificationAsRead(id) {
+  return dbUpdate((db) => {
+    const n = (db.notifications || []).find((x) => x.id === id);
+    if (n) n.isRead = true;
+    return db;
+  });
+}
+
+export function markAllNotificationsAsRead(role) {
+  return dbUpdate((db) => {
+    (db.notifications || []).forEach((n) => {
+      if (!role || (n.targetRoles && n.targetRoles.includes(role.toLowerCase()))) {
+        n.isRead = true;
+      }
+    });
+    return db;
+  });
+}
+
 /* ===========================
  * SUBSCRIBE (dummy realtime via storage event)
  * =========================== */
@@ -127,14 +146,16 @@ export function createTokoRequest(payload) {
       status: "Menunggu",
     });
 
-    // notif untuk gudang/admin (global)
+    // notif untuk gudang & admin
     db.notifications.unshift({
       id: newId("NTF"),
       type: "request_toko",
-      title: "Request Toko",
-      message: `${id} request dari ${fromName} ke Gudang`,
+      title: "Request Toko Baru",
+      message: `Ada permintaan barang baru dari ${fromName} (${id})`,
       time: nowTimeHHMM(),
       isRead: false,
+      targetRoles: ["admin", "gudang"],
+      link: "/requests"
     });
 
     return db;
@@ -164,10 +185,11 @@ export function gudangDecideRequest(id, decision) {
       db.notifications.unshift({
         id: newId("NTF"),
         type: "request_accepted",
-        title: "Gudang ACC",
-        message: `${id} disetujui Gudang`,
+        title: "Request Disetujui",
+        message: `Permintaan ${id} telah disetujui oleh Gudang`,
         time: nowTimeHHMM(),
         isRead: false,
+        targetRoles: ["toko", "admin"],
       });
     } else {
       r.status = "Ditolak";
@@ -175,10 +197,11 @@ export function gudangDecideRequest(id, decision) {
       db.notifications.unshift({
         id: newId("NTF"),
         type: "request_declined",
-        title: "Gudang Decline",
-        message: `${id} ditolak Gudang`,
+        title: "Request Ditolak",
+        message: `Permintaan ${id} ditolak oleh Gudang`,
         time: nowTimeHHMM(),
         isRead: false,
+        targetRoles: ["toko", "admin"],
       });
     }
 
@@ -215,10 +238,11 @@ export function gudangKirimBarang(id) {
     db.notifications.unshift({
       id: newId("NTF"),
       type: "shipping",
-      title: "Pengiriman",
-      message: `${id} sedang dikirim`,
+      title: "Barang Dikirim",
+      message: `Pesanan ${id} sedang dalam perjalanan ke toko`,
       time: nowTimeHHMM(),
       isRead: false,
+      targetRoles: ["toko", "admin"],
     });
 
     return db;
@@ -245,10 +269,11 @@ export function tokoSelesaiTerima(id) {
     db.notifications.unshift({
       id: newId("NTF"),
       type: "done",
-      title: "Selesai",
-      message: `${id} selesai (barang diterima ${r.fromName})`,
+      title: "Barang Diterima",
+      message: `Permintaan ${id} telah selesai diterima oleh ${r.fromName}`,
       time: nowTimeHHMM(),
       isRead: false,
+      targetRoles: ["gudang", "admin"],
     });
 
     return db;
@@ -288,9 +313,10 @@ export function createRestockToAdmin(payload) {
       id: newId("NTF"),
       type: "restock_new",
       title: "Request Restock",
-      message: `${id} request restock dari Gudang`,
+      message: `Gudang mengirim permintaan restock barang (${id})`,
       time: nowTimeHHMM(),
       isRead: false,
+      targetRoles: ["admin"],
     });
 
     return db;
@@ -320,10 +346,11 @@ export function adminDecideRestock(id, decision) {
       db.notifications.unshift({
         id: newId("NTF"),
         type: "restock_accepted",
-        title: "Admin Accept",
-        message: `${id} disetujui Admin`,
+        title: "Restock Disetujui",
+        message: `Permintaan restock ${id} telah disetujui Admin`,
         time: nowTimeHHMM(),
         isRead: false,
+        targetRoles: ["gudang"],
       });
     } else {
       r.status = "Ditolak";
@@ -331,10 +358,11 @@ export function adminDecideRestock(id, decision) {
       db.notifications.unshift({
         id: newId("NTF"),
         type: "restock_declined",
-        title: "Admin Decline",
-        message: `${id} ditolak Admin`,
+        title: "Restock Ditolak",
+        message: `Permintaan restock ${id} ditolak oleh Admin`,
         time: nowTimeHHMM(),
         isRead: false,
+        targetRoles: ["gudang"],
       });
     }
 
@@ -364,9 +392,10 @@ export function gudangFinishRestockWithProof(id, proofImage) {
       id: newId("NTF"),
       type: "restock_done",
       title: "Restock Selesai",
-      message: `${id} selesai (bukti diupload Gudang)`,
+      message: `Proses restock ${id} telah selesai dengan bukti terlampir`,
       time: nowTimeHHMM(),
       isRead: false,
+      targetRoles: ["admin"],
     });
 
     return db;

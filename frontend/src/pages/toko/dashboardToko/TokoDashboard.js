@@ -236,9 +236,9 @@ export default function TokoDashboard() {
                 <motion.path
                   d="M0,160 C100,140 150,100 200,120 C250,140 350,80 400,90 C450,100 550,60 600,80 C650,100 750,70 800,90 L800,220 L0,220 Z"
                   fill="url(#chartGradient)"
-                  initial={{ opacity: 0, pathLength: 0 }}
-                  animate={{ opacity: 1, pathLength: 1 }}
-                  transition={{ delay: 0.8, duration: 1.2 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1.2, duration: 0.8 }}
                 />
                 {/* Line */}
                 <motion.path
@@ -248,9 +248,9 @@ export default function TokoDashboard() {
                   strokeWidth="3.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  initial={{ pathLength: 0 }}
-                  animate={{ pathLength: 1 }}
-                  transition={{ delay: 0.8, duration: 1.5, ease: "easeInOut" }}
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  animate={{ pathLength: 1, opacity: 1 }}
+                  transition={{ delay: 0.8, duration: 1.8, ease: "easeInOut" }}
                 />
                 {/* Points */}
                 {[
@@ -286,7 +286,7 @@ export default function TokoDashboard() {
             </div>
             <div className="donut-container">
               <div className="donut-wrapper">
-                <svg className="donut-svg" width="160" height="160" viewBox="0 0 100 100">
+                <svg className="donut-svg" width="140" height="140" viewBox="0 0 100 100">
                   <circle className="donut-segment donut-segment--gray" cx="50" cy="50" r="38" strokeDasharray="238 238" strokeDashoffset="0" opacity="0.3" />
                   <motion.circle 
                     className="donut-segment donut-segment--green" cx="50" cy="50" r="38" 
@@ -310,38 +310,37 @@ export default function TokoDashboard() {
                     transition={{ delay: 1.4, duration: 1, ease: easing }}
                   />
                 </svg>
-                <div className="donut-center" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                  <span className="donut-center__label" style={{ marginBottom: "-4px" }}>Total</span>
-                  <span className="donut-center__value" style={{ lineHeight: "1" }}>1.250</span>
-                  <span className="donut-center__label" style={{ marginTop: "-2px" }}>Item</span>
+                <div className="donut-center">
+                  <span className="donut-center__label">Total</span>
+                  <span className="donut-center__value">1.250</span>
+                  <span className="donut-center__label">Item</span>
                 </div>
               </div>
               <div className="donut-legend">
                 {[
-                  { color: "#22c55e", label: "Stok Aman", value: "1.050", percent: "84%" },
-                  { color: "#f97316", label: "Stok Menipis", value: "120", percent: "10%" },
-                  { color: "#ef4444", label: "Stok Habis", value: "40", percent: "3%" },
-                  { color: "#94a3b8", label: "Tidak Aktif", value: "40", percent: "3%" },
+                  { color: "#22c55e", label: "Aman", value: "1.050", percent: "84%" },
+                  { color: "#f97316", label: "Menipis", value: "120", percent: "10%" },
+                  { color: "#ef4444", label: "Habis", value: "40", percent: "3%" },
+                  { color: "#94a3b8", label: "Pasif", value: "40", percent: "3%" },
                 ].map((item, idx) => (
                   <div key={idx} className="legend-item">
                     <div className="legend-item__left">
                       <span className="legend-dot" style={{ backgroundColor: item.color }}></span>
                       {item.label}
                     </div>
-                    <div className="legend-item__right">{item.value} <span className="legend-item__percent">({item.percent})</span></div>
+                    <div className="legend-item__right">{item.value}</div>
                   </div>
                 ))}
               </div>
               <motion.div 
                 className="alert-box"
-                whileHover={{ scale: 1.02, x: 3 }}
-                style={{ width: "100%", boxSizing: "border-box" }}
+                whileHover={{ scale: 1.01, x: 2 }}
               >
                 <div className="alert-box__left">
-                  <span>⚠️</span>
-                  <span>18 produk perlu restock</span>
+                  <span className="alert-box__icon">⚠️</span>
+                  <span className="alert-box__text">18 produk perlu restock segera</span>
                 </div>
-                <span>›</span>
+                <span className="alert-box__arrow">›</span>
               </motion.div>
             </div>
           </motion.div>

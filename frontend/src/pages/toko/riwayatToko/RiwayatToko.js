@@ -78,36 +78,101 @@ export default function RiwayatToko() {
         <section className="performance-chart-card">
           <div className="chart-header">
             <h3 className="chart-title">Ringkasan Performa</h3>
-            <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+            <div className="chart-actions-group">
               <div className="chart-legend">
                 <div className="legend-item"><span className="legend-dot" style={{ background: "#f97316" }}></span> Penjualan</div>
                 <div className="legend-item"><span className="legend-dot" style={{ background: "#3b82f6" }}></span> Pengeluaran</div>
                 <div className="legend-item"><span className="legend-dot" style={{ background: "#ef4444" }}></span> Retur</div>
                 <div className="legend-item"><span className="legend-dot" style={{ background: "#22c55e" }}></span> Penyesuaian</div>
               </div>
-              <select className="filter-select" style={{ padding: "4px 8px", fontSize: "11px" }}>
+              <select className="filter-select" style={{ padding: "6px 12px", fontSize: "12px", borderRadius: "10px" }}>
                 <option>7 Hari Terakhir</option>
+                <option>30 Hari Terakhir</option>
               </select>
             </div>
           </div>
           
-          <div style={{ height: "240px", width: "100%", position: "relative", marginTop: "20px" }}>
-            <svg width="100%" height="100%" viewBox="0 0 800 200" preserveAspectRatio="none">
-              {/* Grid Lines */}
-              {[0, 50, 100, 150, 200].map(y => (
-                <line key={y} x1="0" y1={y} x2="800" y2={y} stroke="#f1f5f9" strokeWidth="1" />
-              ))}
-              
-              {/* Penjualan (Orange) */}
-              <path d="M0,150 L133,120 L266,130 L400,100 L533,90 L666,110 L800,85" fill="none" stroke="#f97316" strokeWidth="3" />
-              {/* Pengeluaran (Blue) */}
-              <path d="M0,170 L133,160 L266,155 L400,140 L533,130 L666,150 L800,140" fill="none" stroke="#3b82f6" strokeWidth="2" />
-              {/* Retur (Red) */}
-              <path d="M0,190 L133,185 L266,180 L400,185 L533,180 L666,185 L800,175" fill="none" stroke="#ef4444" strokeWidth="1.5" />
-              {/* Penyesuaian (Green) */}
-              <path d="M0,180 L133,175 L266,170 L400,165 L533,160 L666,170 L800,160" fill="none" stroke="#22c55e" strokeWidth="1.5" strokeDasharray="4 2" />
-            </svg>
-            <div style={{ display: "flex", justifyContent: "space-between", marginTop: "10px", fontSize: "10px", color: "#94a3b8" }}>
+          <div className="chart-wrapper-main">
+            {/* Y Labels */}
+            <div className="chart-y-axis">
+              <span>Rp 10M</span>
+              <span>Rp 7.5M</span>
+              <span>Rp 5M</span>
+              <span>Rp 2.5M</span>
+              <span>0</span>
+            </div>
+
+            <div className="chart-svg-container">
+              <svg width="100%" height="100%" viewBox="0 0 800 200" preserveAspectRatio="none" style={{ overflow: "visible" }}>
+                <defs>
+                  <linearGradient id="gradSale" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#f97316" stopOpacity="0.15" />
+                    <stop offset="100%" stopColor="#f97316" stopOpacity="0" />
+                  </linearGradient>
+                  <linearGradient id="gradSpend" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.1" />
+                    <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+
+                {/* Grid Lines */}
+                {[0, 50, 100, 150, 200].map(y => (
+                  <line key={y} x1="0" y1={y} x2="800" y2={y} stroke="#f1f5f9" strokeWidth="1" />
+                ))}
+                
+                {/* Penjualan (Orange) - Area & Line */}
+                <motion.path 
+                  d="M0,150 C100,120 150,140 200,130 C250,120 350,100 400,110 C450,120 550,80 600,90 C650,100 750,75 800,85 L800,200 L0,200 Z" 
+                  fill="url(#gradSale)"
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1, duration: 1 }}
+                />
+                <motion.path 
+                  d="M0,150 C100,120 150,140 200,130 C250,120 350,100 400,110 C450,120 550,80 600,90 C650,100 750,75 800,85" 
+                  fill="none" stroke="#f97316" strokeWidth="3.5" strokeLinecap="round" 
+                  initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 1.5, ease: "easeInOut" }}
+                />
+
+                {/* Pengeluaran (Blue) - Area & Line */}
+                <motion.path 
+                  d="M0,175 C100,165 150,170 200,160 C250,150 350,145 400,150 C450,155 550,135 600,145 C650,155 750,135 800,140 L800,200 L0,200 Z" 
+                  fill="url(#gradSpend)"
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2, duration: 1 }}
+                />
+                <motion.path 
+                  d="M0,175 C100,165 150,170 200,160 C250,150 350,145 400,150 C450,155 550,135 600,145 C650,155 750,135 800,140" 
+                  fill="none" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" 
+                  initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ delay: 0.3, duration: 1.5, ease: "easeInOut" }}
+                />
+
+                {/* Retur (Red) - Line Only */}
+                <motion.path 
+                  d="M0,190 C133,185 266,192 400,188 C533,184 666,190 800,182" 
+                  fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeDasharray="1,6"
+                  initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ delay: 0.6, duration: 1.5 }}
+                />
+
+                {/* Penyesuaian (Green) - Line Only */}
+                <motion.path 
+                  d="M0,182 C133,178 266,180 400,172 C533,165 666,175 800,168" 
+                  fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeDasharray="5,5"
+                  initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ delay: 0.8, duration: 1.5 }}
+                />
+
+                {/* Data points for Sales */}
+                {[0, 200, 400, 600, 800].map((x, i) => {
+                  const ys = [150, 130, 110, 90, 85];
+                  return (
+                    <motion.circle 
+                      key={i} cx={x} cy={ys[i]} r="4.5" fill="white" stroke="#f97316" strokeWidth="2" 
+                      initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 1.5 + i * 0.1 }}
+                    />
+                  );
+                })}
+              </svg>
+            </div>
+
+            {/* X Labels */}
+            <div className="chart-x-axis">
               <span>18 Mei</span><span>19 Mei</span><span>20 Mei</span><span>21 Mei</span><span>22 Mei</span><span>23 Mei</span><span>24 Mei</span>
             </div>
           </div>

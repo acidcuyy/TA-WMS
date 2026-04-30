@@ -98,9 +98,20 @@ export default function Login() {
               />
               <SplitText
                 tag="p"
-                text="The most popular Warehouse System is here."
+                text="The Most Advance"
                 className="brand-tagline"
                 delay={500}
+                from={{ opacity: 0, y: 20 }}
+                to={{ opacity: 1, y: 0 }}
+                ease="power2.out"
+                threshold={0.1}
+                textAlign="left"
+              />
+              <SplitText
+                tag="p"
+                text="Warehouse System is here"
+                className="brand-tagline"
+                delay={800}
                 from={{ opacity: 0, y: 20 }}
                 to={{ opacity: 1, y: 0 }}
                 ease="power2.out"
