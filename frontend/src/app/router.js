@@ -50,6 +50,12 @@ import PenyesuaianStokToko from "../pages/toko/penyesuaianStokToko/PenyesuaianSt
 import PesananPenjualanToko from "../pages/toko/pesananPenjualanToko/PesananPenjualanToko";
 import ReturPenjualanToko from "../pages/toko/returPenjualanToko/ReturPenjualanToko";
 
+// Driver
+import DriverLayout from "../pages/driver/DriverLayout";
+import DriverDashboard from "../pages/driver/dashboard/DriverDashboard";
+import DriverTracking from "../pages/driver/tracking/DriverTracking";
+import DriverHistory from "../pages/driver/history/DriverHistory";
+
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -76,6 +82,17 @@ export const router = createBrowserRouter([
           { path: "laporan-order", element: <LaporanOrder /> },
           { path: "laporan-pergerakan", element: <LaporanPergerakanStok /> },
           { path: "laporan-produksi", element: <LaporanProduksi /> },
+        ],
+      },
+
+      {
+        path: "driver",
+        element: <DriverLayout />,
+        children: [
+          { index: true, element: <DriverDashboard /> },
+          { path: "tracking", element: <DriverTracking /> },
+          { path: "history", element: <DriverHistory /> },
+          { path: "profile", element: <ProfileToko /> }, // Reusing profile for now
         ],
       },
     ],

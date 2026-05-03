@@ -34,6 +34,7 @@ export default function Login() {
       "admin@gmail.com": { pass: "admin", role: "admin", path: "/admin" },
       "gudang@gmail.com": { pass: "gudang", role: "gudang", path: "/gudang" },
       "toko@gmail.com": { pass: "toko", role: "toko", path: "/toko" },
+      "driver@gmail.com": { pass: "driver", role: "driver", path: "/driver" },
     };
 
     const user = users[eLower];
