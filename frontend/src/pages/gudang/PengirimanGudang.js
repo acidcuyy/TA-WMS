@@ -1,165 +1,141 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Card from "../../components/common/Card";
-import "../admin/PageAdmin.css";
+import "../toko/PengirimanToko.css";
 
 import { useReastockDb } from "../../services/useReastockDb";
-import { getRequestById, getShipment } from "../../services/wmsApi";
-
-function clamp(n, min, max) {
-  return Math.max(min, Math.min(max, n));
-}
-
-function lerp(a, b, t) {
-  return a + (b - a) * t;
-}
+import TrackingMap from "../../components/common/TrackingMap";
 
 export default function PengirimanGudang() {
   const { id } = useParams();
   const navigate = useNavigate();
   const db = useReastockDb();
 
-  const req = useMemo(() => getRequestById(id), [id, db]);
-  const shipment = useMemo(() => getShipment(id), [id, db]);
-
-  const [now, setNow] = useState(Date.now());
-
+  const [tick, setTick] = useState(0);
   useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 1000);
+    const t = setInterval(() => setTick((x) => x + 1), 1000);
     return () => clearInterval(t);
   }, []);
 
-  // fallback aman kalau shipment belum ada
-  const start = shipment?.start || { lat: -6.2000, lng: 106.8166 };
-  const end = shipment?.end || { lat: -6.1754, lng: 106.8272 };
-  const startedAt = shipment?.startedAt || Date.now() - 1000 * 60 * 2;
-  const durationMs = shipment?.durationMs || 1000 * 60 * 18;
+  const req = useMemo(() => (db.requests || []).find((r) => r.id === id), [db.requests, id]);
+  const shipment = useMemo(() => (db.shipments?.[id] || null), [db.shipments, id]);
 
-  const tRaw = (now - startedAt) / durationMs;
-  const t = clamp(tRaw, 0, 1);
+  const calc = (sh) => {
+    if (!sh) return { progress: 0, etaMs: 0, driver: { lat: 0, lng: 0 } };
+    const elapsed = Date.now() - sh.startedAt;
+    const progress = Math.max(0, Math.min(1, elapsed / sh.durationMs));
+    const etaMs = Math.max(0, sh.durationMs - elapsed);
+    const driver = {
+      lat: sh.start.lat + (sh.end.lat - sh.start.lat) * progress,
+      lng: sh.start.lng + (sh.end.lng - sh.start.lng) * progress,
+    };
+    return { progress, etaMs, driver };
+  };
 
-  const driverLat = lerp(start.lat, end.lat, t);
-  const driverLng = lerp(start.lng, end.lng, t);
+  if (!req || !shipment) {
+    return (
+      <div className="p-toko-loading">
+        <div className="spinner"></div>
+        <p>Memuat data pelacakan...</p>
+      </div>
+    );
+  }
 
-  const progressPct = Math.round(t * 100);
-  const etaMs = Math.max(0, startedAt + durationMs - now);
+  const { progress, etaMs, driver } = calc(shipment);
   const etaMin = Math.ceil(etaMs / 60000);
-
-  // Embed peta (tanpa library tambahan)
-  // Kita bikin bbox kecil di sekitar driver supaya terasa “tracking”
-  const delta = 0.03;
-  const left = driverLng - delta;
-  const right = driverLng + delta;
-  const top = driverLat + delta;
-  const bottom = driverLat - delta;
-
-  const mapSrc = `https://www.openstreetmap.org/export/embed.html?bbox=${left}%2C${bottom}%2C${right}%2C${top}&layer=mapnik&marker=${driverLat}%2C${driverLng}`;
+  const isArrived = progress >= 1;
 
   return (
-    <div className="pageAdmin pageAdmin--wide">
-      <div className="pageAdmin__head">
-        <h1>Pengiriman #{id}</h1>
-        <p>
-          {req
-            ? `Dari Gudang • Tujuan: ${req.fromName} • Items: ${(req.items || [])
-              .map((it) => `${it.sku} (${it.qty})`)
-              .join(", ")}`
-            : "Detail pengiriman"}
-        </p>
-      </div>
-
-      <button
-        className="pageAdmin__btn"
-        style={{ width: "100%", marginBottom: 12 }}
-        onClick={() => navigate("/gudang/requests")}
-        type="button"
-      >
-        Kembali
-      </button>
-
-      <Card className="pageAdmin__card pageAdmin__card--full">
-        <div
-          style={{
-            width: "100%",
-            height: 520,
-            borderRadius: 16,
-            overflow: "hidden",
-            border: "1px solid rgba(0,0,0,0.08)",
-          }}
-        >
-          <iframe
-            title="Tracking Map Gudang"
-            src={mapSrc}
-            width="100%"
-            height="520"
-            frameBorder="0"
-            style={{ border: 0 }}
-            loading="lazy"
-          />
-        </div>
-      </Card>
-
-      {/* Bottom bar */}
-      <div
-        style={{
-          position: "sticky",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          marginTop: 12,
-          background: "rgba(255,255,255,0.75)",
-          backdropFilter: "blur(10px)",
-          borderTop: "1px solid rgba(0,0,0,0.08)",
-          padding: "12px 16px",
-          borderRadius: 16,
-        }}
-      >
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "180px 1fr 240px",
-            gap: 12,
-            alignItems: "center",
-          }}
-        >
+    <div className="p-toko">
+      <header className="p-toko__header">
+        <div className="p-toko__title-group">
+          <button className="btn-back" onClick={() => navigate("/gudang/requests")}>←</button>
           <div>
-            <div style={{ fontWeight: 700 }}>Estimasi sampai</div>
-            <div className="pageAdmin__muted">
-              {progressPct >= 100 ? "Sampai" : `${etaMin} menit`}
-            </div>
-          </div>
-
-          <div>
-            <div style={{ fontWeight: 700, marginBottom: 6 }}>Progress</div>
-            <div
-              style={{
-                height: 10,
-                borderRadius: 999,
-                background: "rgba(0,0,0,0.08)",
-                overflow: "hidden",
-              }}
-            >
-              <div
-                style={{
-                  height: "100%",
-                  width: `${progressPct}%`,
-                  borderRadius: 999,
-                  background: "rgba(0,0,0,0.35)",
-                }}
-              />
-            </div>
-            <div className="pageAdmin__muted" style={{ marginTop: 6 }}>
-              {progressPct}%
-            </div>
-          </div>
-
-          <div>
-            <div style={{ fontWeight: 700 }}>Koordinat Driver</div>
-            <div className="pageAdmin__muted">
-              {driverLat.toFixed(5)}, {driverLng.toFixed(5)}
-            </div>
+            <h1>Pantau Lokasi Pengiriman</h1>
+            <p>ID Request: <b>#{id}</b></p>
           </div>
         </div>
+        <div className={`p-toko__status ${isArrived ? 'arrived' : 'shipping'}`}>
+          {isArrived ? "📦 Telah Sampai" : "🚚 Sedang Berjalan"}
+        </div>
+      </header>
+
+      <div className="p-toko__grid">
+        <div className="p-toko__map-side">
+          <Card className="p-toko__map-card">
+            <TrackingMap start={shipment.start} end={shipment.end} progress={progress} height="100%" />
+            
+            <div className="map-info-overlay">
+              <div className="info-badge">
+                <span className="dot"></span>
+                Driver Live
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        <aside className="p-toko__info-side">
+          <Card className="p-toko__card">
+            <h3>Informasi Driver</h3>
+            <div className="driver-profile">
+              <div className="driver-avatar">👤</div>
+              <div className="driver-text">
+                <b>{shipment.driverName || "Budi Santoso"}</b>
+                <span>DRV-001 • Truck Hino</span>
+              </div>
+              <button className="btn-contact">📞</button>
+            </div>
+          </Card>
+
+          <Card className="p-toko__card">
+            <h3>Detail Alur</h3>
+            <div className="delivery-steps">
+              <div className="step-item done">
+                <div className="step-dot"></div>
+                <div className="step-content">
+                  <b>Barang Keluar Gudang</b>
+                  <span>Selesai Dipacking</span>
+                </div>
+              </div>
+              <div className={`step-item ${progress > 0.5 ? 'done' : 'active'}`}>
+                <div className="step-dot"></div>
+                <div className="step-content">
+                  <b>Dalam Perjalanan</b>
+                  <span>Menuju {req.fromName}</span>
+                </div>
+              </div>
+              <div className={`step-item ${isArrived ? 'done' : ''}`}>
+                <div className="step-dot"></div>
+                <div className="step-content">
+                  <b>Sampai di Tujuan</b>
+                  <span>Estimasi: {etaMin} menit lagi</span>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-toko__card highlight" style={{ background: '#f86c14' }}>
+            <div className="eta-section">
+              <span className="eta-label">Estimasi Sampai ke Toko</span>
+              <h2 className="eta-val">{isArrived ? "Tiba" : `${etaMin} Menit`}</h2>
+            </div>
+            
+            <div className="tracking-stats">
+              <div className="stat-row">
+                <span>Progress Perjalanan</span>
+                <b>{(progress * 100).toFixed(0)}%</b>
+              </div>
+              <div className="stat-row">
+                <span>Koordinat GPS</span>
+                <b style={{ fontSize: '10px' }}>{driver.lat.toFixed(5)}, {driver.lng.toFixed(5)}</b>
+              </div>
+            </div>
+
+            <div style={{ textAlign: 'center', fontSize: '12px', opacity: 0.8 }}>
+              {isArrived ? "Barang Menunggu Konfirmasi Toko" : "Memantau pergerakan driver secara live"}
+            </div>
+          </Card>
+        </aside>
       </div>
     </div>
   );

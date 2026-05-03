@@ -64,6 +64,10 @@ export function getNotifications() {
   return dbLoad().notifications || [];
 }
 
+export function getBranches() {
+  return dbLoad().branches || [];
+}
+
 export function markNotificationAsRead(id) {
   return dbUpdate((db) => {
     const n = (db.notifications || []).find((x) => x.id === id);
@@ -118,11 +122,49 @@ export function subscribeNotifications(callback) {
   return makeSub(getNotifications, callback);
 }
 
+export function subscribeBranches(callback) {
+  return makeSub(getBranches, callback);
+}
+
+export function getDriverProfile() {
+  return dbLoad().driverProfile || {};
+}
+
+export function subscribeDriverProfile(callback) {
+  return makeSub(getDriverProfile, callback);
+}
+
+export function updateDriverProfile(payload) {
+  return dbUpdate((db) => {
+    db.driverProfile = { ...(db.driverProfile || {}), ...payload };
+    
+    // Sinkronisasi nama driver di request/shipment yang sedang aktif
+    if (payload.name) {
+      (db.requests || []).forEach(r => {
+        if (r.driverName === "Budi Santoso" || r.driverName === db.driverProfile.name) {
+          r.driverName = payload.name;
+        }
+      });
+      if (db.shipments) {
+        Object.values(db.shipments).forEach(s => {
+          if (s.driverName === "Budi Santoso" || s.driverName === db.driverProfile.name) {
+            s.driverName = payload.name;
+          }
+        });
+      }
+    }
+    
+    return db;
+  });
+}
+
 /* =========================================================
  * TOKO -> GUDANG request
  * ========================================================= */
 export function createTokoRequest(payload) {
   const fromName = payload?.fromName || payload?.from || "Toko";
+  const toBranchId = payload?.toBranchId || "BRC-001";
+  const toBranchName = payload?.toBranchName || "Gudang Pusat";
   const note = payload?.note || "";
   const items = normalizeItems(payload);
 
@@ -138,7 +180,8 @@ export function createTokoRequest(payload) {
       fromRole: "toko",
       fromName,
       toRole: "gudang",
-      toName: "Gudang",
+      toBranchId,
+      toName: toBranchName,
       createdAt,
       items,
       note,
@@ -151,7 +194,7 @@ export function createTokoRequest(payload) {
       id: newId("NTF"),
       type: "request_toko",
       title: "Request Toko Baru",
-      message: `Ada permintaan barang baru dari ${fromName} (${id})`,
+      message: `Ada permintaan barang baru dari ${fromName} ke ${toBranchName} (${id})`,
       time: nowTimeHHMM(),
       isRead: false,
       targetRoles: ["admin", "gudang"],
@@ -180,7 +223,7 @@ export function gudangDecideRequest(id, decision) {
     r.decision = dec;
 
     if (dec === "Accepted") {
-      r.status = "Diproses";
+      r.status = "Memproses";
 
       db.notifications.unshift({
         id: newId("NTF"),
@@ -192,7 +235,7 @@ export function gudangDecideRequest(id, decision) {
         targetRoles: ["toko", "admin"],
       });
     } else {
-      r.status = "Ditolak";
+      r.status = "Declined";
 
       db.notifications.unshift({
         id: newId("NTF"),
@@ -220,12 +263,38 @@ export function gudangKirimBarang(id) {
     const r = (db.requests || []).find((x) => x.id === id);
     if (!r) return db;
 
-    if (r.status !== "Diproses") return db;
+    if (r.status !== "Memproses") return db;
+
+    db.notifications = db.notifications || [];
+
+    r.status = "Siap Dikirim";
+
+    db.notifications.unshift({
+      id: newId("NTF"),
+      type: "shipping_ready",
+      title: "Barang Siap Dikirim",
+      message: `Permintaan ${id} siap dikirim. Driver silakan mengambil tugas.`,
+      time: nowTimeHHMM(),
+      isRead: false,
+      targetRoles: ["driver", "admin"],
+    });
+
+    return db;
+  });
+}
+
+export function driverAcceptTask(id, driverName = "Driver 01") {
+  return dbUpdate((db) => {
+    const r = (db.requests || []).find((x) => x.id === id);
+    if (!r) return db;
+
+    if (r.status !== "Siap Dikirim") return db;
 
     db.shipments = db.shipments || {};
     db.notifications = db.notifications || [];
 
     r.status = "Mengirim";
+    r.driverName = driverName;
 
     db.shipments[id] = {
       start: { lat: -6.2, lng: 106.8166 }, // gudang dummy
@@ -233,16 +302,17 @@ export function gudangKirimBarang(id) {
       startedAt: Date.now(),
       durationMs: 1000 * 60 * 18,
       driver: { lat: -6.197, lng: 106.8177 },
+      driverName: driverName
     };
 
     db.notifications.unshift({
       id: newId("NTF"),
       type: "shipping",
-      title: "Barang Dikirim",
-      message: `Pesanan ${id} sedang dalam perjalanan ke toko`,
+      title: "Driver Mengambil Tugas",
+      message: `Pesanan ${id} sedang dikirim oleh ${driverName}`,
       time: nowTimeHHMM(),
       isRead: false,
-      targetRoles: ["toko", "admin"],
+      targetRoles: ["toko", "gudang", "admin"],
     });
 
     return db;
@@ -255,7 +325,7 @@ export function gudangKirimBarang(id) {
  * - hanya boleh saat status Mengirim
  * - status Selesai (dua sisi sama karena data 1 sumber)
  * =========================== */
-export function tokoSelesaiTerima(id) {
+export function tokoSelesaiTerima(id, proofImage = null) {
   return dbUpdate((db) => {
     const r = (db.requests || []).find((x) => x.id === id);
     if (!r) return db;
@@ -265,12 +335,13 @@ export function tokoSelesaiTerima(id) {
     db.notifications = db.notifications || [];
 
     r.status = "Selesai";
+    r.proofImage = proofImage;
 
     db.notifications.unshift({
       id: newId("NTF"),
       type: "done",
       title: "Barang Diterima",
-      message: `Permintaan ${id} telah selesai diterima oleh ${r.fromName}`,
+      message: `Permintaan ${id} telah selesai diterima oleh ${r.fromName}. Bukti foto telah diunggah.`,
       time: nowTimeHHMM(),
       isRead: false,
       targetRoles: ["gudang", "admin"],
@@ -408,3 +479,22 @@ export function gudangFinishRestockWithProof(id, proofImage) {
 export const createRequest = createTokoRequest;
 export const completeShipmentByToko = tokoSelesaiTerima;
 export const startShipment = gudangKirimBarang;
+
+export function createBranchAccount(payload) {
+  return dbUpdate((db) => {
+    db.branches = db.branches || [];
+    const id = newId("BRC");
+    db.branches.push({
+      id,
+      ...payload
+    });
+    return db;
+  });
+}
+
+export function deleteBranch(id) {
+  return dbUpdate((db) => {
+    db.branches = (db.branches || []).filter((b) => b.id !== id);
+    return db;
+  });
+}

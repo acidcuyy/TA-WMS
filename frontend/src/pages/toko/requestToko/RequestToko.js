@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import "./RequestToko.css";
 import {
   createTokoRequest,
   subscribeRequests,
   tokoSelesaiTerima,
+  subscribeBranches,
 } from "../../../services/wmsApi";
 
 const getBadgeClass = (status) => {
@@ -13,25 +14,50 @@ const getBadgeClass = (status) => {
   if (!s || s.includes("menunggu") || s.includes("pending")) return "badge--pending";
   if (s.includes("accepted")) return "badge--accepted";
   if (s.includes("mengirim") || s.includes("ship")) return "badge--ship";
+  if (s.includes("siap")) return "badge--ready";
   if (s.includes("selesai") || s.includes("done")) return "badge--done";
-  if (s.includes("ditolak") || s.includes("declined")) return "badge--declined";
-  if (s.includes("proses") || s.includes("processing")) return "badge--process";
+  if (s.includes("declined") || s.includes("ditolak")) return "badge--declined";
+  if (s.includes("memproses") || s.includes("processing")) return "badge--process";
   return "";
 };
 
 export default function RequestToko() {
   const navigate = useNavigate();
   const [allReq, setAllReq] = useState([]);
+  const [branches, setBranches] = useState([]);
   const [kode, setKode] = useState("");
   const [jumlah, setJumlah] = useState("");
   const [catatan, setCatatan] = useState("");
+  const [targetGudang, setTargetGudang] = useState("");
+
+  // Confirmation Modal
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [confirmId, setConfirmId] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+
+  // Proof Modal
+  const [showProof, setShowProof] = useState(false);
+  const [proofImg, setProofImg] = useState(null);
 
   const easing = [0.22, 1, 0.36, 1];
 
   useEffect(() => {
-    const unsub = subscribeRequests((rows) => setAllReq(rows || []));
-    return () => typeof unsub === "function" && unsub();
-  }, []);
+    const unsubReq = subscribeRequests((rows) => setAllReq(rows || []));
+    const unsubBranch = subscribeBranches((rows) => {
+      const gudangs = rows.filter(b => b.type === 'gudang');
+      setBranches(gudangs);
+      if (gudangs.length > 0 && !targetGudang) setTargetGudang(gudangs[0].id);
+    });
+    return () => {
+      unsubReq();
+      unsubBranch();
+    };
+  }, [targetGudang]);
+
+  const openProof = (img) => {
+    setProofImg(img);
+    setShowProof(true);
+  };
 
   const tokoReq = useMemo(() => {
     return allReq.filter((r) => (r.fromRole || "").toLowerCase() === "toko");
@@ -39,17 +65,20 @@ export default function RequestToko() {
 
   const stats = useMemo(() => {
     const total = tokoReq.length;
-    const pending = tokoReq.filter(r => (r.status || "").toLowerCase().includes("menunggu") || (r.status || "").toLowerCase().includes("pending")).length;
-    const process = tokoReq.filter(r => (r.status || "").toLowerCase().includes("proses") || (r.status || "").toLowerCase().includes("accepted")).length;
+    const pending = tokoReq.filter(r => (r.status || "").toLowerCase().includes("menunggu")).length;
+    const process = tokoReq.filter(r => (r.status || "").toLowerCase().includes("memproses")).length;
     const shipping = tokoReq.filter(r => (r.status || "").toLowerCase().includes("mengirim")).length;
     const done = tokoReq.filter(r => (r.status || "").toLowerCase().includes("selesai")).length;
     return { total, pending, process, shipping, done };
   }, [tokoReq]);
 
   const sendRequest = async () => {
-    if (!kode || !jumlah) return;
+    if (!kode || !jumlah || !targetGudang) return;
+    const branch = branches.find(b => b.id === targetGudang);
     await createTokoRequest({
-      fromName: "Toko",
+      fromName: "Toko Utama", // Cabang toko yang sedang login
+      toBranchId: targetGudang,
+      toBranchName: branch?.name || "Gudang",
       items: [{ code: kode, qty: Number(jumlah) || 0 }],
       note: catatan,
     });
@@ -58,12 +87,23 @@ export default function RequestToko() {
     setCatatan("");
   };
 
-  const lihatPengiriman = (id) => {
-    navigate(`/toko/pengiriman/${id}`);
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedFile(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
-  const selesaiTerima = async (id) => {
-    await tokoSelesaiTerima(id);
+  const submitTerima = async () => {
+    if (!selectedFile) return alert("Pilih foto bukti terlebih dahulu!");
+    await tokoSelesaiTerima(confirmId, selectedFile);
+    setShowConfirm(false);
+    setConfirmId(null);
+    setSelectedFile(null);
   };
 
   const summaryCards = [
@@ -113,9 +153,22 @@ export default function RequestToko() {
             {/* FORM CARD */}
             <section className="request-form-card">
               <div className="form-title">Buat Request Baru</div>
-              <p className="form-sub">Isi detail barang yang Anda butuhkan dari gudang pusat.</p>
+              <p className="form-sub">Pilih gudang dan isi detail barang yang Anda butuhkan.</p>
 
               <div className="form-grid">
+                <div className="input-group">
+                  <label>Pilih Gudang</label>
+                  <select 
+                    className="input-field" 
+                    value={targetGudang}
+                    onChange={(e) => setTargetGudang(e.target.value)}
+                  >
+                    {branches.length === 0 && <option value="">Memuat gudang...</option>}
+                    {branches.map(b => (
+                      <option key={b.id} value={b.id}>{b.name} ({b.location})</option>
+                    ))}
+                  </select>
+                </div>
                 <div className="input-group">
                   <label>Kode Barang</label>
                   <input
@@ -125,6 +178,9 @@ export default function RequestToko() {
                     placeholder="Contoh: BRG-002"
                   />
                 </div>
+              </div>
+
+              <div className="form-grid" style={{ marginTop: '15px' }}>
                 <div className="input-group">
                   <label>Jumlah</label>
                   <input
@@ -135,19 +191,18 @@ export default function RequestToko() {
                     placeholder="0"
                   />
                 </div>
+                <div className="input-group">
+                  <label>Catatan (Opsional)</label>
+                  <input
+                    className="input-field"
+                    value={catatan}
+                    onChange={(e) => setCatatan(e.target.value)}
+                    placeholder="Contoh: Untuk stok promo weekend"
+                  />
+                </div>
               </div>
 
-              <div className="input-group">
-                <label>Catatan (Opsional)</label>
-                <input
-                  className="input-field"
-                  value={catatan}
-                  onChange={(e) => setCatatan(e.target.value)}
-                  placeholder="Contoh: Untuk stok promo weekend"
-                />
-              </div>
-
-              <button className="btn-submit" onClick={sendRequest}>
+              <button className="btn-submit" style={{ marginTop: '20px' }} onClick={sendRequest}>
                 Kirim Request ke Gudang
               </button>
             </section>
@@ -156,29 +211,23 @@ export default function RequestToko() {
             <section className="request-list-card">
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
                 <div className="form-title">Daftar Riwayat Request</div>
-                <div className="filter-search" style={{ border: "1px solid var(--border)", borderRadius: "8px", padding: "4px 12px", display: "flex", alignItems: "center", gap: "8px" }}>
-                  <span style={{ fontSize: "14px" }}>🔍</span>
-                  <input placeholder="Cari ID atau produk..." style={{ border: "none", background: "transparent", outline: "none", fontSize: "13px" }} />
-                </div>
               </div>
 
               <table className="request-table">
                 <thead>
                   <tr>
                     <th>ID Request</th>
-                    <th>Tanggal</th>
+                    <th>Tujuan</th>
                     <th>Produk & Catatan</th>
-                    <th>Keputusan</th>
-                    <th>Status Alur</th>
+                    <th>Status</th>
                     <th>Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
                   {tokoReq.length === 0 ? (
-                    <tr><td colSpan="6" style={{ textAlign: "center", padding: "40px", color: "#94a3b8" }}>Belum ada data request.</td></tr>
+                    <tr><td colSpan="5" style={{ textAlign: "center", padding: "40px", color: "#94a3b8" }}>Belum ada data request.</td></tr>
                   ) : (
                     tokoReq.map((r, idx) => {
-                      const date = (r.createdAt || "").split("T")[0] || "-";
                       const item = r.items?.[0];
                       const itemText = item ? `${item.code} (${item.qty})` : "-";
                       const status = (r.status || "").toLowerCase();
@@ -194,15 +243,10 @@ export default function RequestToko() {
                           transition={{ delay: 0.2 + idx * 0.05 }}
                         >
                           <td style={{ fontWeight: 600 }}>{r.id}</td>
-                          <td>{date}</td>
+                          <td>{r.toName || "Gudang"}</td>
                           <td>
                             <div style={{ fontWeight: 600 }}>{itemText}</div>
                             <div style={{ fontSize: "11px", color: "#94a3b8" }}>{r.note || "-"}</div>
-                          </td>
-                          <td>
-                            <span className={`badge ${r.decision?.toLowerCase() === 'accepted' ? 'badge--accepted' : r.decision?.toLowerCase() === 'declined' ? 'badge--declined' : 'badge--pending'}`}>
-                              {r.decision || "Pending"}
-                            </span>
                           </td>
                           <td>
                             <span className={`badge ${getBadgeClass(r.status)}`}>
@@ -214,14 +258,26 @@ export default function RequestToko() {
                               {!done && (
                                 <>
                                   {canSeeTrack && (
-                                    <button className="btn-action-small" onClick={() => lihatPengiriman(r.id)}>Lacak</button>
+                                    <button className="btn-action-small" onClick={() => navigate(`/toko/pengiriman/${r.id}`)}>Lihat Pengiriman</button>
                                   )}
                                   {canFinish && (
-                                    <button className="btn-action-small primary" onClick={() => selesaiTerima(r.id)}>Selesai</button>
+                                    <button className="btn-action-small primary" onClick={() => { setConfirmId(r.id); setShowConfirm(true); }}>Terima Barang</button>
                                   )}
                                 </>
                               )}
-                              {done && <span style={{ color: "#94a3b8", fontSize: "11px" }}>Terselesaikan</span>}
+                              {done && (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                  <span style={{ color: "#52c41a", fontSize: "11px", fontWeight: 600 }}>Diterima</span>
+                                  {r.proofImage && (
+                                    <span 
+                                      style={{ fontSize: '10px', color: 'var(--primary)', cursor: 'pointer', textDecoration: 'underline' }}
+                                      onClick={() => openProof(r.proofImage)}
+                                    >
+                                      Lihat Bukti
+                                    </span>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           </td>
                         </motion.tr>
@@ -236,37 +292,92 @@ export default function RequestToko() {
           {/* SIDEBAR */}
           <aside className="request-sidebar">
             <div className="sidebar-widget">
-              <h3 className="widget-title">Panduan Request</h3>
-              <ul style={{ paddingLeft: "16px", margin: 0, fontSize: "12px", color: "#64748b", lineHeight: "1.6" }}>
-                <li>Gunakan kode barang yang valid (SKU).</li>
-                <li>Gudang akan meninjau stok yang tersedia.</li>
-                <li>Setelah disetujui, status akan menjadi "Proses".</li>
-                <li>Tombol "Selesai" muncul saat barang dikirim.</li>
+              <h3 className="widget-title">Alur Request Barang</h3>
+              <ul style={{ paddingLeft: "16px", margin: 0, fontSize: "12px", color: "#64748b", lineHeight: "1.8" }}>
+                <li><b>1. Request:</b> Toko memilih gudang dan input barang.</li>
+                <li><b>2. Approval:</b> Gudang menyetujui (Status: Memproses).</li>
+                <li><b>3. Persiapan:</b> Gudang menyiapkan barang (Status: Siap Dikirim).</li>
+                <li><b>4. Pengiriman:</b> Driver mengambil tugas (Status: Mengirim).</li>
+                <li><b>5. Pelacakan:</b> Pantau posisi driver di Maps secara realtime.</li>
+                <li><b>6. Selesai:</b> Toko klik Terima Barang & upload bukti foto.</li>
               </ul>
-            </div>
-
-            <div className="sidebar-widget">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-                <h3 className="widget-title" style={{ margin: 0 }}>Aktivitas Terbaru</h3>
-                <a href="#" style={{ fontSize: "10px", color: "var(--primary)", fontWeight: 600 }}>Lihat Semua</a>
-              </div>
-              <div className="activity-list">
-                {tokoReq.slice(0, 4).map(r => (
-                  <div key={r.id} className="activity-item">
-                    <div className="activity-icon" style={{ background: "#f8fafc" }}>
-                      {r.status?.includes("selesai") ? "✅" : "📄"}
-                    </div>
-                    <div className="activity-content">
-                      <span className="activity-name">Request {r.id}</span>
-                      <span className="activity-sub">{r.status || "Baru dibuat"}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
             </div>
           </aside>
         </div>
       </motion.div>
+
+      {/* CONFIRMATION MODAL */}
+      <AnimatePresence>
+        {showConfirm && (
+          <div className="mgAdmin__modalOverlay" onClick={() => setShowConfirm(false)}>
+            <motion.div 
+              className="mgAdmin__modal" 
+              onClick={e => e.stopPropagation()}
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              style={{ maxWidth: '440px' }}
+            >
+              <div className="mgAdmin__modalHead">
+                <h3><span>📸</span> Konfirmasi Penerimaan</h3>
+                <button className="mgAdmin__modalClose" onClick={() => setShowConfirm(false)}>✕</button>
+              </div>
+              <div className="mgAdmin__modalBody">
+                <p style={{ fontSize: '14px', color: '#64748b', marginBottom: '20px', lineHeight: '1.5' }}>
+                  Silakan upload foto bukti bahwa barang telah diterima dalam kondisi baik untuk menyelesaikan pesanan.
+                </p>
+                <div 
+                  className="upload-area" 
+                  style={{ border: '2px dashed #cbd5e1', borderRadius: '20px', padding: '40px 20px', textAlign: 'center', cursor: 'pointer', background: '#f8fafc', transition: 'all 0.2s' }} 
+                  onClick={() => document.getElementById('proof-upload').click()}
+                >
+                  {selectedFile ? (
+                    <img src={selectedFile} alt="Preview" style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '12px', boxShadow: '0 8px 20px rgba(0,0,0,0.1)' }} />
+                  ) : (
+                    <>
+                      <div style={{ fontSize: '40px', marginBottom: '12px' }}>📤</div>
+                      <div style={{ fontSize: '14px', fontWeight: 700, color: '#334155' }}>Klik untuk Pilih Foto</div>
+                      <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>Ambil foto barang yang Anda terima</div>
+                    </>
+                  )}
+                  <input type="file" id="proof-upload" hidden accept="image/*" onChange={handleFileChange} />
+                </div>
+              </div>
+              <div className="mgAdmin__modalFooter">
+                <button className="mgAdmin__btnAction mgAdmin__btnAction--cancel" onClick={() => setShowConfirm(false)}>Batal</button>
+                <button className="mgAdmin__btnAction mgAdmin__btnAction--save" onClick={submitTerima}>Kirim & Selesai</button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* PROOF VIEW MODAL */}
+      <AnimatePresence>
+        {showProof && (
+          <div className="mgAdmin__modalOverlay" onClick={() => setShowProof(false)}>
+            <motion.div 
+              className="mgAdmin__modal" 
+              onClick={e => e.stopPropagation()} 
+              initial={{ scale: 0.9, opacity: 0, y: 20 }} 
+              animate={{ scale: 1, opacity: 1, y: 0 }} 
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              style={{ maxWidth: '500px' }}
+            >
+              <div className="mgAdmin__modalHead">
+                <h3><span>📸</span> Bukti Foto Penerimaan</h3>
+                <button className="mgAdmin__modalClose" onClick={() => setShowProof(false)}>✕</button>
+              </div>
+              <div className="mgAdmin__modalBody" style={{ textAlign: 'center', background: '#f8fafc' }}>
+                <img src={proofImg} alt="Bukti" style={{ width: '100%', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.15)', border: '4px solid white' }} />
+              </div>
+              <div className="mgAdmin__modalFooter">
+                <button className="mgAdmin__btnAction mgAdmin__btnAction--save" style={{ width: '100%' }} onClick={() => setShowProof(false)}>Tutup Halaman</button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

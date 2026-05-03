@@ -1,63 +1,80 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import Card from "../../../components/common/Card";
+import { subscribeRequests, subscribeDriverProfile, getShipment } from "../../../services/wmsApi";
+import TrackingMap from "../../../components/common/TrackingMap";
 import "./DriverTracking.css";
 
 export default function DriverTracking() {
-  const [status, setStatus] = useState("Menuju Lokasi"); // Menuju Lokasi, Sampai, Selesai
-  const [progress, setProgress] = useState(0);
-  const [location, setLocation] = useState({ lat: -6.2088, lng: 106.8456 }); // Jakarta
-  const [duration, setDuration] = useState("15 menit");
-  const [eta, setEta] = useState("14:55 WIB");
+  const [requests, setRequests] = useState([]);
+  const [profile, setProfile] = useState({});
+  const [tick, setTick] = useState(0);
 
-  // Mock movement
   useEffect(() => {
-    const interval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setStatus("Tiba di Tujuan");
-          return 100;
-        }
-        return prev + 1;
-      });
-    }, 2000);
+    const unsubReq = subscribeRequests((rows) => setRequests(rows || []));
+    const unsubProfile = subscribeDriverProfile((data) => setProfile(data || {}));
+    const t = setInterval(() => setTick(x => x + 1), 1000);
 
-    return () => clearInterval(interval);
+    return () => {
+      unsubReq();
+      unsubProfile();
+      clearInterval(t);
+    };
   }, []);
+
+  const activeRequest = useMemo(() => {
+    return requests.find(r => r.status === "Mengirim" && r.driverName === profile.name);
+  }, [requests, profile.name]);
+
+  const shipment = useMemo(() => {
+    if (!activeRequest) return null;
+    return getShipment(activeRequest.id);
+  }, [activeRequest]);
+
+  const calc = (sh) => {
+    if (!sh) return { progress: 0, etaMs: 0, driver: { lat: 0, lng: 0 } };
+    const elapsed = Date.now() - sh.startedAt;
+    const progress = Math.max(0, Math.min(1, elapsed / sh.durationMs));
+    const etaMs = Math.max(0, sh.durationMs - elapsed);
+    const driver = {
+      lat: sh.start.lat + (sh.end.lat - sh.start.lat) * progress,
+      lng: sh.start.lng + (sh.end.lng - sh.start.lng) * progress,
+    };
+    return { progress, etaMs, driver };
+  };
+
+  if (!activeRequest || !shipment) {
+    return (
+      <div className="dtracking dtracking--empty">
+        <motion.div 
+          className="empty-state"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <div className="empty-icon">🚛</div>
+          <h2>Tidak Ada Pengiriman Aktif</h2>
+          <p>Anda sedang tidak memiliki tugas pengiriman yang berjalan. <br/> Silakan cek Dashboard untuk mengambil tugas baru.</p>
+          <button className="btn-goto-dash" onClick={() => window.location.href='/driver'}>Ke Dashboard</button>
+        </motion.div>
+      </div>
+    );
+  }
+
+  const { progress, etaMs, driver } = calc(shipment);
+  const etaMin = Math.ceil(etaMs / 60000);
+  const isArrived = progress >= 1;
 
   return (
     <div className="dtracking">
       <div className="dtracking__map-container">
-        {/* MOCKED GOOGLE MAP */}
-        <div className="mock-map">
+        <Card className="dtracking__map-card">
+          <TrackingMap start={shipment.start} end={shipment.end} progress={progress} height="100%" />
           <div className="map-overlay">
-            <div className="map-search-bar">📍 {status === "Menuju Lokasi" ? "Sedang dalam perjalanan..." : "Tiba di lokasi tujuan"}</div>
+            <div className="map-search-bar">
+              📍 {isArrived ? "Tiba di lokasi tujuan" : "Sedang dalam perjalanan..."}
+            </div>
           </div>
-          
-          {/* MOCK ROUTE LINE */}
-          <svg className="mock-route" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <path d="M10,80 C30,70 50,90 90,20" fill="none" stroke="#1890ff" strokeWidth="2" strokeDasharray="5,5" />
-            <motion.circle 
-              cx={10 + (90-10) * (progress/100)} 
-              cy={80 + (20-80) * (progress/100)} 
-              r="2" fill="#1890ff" 
-            />
-          </svg>
-
-          <div className="map-marker origin" style={{ left: '10%', top: '80%' }}>🏢</div>
-          <div className="map-marker destination" style={{ left: '90%', top: '20%' }}>📍</div>
-          
-          <motion.div 
-            className="map-marker driver" 
-            animate={{ 
-              left: `${10 + (90-10) * (progress/100)}%`, 
-              top: `${80 + (20-80) * (progress/100)}%` 
-            }}
-          >
-            🚚
-          </motion.div>
-        </div>
+        </Card>
       </div>
 
       <div className="dtracking__info">
@@ -65,49 +82,55 @@ export default function DriverTracking() {
           <div className="delivery-header">
             <div className="delivery-id">
               <span>ID Pengiriman</span>
-              <b>REQ-2026-045</b>
+              <b>{activeRequest.id}</b>
             </div>
-            <span className="status-pill">{status}</span>
+            <span className={`status-pill ${isArrived ? 'arrived' : 'shipping'}`}>
+              {isArrived ? "Tiba" : "Mengirim"}
+            </span>
           </div>
 
           <div className="progress-section">
             <div className="progress-bar-bg">
               <motion.div 
                 className="progress-bar-fill" 
-                initial={{ width: 0 }}
-                animate={{ width: `${progress}%` }}
+                initial={false}
+                animate={{ width: `${progress * 100}%` }}
               ></motion.div>
             </div>
             <div className="progress-labels">
-              <span>{progress}% Perjalanan</span>
-              <span>Sisa {duration}</span>
+              <span>{(progress * 100).toFixed(0)}% Perjalanan</span>
+              <span>{isArrived ? "Selesai" : `Sisa ${etaMin} menit`}</span>
             </div>
           </div>
 
           <div className="tracking-details">
             <div className="track-item">
-              <span className="track-label">Estimasi Tiba</span>
-              <b className="track-val">{eta}</b>
+              <span className="track-label">Tujuan</span>
+              <b className="track-val">{activeRequest.toName}</b>
             </div>
             <div className="track-item">
               <span className="track-label">Koordinat</span>
-              <b className="track-val">{location.lat.toFixed(4)}, {location.lng.toFixed(4)}</b>
+              <b className="track-val">{driver.lat.toFixed(4)}, {driver.lng.toFixed(4)}</b>
             </div>
             <div className="track-item">
-              <span className="track-label">Kecapatan</span>
-              <b className="track-val">45 km/jam</b>
+              <span className="track-label">Estimasi</span>
+              <b className="track-val">{isArrived ? "Sampai" : `${etaMin} menit`}</b>
             </div>
           </div>
 
           <div className="delivery-footer">
             <button 
-              className={`btn-action ${status === "Tiba di Tujuan" ? "pulse" : "disabled"}`}
-              disabled={status !== "Tiba di Tujuan"}
-              onClick={() => alert("Menunggu konfirmasi penerimaan dari Toko...")}
+              className={`btn-action ${isArrived ? "pulse" : "disabled"}`}
+              disabled={!isArrived}
+              onClick={() => alert("Silakan tunggu pihak Toko melakukan konfirmasi penerimaan barang.")}
             >
-              {status === "Tiba di Tujuan" ? "Hubungi Penerima" : "Sedang Mengantar..."}
+              {isArrived ? "Tiba di Tujuan" : "Sedang Mengantar..."}
             </button>
-            <p className="footer-note">Informasi ini dibagikan secara realtime ke Toko Cabang A & Gudang Pusat.</p>
+            <p className="footer-note">
+              {isArrived 
+                ? "Pesanan akan selesai otomatis setelah Toko mengunggah bukti penerimaan."
+                : "Informasi lokasi Anda dibagikan secara live ke Toko & Gudang."}
+            </p>
           </div>
         </Card>
       </div>

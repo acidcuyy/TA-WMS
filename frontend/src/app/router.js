@@ -55,6 +55,7 @@ import DriverLayout from "../pages/driver/DriverLayout";
 import DriverDashboard from "../pages/driver/dashboard/DriverDashboard";
 import DriverTracking from "../pages/driver/tracking/DriverTracking";
 import DriverHistory from "../pages/driver/history/DriverHistory";
+import ProfileDriver from "../pages/driver/profile/ProfileDriver";
 
 export const router = createBrowserRouter([
   {
@@ -82,6 +83,7 @@ export const router = createBrowserRouter([
           { path: "laporan-order", element: <LaporanOrder /> },
           { path: "laporan-pergerakan", element: <LaporanPergerakanStok /> },
           { path: "laporan-produksi", element: <LaporanProduksi /> },
+          { path: "pengiriman/:id", element: <PengirimanGudang /> },
         ],
       },
 
@@ -92,7 +94,7 @@ export const router = createBrowserRouter([
           { index: true, element: <DriverDashboard /> },
           { path: "tracking", element: <DriverTracking /> },
           { path: "history", element: <DriverHistory /> },
-          { path: "profile", element: <ProfileToko /> }, // Reusing profile for now
+          { path: "profile", element: <ProfileDriver /> },
         ],
       },
     ],

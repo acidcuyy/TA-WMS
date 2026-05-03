@@ -4,11 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import Card from "../../../components/common/Card";
 import "./RequestsGudang.css";
 import {
-  createRestockToAdmin,
   gudangDecideRequest,
-  gudangFinishRestockWithProof,
   gudangKirimBarang,
-  startShipment,
   subscribeRequests,
   subscribeRestockToAdmin,
 } from "../../../services/wmsApi";
@@ -16,8 +13,11 @@ import {
 const getStatusClass = (status) => {
   const s = (status || "").toLowerCase();
   if (s.includes("menunggu") || s.includes("pending")) return "pending";
-  if (s.includes("accepted") || s.includes("approved") || s.includes("proses")) return "accepted";
-  if (s.includes("ditolak") || s.includes("declined")) return "declined";
+  if (s.includes("memproses") || s.includes("accepted")) return "accepted";
+  if (s.includes("mengirim") || s.includes("shipping")) return "shipping";
+  if (s.includes("siap")) return "ready";
+  if (s.includes("selesai") || s.includes("done")) return "done";
+  if (s.includes("declined") || s.includes("ditolak")) return "declined";
   return "";
 };
 
@@ -29,18 +29,26 @@ export default function RequestsGudang() {
   const [restockToAdmin, setRestockToAdmin] = useState([]);
 
   // Modals
-  const [proofOpen, setProofOpen] = useState(false);
-  const [proofReqId, setProofReqId] = useState(null);
-  const [proofBase64, setProofBase64] = useState(null);
   const [restockOpen, setRestockOpen] = useState(false);
-  const [restockNote, setRestockNote] = useState("");
   const [restockItems, setRestockItems] = useState([{ code: "", qty: "" }]);
+  const [proofOpen, setProofOpen] = useState(false);
+  const [proofImg, setProofImg] = useState(null);
 
   useEffect(() => {
     const unsubReq = subscribeRequests((rows) => setAllReq(rows || []));
     const unsubRestock = subscribeRestockToAdmin((rows) => setRestockToAdmin(rows || []));
     return () => { unsubReq?.(); unsubRestock?.(); };
   }, []);
+  
+  const openProof = (img) => {
+    setProofImg(img);
+    setProofOpen(true);
+  };
+  
+  // ... rest of the component logic ...
+  
+  // Update the button in the grid:
+  // {r.proofImage && <button className="btn-action-small" style={{ fontSize: '10px' }} onClick={() => openProof(r.proofImage)}>Lihat Bukti Foto</button>}
 
   const displayedRequests = useMemo(() => {
     const tokoReq = allReq.filter((r) => (r.fromRole || "").toLowerCase() === "toko");
@@ -57,7 +65,7 @@ export default function RequestsGudang() {
   ];
 
   const handleDecide = async (id, dec) => await gudangDecideRequest(id, dec);
-  const handleKirim = async (id) => { await gudangKirimBarang(id); await startShipment(id); };
+  const handleKirim = async (id) => await gudangKirimBarang(id);
 
   return (
     <div className="gdash">
@@ -86,18 +94,6 @@ export default function RequestsGudang() {
           ))}
         </div>
 
-        {/* FILTER BAR (Matched to Image) */}
-        <div className="rqGudang__filterBar">
-          <select className="rqGudang__select"><option>Semua Toko</option></select>
-          <select className="rqGudang__select"><option>Semua Kategori</option></select>
-          <select className="rqGudang__select"><option>Status Request</option></select>
-          <div className="rqGudang__searchWrap">
-            <span className="rqGudang__searchIcon">🔍</span>
-            <input className="rqGudang__searchInput" placeholder="Cari ID Request, kode item, atau catatan..." />
-          </div>
-          <button className="rqGudang__reset">Reset</button>
-        </div>
-
         {/* TABS */}
         <div className="rqGudang__tabs">
           {["Semua Request", "Dari Toko", "Restock Admin"].map(tab => (
@@ -105,7 +101,7 @@ export default function RequestsGudang() {
           ))}
         </div>
 
-        {/* PRODUCT-LIST STYLE GRID (Matched to Image) */}
+        {/* PRODUCT-LIST STYLE GRID */}
         <div className="rqGudang__grid">
           {displayedRequests.length === 0 ? (
             <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '60px', color: '#888' }}>Tidak ada request ditemukan.</div>
@@ -116,11 +112,11 @@ export default function RequestsGudang() {
                 <span style={{ fontSize: '40px' }}>{r.fromRole?.toLowerCase() === 'toko' ? "🏪" : "🏢"}</span>
               </div>
               <h4 className="rqGudang__cardTitle">{r.id}</h4>
-              <p className="rqGudang__cardSub">{r.fromName || (r.fromRole === 'toko' ? "Toko Cabang" : "Gudang Utama")}</p>
+              <p className="rqGudang__cardSub">{r.fromName || "Cabang"}</p>
 
               <div className="rqGudang__cardMeta">
                 <div>Items: <b>{(r.items || []).length} SKU</b></div>
-                <div>Decision: <b className={getStatusClass(r.decision)}>{r.decision || "Pending"}</b></div>
+                <div>Target: <b>{r.toName || "Gudang Pusat"}</b></div>
               </div>
 
               <div className="rqGudang__cardRow">
@@ -129,67 +125,83 @@ export default function RequestsGudang() {
               </div>
 
               <div className="rqGudang__cardActions">
-                {["menunggu", "pending"].includes(r.status?.toLowerCase()) && r.fromRole?.toLowerCase() === 'toko' ? (
-                  <>
-                    <button className="rqGudang__pageBtn" onClick={() => handleDecide(r.id, "Accepted")}>✅</button>
-                    <button className="rqGudang__pageBtn" onClick={() => handleDecide(r.id, "Declined")}>❌</button>
-                  </>
-                ) : (r.decision === "Accepted" || r.status === "Diproses") && r.fromRole?.toLowerCase() === 'toko' && r.status !== 'Mengirim' && r.status !== 'Selesai' ? (
-                  <button className="pageAdmin__btnSmall" onClick={() => handleKirim(r.id)}>Kirim Barang</button>
-                ) : r.status === 'Mengirim' ? (
-                  <button className="pageAdmin__btnSmall isGhost" onClick={() => navigate(`/gudang/pengiriman/${r.id}`)}>Pantau</button>
-                ) : (r.decision === "Accepted" || r.status === "Approved") && r.fromRole?.toLowerCase() === 'gudang' && r.status !== 'Selesai' ? (
-                  <button className="pageAdmin__btnSmall" onClick={() => { setProofReqId(r.id); setProofOpen(true); }}>Selesai</button>
+                {["menunggu", "pending"].includes(r.status?.toLowerCase()) ? (
+                  <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
+                    <button className="pageAdmin__btnSmall" style={{ flex: 1 }} onClick={() => handleDecide(r.id, "Accepted")}>Approve</button>
+                    <button className="pageAdmin__btnSmall isGhost" style={{ flex: 1 }} onClick={() => handleDecide(r.id, "Declined")}>Decline</button>
+                  </div>
+                ) : r.status === "Memproses" ? (
+                  <button className="pageAdmin__btnSmall" style={{ width: '100%' }} onClick={() => handleKirim(r.id)}>Siapkan & Kirim</button>
+                ) : r.status === "Siap Dikirim" ? (
+                  <div style={{ fontSize: '12px', color: '#888', textAlign: 'center', width: '100%' }}>⏳ Menunggu Driver...</div>
+                ) : r.status === "Mengirim" ? (
+                  <button className="pageAdmin__btnSmall isGhost" style={{ width: '100%' }} onClick={() => navigate(`/gudang/pengiriman/${r.id}`)}>📍 Pantau Lokasi</button>
+                ) : r.status === "Selesai" ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '100%', alignItems: 'center' }}>
+                    <span style={{ color: "#52c41a", fontSize: "12px", fontWeight: 600 }}>✅ Selesai Diterima</span>
+                    {r.proofImage && (
+                      <button 
+                        className="btn-action-small" 
+                        style={{ fontSize: '10px', color: 'var(--primary)', textDecoration: 'underline' }}
+                        onClick={() => openProof(r.proofImage)}
+                      >
+                        Lihat Bukti Foto
+                      </button>
+                    )}
+                  </div>
                 ) : (
-                  <button className="btn-icon">👁️</button>
+                  <button className="btn-icon" style={{ width: '100%' }}>Tutup</button>
                 )}
-                <button className="btn-icon">⋮</button>
               </div>
             </div>
           ))}
         </div>
-
-        {/* FOOTER / PAGINATION (Matched to Image) */}
-        <footer className="rqGudang__footer">
-          <span style={{ fontSize: '12px', color: '#888' }}>Menampilkan 1 - {displayedRequests.length} dari {displayedRequests.length} data</span>
-          <div className="rqGudang__pageControls">
-            <select className="rqGudang__select" style={{ padding: '4px 8px', fontSize: '11px' }}><option>10 / halaman</option></select>
-            <div style={{ display: 'flex', gap: '4px' }}>
-              <button className="rqGudang__pageBtn" disabled>⟨</button>
-              <button className="rqGudang__pageBtn active">1</button>
-              <button className="rqGudang__pageBtn">2</button>
-              <button className="rqGudang__pageBtn">3</button>
-              <span style={{ padding: '0 4px' }}>...</span>
-              <button className="rqGudang__pageBtn">325</button>
-              <button className="rqGudang__pageBtn">⟩</button>
-            </div>
-          </div>
-        </footer>
-
-        {/* Modals here... (Same logic as before) */}
-        <AnimatePresence>
-          {restockOpen && (
-            <div className="rqGudang__modalOverlay" onClick={() => setRestockOpen(false)}>
-              <motion.div className="rqGudang__modal" onClick={e => e.stopPropagation()} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}>
-                <div className="rqGudang__modalHead"><h3>Buat Request Restock</h3><button onClick={() => setRestockOpen(false)}>✕</button></div>
-                <div className="rqGudang__modalBody">
-                  {restockItems.map((item, idx) => (
-                    <div key={idx} style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-                      <input className="rqGudang__searchInput" style={{ paddingLeft: '12px' }} placeholder="Kode SKU" value={item.code} onChange={e => setRestockItems(prev => prev.map((it, i) => i === idx ? { ...it, code: e.target.value } : it))} />
-                      <input className="rqGudang__searchInput" style={{ paddingLeft: '12px', width: '80px' }} placeholder="Qty" type="number" value={item.qty} onChange={e => setRestockItems(prev => prev.map((it, i) => i === idx ? { ...it, qty: e.target.value } : it))} />
-                    </div>
-                  ))}
-                  <button className="rqGudang__reset" onClick={() => setRestockItems([...restockItems, { code: "", qty: "" }])}>+ Tambah Baris</button>
-                </div>
-                <div className="rqGudang__modalFooter">
-                  <button className="pageAdmin__btnSmall isGhost" onClick={() => setRestockOpen(false)}>Batal</button>
-                  <button className="pageAdmin__btnSmall" onClick={() => setRestockOpen(false)}>Kirim</button>
-                </div>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>
       </div>
+
+      {/* Modals here... */}
+      <AnimatePresence>
+        {restockOpen && (
+          <div className="rqGudang__modalOverlay" onClick={() => setRestockOpen(false)}>
+            <motion.div className="rqGudang__modal" onClick={e => e.stopPropagation()} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}>
+              <div className="rqGudang__modalHead"><h3>Buat Request Restock ke Admin</h3><button onClick={() => setRestockOpen(false)}>✕</button></div>
+              <div className="rqGudang__modalBody">
+                {restockItems.map((item, idx) => (
+                  <div key={idx} style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                    <input className="rqGudang__searchInput" style={{ paddingLeft: '12px' }} placeholder="Kode SKU" value={item.code} onChange={e => setRestockItems(prev => prev.map((it, i) => i === idx ? { ...it, code: e.target.value } : it))} />
+                    <input className="rqGudang__searchInput" style={{ paddingLeft: '12px', width: '80px' }} placeholder="Qty" type="number" value={item.qty} onChange={e => setRestockItems(prev => prev.map((it, i) => i === idx ? { ...it, qty: e.target.value } : it))} />
+                  </div>
+                ))}
+                <button className="rqGudang__reset" onClick={() => setRestockItems([...restockItems, { code: "", qty: "" }])}>+ Tambah Baris</button>
+              </div>
+              <div className="rqGudang__modalFooter">
+                <button className="pageAdmin__btnSmall isGhost" onClick={() => setRestockOpen(false)}>Batal</button>
+                <button className="pageAdmin__btnSmall" onClick={() => setRestockOpen(false)}>Kirim ke Admin</button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
+        {proofOpen && (
+          <div className="rqGudang__modalOverlay" onClick={() => setProofOpen(false)}>
+            <motion.div 
+              className="rqGudang__modal" 
+              onClick={e => e.stopPropagation()} 
+              initial={{ scale: 0.9, opacity: 0 }} 
+              animate={{ scale: 1, opacity: 1 }} 
+              exit={{ scale: 0.9, opacity: 0 }}
+              style={{ maxWidth: '500px' }}
+            >
+              <div className="rqGudang__modalHead"><h3>Bukti Penerimaan</h3><button onClick={() => setProofOpen(false)}>✕</button></div>
+              <div className="rqGudang__modalBody" style={{ textAlign: 'center' }}>
+                <img src={proofImg} alt="Bukti" style={{ width: '100%', borderRadius: '12px' }} />
+              </div>
+              <div className="rqGudang__modalFooter">
+                <button className="pageAdmin__btnSmall primary" style={{ width: '100%' }} onClick={() => setProofOpen(false)}>Tutup</button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

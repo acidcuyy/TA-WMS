@@ -58,6 +58,14 @@ const seed = () => ({
     },
   ],
 
+  // Daftar Cabang (Gudang & Toko)
+  branches: [
+    { id: "BRC-001", name: "Gudang Pusat", type: "gudang", location: "Jakarta" },
+    { id: "BRC-002", name: "Gudang Barat", type: "gudang", location: "Tangerang" },
+    { id: "BRC-003", name: "Toko Utama", type: "toko", location: "Bandung" },
+    { id: "BRC-004", name: "Toko Selatan", type: "toko", location: "Depok" },
+  ],
+
   // Stok gudang (dummy awal)
   warehouseStock: [
     {
@@ -67,6 +75,7 @@ const seed = () => ({
       qty: 120,
       minQty: 30,
       image: null,
+      branchId: "BRC-001"
     },
     {
       sku: "BRG-010",
@@ -75,6 +84,7 @@ const seed = () => ({
       qty: 18,
       minQty: 25,
       image: null,
+      branchId: "BRC-001"
     },
   ],
 
@@ -82,6 +92,18 @@ const seed = () => ({
   restockToAdmin: [
     // { id, createdAt, items:[{sku,qty}], note, decision:null|Approved|Declined, status:"Menunggu"|"Approved"|"Selesai", proofImage:null }
   ],
+
+  // Profile Driver
+  driverProfile: {
+    name: "Budi Santoso",
+    email: "driver@reastock.com",
+    phone: "081234567890",
+    role: "Driver Utama",
+    joinedAt: "10 Januari 2025",
+    vehicle: "Truck Hino (B 1234 ABC)",
+    status: "Online",
+    lastLogin: "13 Mei 2025, 09:40",
+  }
 });
 
 function safeParse(raw) {
@@ -94,17 +116,33 @@ function safeParse(raw) {
 
 export function dbLoad() {
   const raw = localStorage.getItem(KEY);
+  const s = seed();
+
   if (!raw) {
-    const s = seed();
     localStorage.setItem(KEY, JSON.stringify(s));
     return s;
   }
+
   const parsed = safeParse(raw);
   if (!parsed) {
-    const s = seed();
     localStorage.setItem(KEY, JSON.stringify(s));
     return s;
   }
+
+  // Schema migration: Pastikan semua key dari seed ada di parsed
+  let changed = false;
+  Object.keys(s).forEach((key) => {
+    // Jika key belum ada ATAU (khusus untuk branches/warehouseStock) jika array-nya kosong
+    if (parsed[key] === undefined || (Array.isArray(parsed[key]) && parsed[key].length === 0 && s[key].length > 0)) {
+      parsed[key] = s[key];
+      changed = true;
+    }
+  });
+
+  if (changed) {
+    localStorage.setItem(KEY, JSON.stringify(parsed));
+  }
+
   return parsed;
 }
 

@@ -1,12 +1,12 @@
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "../../app/ThemeProvider";
 import Sidebar from "../../components/layout/Sidebar";
 import NotificationSystem from "../../components/layout/NotificationSystem";
+import { subscribeDriverProfile } from "../../services/wmsApi";
 import logoSideDark from "../../assets/images/LogoSide_dark.png";
 import logoSideDefault from "../../assets/images/LogoSide_default.png";
-import avatarImg from "../../assets/images/stok.jpg";
 import "./DriverLayout.css";
 
 export default function DriverLayout() {
@@ -14,6 +14,12 @@ export default function DriverLayout() {
   const navigate = useNavigate();
   const { theme } = useTheme();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [profile, setProfile] = useState({});
+
+  useEffect(() => {
+    const unsub = subscribeDriverProfile((data) => setProfile(data || {}));
+    return () => unsub();
+  }, []);
 
   const currentLogo = theme === "dark" ? logoSideDark : logoSideDefault;
 
@@ -68,10 +74,10 @@ export default function DriverLayout() {
             <NotificationSystem role="DRIVER" />
 
             <div className="user-profile-top">
-              <img src={avatarImg} alt="User" className="user-avatar" />
+              <div className="user-avatar" style={{ fontSize: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f1f5f9', borderRadius: '50%', width: '40px', height: '40px' }}>👤</div>
               <div className="user-info-text">
-                <b>Budi Santoso</b>
-                <span>Driver Utama</span>
+                <b>{profile.name || "Driver"}</b>
+                <span>{profile.role || "Driver Utama"}</span>
               </div>
             </div>
           </div>

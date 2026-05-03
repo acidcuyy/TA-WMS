@@ -194,10 +194,62 @@
   100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(24, 144, 255, 0); }
 }
 
-.footer-note {
-  font-size: 11px;
-  color: var(--subtle);
+.status-pill.arrived {
+  background: #f6ffed;
+  color: #52c41a;
+}
+
+.status-pill.shipping {
+  background: #e6f7ff;
+  color: #1890ff;
+}
+
+/* EMPTY STATE */
+.dtracking--empty {
+  grid-template-columns: 1fr;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+}
+
+.empty-state {
   text-align: center;
-  margin-top: 16px;
-  line-height: 1.5;
+  max-width: 400px;
+  padding: 40px;
+}
+
+.empty-icon {
+  font-size: 80px;
+  margin-bottom: 24px;
+}
+
+.empty-state h2 {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+.empty-state p {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 32px;
+}
+
+.btn-goto-dash {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-goto-dash:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(var(--primary-rgb, 248, 108, 20), 0.25);
 }
