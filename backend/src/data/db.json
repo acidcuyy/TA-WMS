@@ -2,7 +2,8 @@
   "users": [
     { "email": "admin@gmail.com", "pass": "admin", "role": "admin", "path": "/admin", "name": "Super Admin" },
     { "email": "gudang@gmail.com", "pass": "gudang", "role": "gudang", "path": "/gudang", "name": "Admin Gudang" },
-    { "email": "toko@gmail.com", "pass": "toko", "role": "toko", "path": "/toko", "name": "Admin Toko" }
+    { "email": "toko@gmail.com", "pass": "toko", "role": "toko", "path": "/toko", "name": "Admin Toko" },
+    { "email": "driver@gmail.com", "pass": "driver", "role": "driver", "path": "/driver", "name": "Budi Santoso" }
   ],
   "products": [
     { "id": 1, "name": "Pipa PVC 1/2 Inch", "sku": "PPI-001", "cat": "Plumbing", "unit": "Pcs", "rack": "PLB-01", "stock": 450, "price": 100000, "status": "Aman", "active": true, "image": "", "sold": 180, "icon": "🚿" },
@@ -59,7 +60,49 @@
   ],
   "stock_requests": [
     { "id": "REQ-2025-0014", "toko": "Toko Utama", "date": "24 Mei 2025", "items": "10 item", "status": "Menunggu", "priority": "Tinggi" },
-    { "id": "REQ-2025-0013", "toko": "Toko Utama", "date": "23 Mei 2025", "items": "5 item", "status": "Disetujui", "priority": "Normal" }
+    { "id": "REQ-2025-0013", "toko": "Toko Utama", "date": "23 Mei 2025", "items": "5 item", "status": "Disetujui", "priority": "Normal" },
+    { "id": "REQ-2025-0015", "fromName": "Toko Sejahtera", "toName": "Gudang Pusat", "date": "25 Mei 2025", "items": [{ "sku": "PPI-001", "qty": 10 }], "status": "Siap Dikirim", "priority": "Tinggi", "note": "Kirim segera" },
+    { "id": "REQ-2025-0016", "fromName": "Toko Maju", "toName": "Gudang Pusat", "date": "25 Mei 2025", "items": [{ "sku": "ELB-001", "qty": 5 }], "status": "Mengirim", "driverName": "Budi Santoso", "priority": "Normal" },
+    { "id": "REQ-2025-0017", "fromName": "Toko Sejahtera", "toName": "Gudang Pusat", "date": "24 Mei 2025", "items": [{ "sku": "KAB-001", "qty": 20 }], "status": "Selesai", "driverName": "Budi Santoso", "priority": "Normal" }
+  ],
+  "driver_profile": {
+    "name": "Budi Santoso",
+    "email": "budi@wms.com",
+    "phone": "0812-3456-7890",
+    "vehicle": "Truk Box B 1234 GAD",
+    "role": "Driver Utama",
+    "status": "Online",
+    "lastLogin": "25 Mei 2025, 08:30",
+    "joinedAt": "12 Januari 2024"
+  },
+  "notifications": [
+    {
+      "id": "NTF-001",
+      "type": "request_toko",
+      "title": "Request Toko Baru",
+      "message": "Ada permintaan barang baru dari Toko Sejahtera (REQ-2025-0015)",
+      "time": "10:30",
+      "isRead": false,
+      "targetRoles": ["admin", "gudang"]
+    },
+    {
+      "id": "NTF-002",
+      "type": "shipping",
+      "title": "Pesanan Dikirim",
+      "message": "Pesanan REQ-2025-0016 sedang dikirim oleh Budi Santoso",
+      "time": "11:15",
+      "isRead": false,
+      "targetRoles": ["toko", "admin"]
+    },
+    {
+      "id": "NTF-003",
+      "type": "done",
+      "title": "Barang Diterima",
+      "message": "Permintaan REQ-2025-0017 telah selesai diterima",
+      "time": "Kemarin",
+      "isRead": true,
+      "targetRoles": ["gudang", "admin"]
+    }
   ],
   "gudang_transfers": [],
   "shipment_details": [],
