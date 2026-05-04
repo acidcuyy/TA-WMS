@@ -593,7 +593,7 @@ export default function SettingsPage({ role = "admin" }) {
                 <div className="sa-field">
                   <h4 style={{ margin: '0 0 4px', fontSize: '15px', fontWeight: 700, color: 'var(--text)' }}>Theme</h4>
                   <p style={{ fontSize: '13px', color: 'var(--muted)', margin: '0 0 16px' }}>Pilih mode tampilan aplikasi</p>
-                  
+
                   <div className="sa-theme-grid">
                     {["warm", "dark"].map((t) => (
                       <div key={t} className={`sa-theme-card ${tempTheme === t ? 'is-active' : ''}`} onClick={() => setTempTheme(t)}>

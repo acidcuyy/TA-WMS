@@ -64,7 +64,7 @@ export default function Login() {
       transition={{ duration: 0.42, ease: easing }}
     >
       {/* LEFT SECTION: BRANDING */}
-      <motion.div 
+      <motion.div
         className="login-brand-section"
         initial={{ x: -100, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
@@ -85,7 +85,7 @@ export default function Login() {
       </motion.div>
 
       {/* RIGHT SECTION: FORM */}
-      <motion.div 
+      <motion.div
         className="login-form-section"
         initial={{ x: 100, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
