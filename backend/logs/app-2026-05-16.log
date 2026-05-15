@@ -1,0 +1,30 @@
+[2026-05-16 02:10:14] [32minfo[39m: [32mKoneksi database berhasil[39m
+[2026-05-16 02:10:14] [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
+[2026-05-16 02:10:14] [32minfo[39m: [32mEnvironment: development[39m
+[2026-05-16 02:10:26] [32minfo[39m: [32mKoneksi database berhasil[39m
+[2026-05-16 02:10:26] [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
+[2026-05-16 02:10:26] [32minfo[39m: [32mEnvironment: development[39m
+[2026-05-16 02:10:29] [32mhttp[39m: [32m[0mGET / [31m500[0m 3.047 ms - 57[0m[39m
+[2026-05-16 02:10:30] [32mhttp[39m: [32m[0mGET /favicon.ico [31m500[0m 0.379 ms - 68[0m[39m
+[2026-05-16 02:13:02] [32mhttp[39m: [32m[0mGET /api/health [31m500[0m 0.542 ms - 67[0m[39m
+[2026-05-16 02:13:35] [32minfo[39m: [32mKoneksi database berhasil[39m
+[2026-05-16 02:13:35] [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
+[2026-05-16 02:13:35] [32minfo[39m: [32mEnvironment: development[39m
+[2026-05-16 02:14:11] [32minfo[39m: [32mKoneksi database berhasil[39m
+[2026-05-16 02:14:11] [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
+[2026-05-16 02:14:11] [32minfo[39m: [32mEnvironment: development[39m
+[2026-05-16 02:14:18] [32mhttp[39m: [32m[0mGET /api/health [32m200[0m 2.819 ms - 113[0m[39m
+[2026-05-16 02:15:00] [32minfo[39m: [32mMematikan server...[39m
+[2026-05-16 02:21:36] [32minfo[39m: [32mKoneksi database berhasil[39m
+[2026-05-16 02:21:36] [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
+[2026-05-16 02:21:36] [32minfo[39m: [32mEnvironment: development[39m
+[2026-05-16 02:23:12] [32minfo[39m: [32mMematikan server...[39m
+[2026-05-16 02:31:03] [32minfo[39m: [32mKoneksi database berhasil[39m
+[2026-05-16 02:31:03] [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
+[2026-05-16 02:31:03] [32minfo[39m: [32mEnvironment: development[39m
+[2026-05-16 02:31:11] [32mhttp[39m: [32m[0mGET /api/health [32m200[0m 2.674 ms - 113[0m[39m
+[2026-05-16 02:31:16] [32mhttp[39m: [32m[0mGET / [31m500[0m 0.795 ms - 57[0m[39m
+[2026-05-16 02:32:21] [32minfo[39m: [32mMematikan server...[39m
+[2026-05-16 02:32:25] [32minfo[39m: [32mKoneksi database berhasil[39m
+[2026-05-16 02:32:25] [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
+[2026-05-16 02:32:25] [32minfo[39m: [32mEnvironment: development[39m
