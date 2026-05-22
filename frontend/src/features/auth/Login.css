@@ -163,6 +163,7 @@
   color: #333;
   outline: none;
   transition: all 0.2s;
+  box-sizing: border-box;
 }
 
 .auth-input:focus {
