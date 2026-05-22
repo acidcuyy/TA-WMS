@@ -119,8 +119,8 @@ export default function Login() {
                 threshold={0.1}
                 textAlign="left"
               />
-              <button className="know-more-btn">
-                Know More <span>→</span>
+              <button type="button" className="know-more-btn" onClick={() => nav("/register")}>
+                Register Your Company <span>→</span>
               </button>
             </div>
           </div>

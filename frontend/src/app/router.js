@@ -3,6 +3,8 @@ import App from "./App";
 
 import Splash from "../features/auth/Splash";
 import Login from "../features/auth/Login";
+import Register from "../features/auth/Register";
+import ErrorPage from "../features/error/ErrorPage";
 
 // Admin
 import AdminLayout from "../pages/admin/AdminLayout";
@@ -61,9 +63,11 @@ export const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
+    errorElement: <ErrorPage />,
     children: [
       { index: true, element: <Splash /> },
       { path: "login", element: <Login /> },
+      { path: "register", element: <Register /> },
 
       {
         path: "admin",
@@ -103,6 +107,7 @@ export const router = createBrowserRouter([
   {
     path: "gudang",
     element: <GudangLayout />,
+    errorElement: <ErrorPage />,
     children: [
       { index: true, element: <GudangDashboard /> },
       { path: "penerimaan", element: <PenerimaanBarang /> },
@@ -128,6 +133,7 @@ export const router = createBrowserRouter([
   {
     path: "toko",
     element: <TokoLayout />,
+    errorElement: <ErrorPage />,
     children: [
       { index: true, element: <TokoDashboard /> },
 

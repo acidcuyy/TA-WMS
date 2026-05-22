@@ -1,0 +1,314 @@
+/* =========================================================
+   REASTOCK WMS ERROR PAGE (SCOPED)
+   Matches the warm-orange premium design language from
+   Login, Register, and Splash pages.
+   ========================================================= */
+
+.reastock-error-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: radial-gradient(circle at 30% 20%, #fff4e6 0%, #fdebd0 50%, #fef9f3 100%);
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* ---- Background Animated Blobs ---- */
+.reastock-error-container .error-blur-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(110px);
+  opacity: 0.12;
+  z-index: 0;
+  pointer-events: none;
+  animation: blobDrift 12s ease-in-out infinite alternate;
+}
+
+.reastock-error-container .blob-orange {
+  width: 500px;
+  height: 500px;
+  background: #e67e22;
+  top: -12%;
+  right: -8%;
+}
+
+.reastock-error-container .blob-yellow {
+  width: 400px;
+  height: 400px;
+  background: #f1c40f;
+  bottom: -10%;
+  left: -5%;
+  animation-delay: 4s;
+}
+
+@keyframes blobDrift {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(25px, -20px) scale(1.08); }
+}
+
+/* ---- Main Error Card ---- */
+.reastock-error-container .error-card {
+  position: relative;
+  z-index: 2;
+  width: 92%;
+  max-width: 680px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 28px;
+  box-shadow: 0 24px 60px rgba(220, 110, 20, 0.10),
+              0 2px 8px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ---- Illustration Section ---- */
+.reastock-error-container .error-illustration-section {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  background: linear-gradient(180deg, #fff8f3 0%, rgba(255, 248, 243, 0) 100%);
+  padding: 36px 30px 10px;
+}
+
+.reastock-error-container .error-svg {
+  max-width: 340px;
+  height: auto;
+}
+
+/* SVG micro-animations */
+.reastock-error-container .bounce-box-animate {
+  animation: boxBounce 2.5s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+
+@keyframes boxBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.reastock-error-container .float-shield-animate {
+  animation: shieldFloat 3s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@keyframes shieldFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(3deg); }
+}
+
+/* ---- Text Content Section ---- */
+.reastock-error-container .error-text-section {
+  padding: 20px 40px 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Error badge */
+.reastock-error-container .error-badge {
+  display: inline-flex;
+}
+
+.reastock-error-container .error-badge-code {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  color: #e67e22;
+  background: rgba(230, 126, 34, 0.10);
+  padding: 5px 14px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Title */
+.reastock-error-container .error-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+  letter-spacing: -0.5px;
+  line-height: 1.25;
+}
+
+/* Description */
+.reastock-error-container .error-description {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.65;
+  max-width: 480px;
+}
+
+/* ---- Action Buttons ---- */
+.reastock-error-container .error-actions {
+  display: flex;
+  gap: 14px;
+  margin-top: 6px;
+  width: 100%;
+  max-width: 380px;
+}
+
+.reastock-error-container .btn-primary {
+  flex: 1.2;
+  padding: 13px 26px;
+  background: #e67e22;
+  color: white;
+  border: none;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 15px rgba(230, 126, 34, 0.25);
+  text-align: center;
+}
+
+.reastock-error-container .btn-primary:hover {
+  background: #d35400;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(230, 126, 34, 0.35);
+}
+
+.reastock-error-container .btn-primary:active {
+  transform: translateY(0);
+}
+
+.reastock-error-container .btn-secondary {
+  flex: 1;
+  padding: 13px 26px;
+  background: #f1f5f9;
+  color: #475569;
+  border: none;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  text-align: center;
+}
+
+.reastock-error-container .btn-secondary:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+/* ---- Technical Details Accordion ---- */
+.reastock-error-container .error-details-accordion {
+  width: 100%;
+  max-width: 480px;
+  margin-top: 8px;
+}
+
+.reastock-error-container .accordion-trigger {
+  width: 100%;
+  padding: 10px 16px;
+  background: transparent;
+  border: 1px dashed #cbd5e1;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.reastock-error-container .accordion-trigger:hover {
+  border-color: #e67e22;
+  color: #e67e22;
+  background: rgba(230, 126, 34, 0.03);
+}
+
+.reastock-error-container .accordion-icon {
+  font-size: 10px;
+  transition: transform 0.3s ease;
+}
+
+.reastock-error-container .accordion-icon.open {
+  transform: rotate(180deg);
+}
+
+.reastock-error-container .accordion-content {
+  overflow: hidden;
+}
+
+.reastock-error-container .error-log-box {
+  margin: 10px 0 0 0;
+  background: #0f172a;
+  color: #94a3b8;
+  border-radius: 10px;
+  padding: 14px 18px;
+  font-size: 11px;
+  font-family: 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+  line-height: 1.6;
+  overflow-x: auto;
+  text-align: left;
+  white-space: pre-wrap;
+  word-break: break-word;
+  border: 1px solid #1e293b;
+}
+
+.reastock-error-container .error-log-box code {
+  color: #f97316;
+}
+
+/* Custom scrollbar for log box */
+.reastock-error-container .error-log-box::-webkit-scrollbar {
+  height: 4px;
+}
+.reastock-error-container .error-log-box::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+.reastock-error-container .error-log-box::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 2px;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 640px) {
+  .reastock-error-container .error-card {
+    width: 96%;
+    border-radius: 20px;
+  }
+
+  .reastock-error-container .error-text-section {
+    padding: 16px 24px 30px;
+  }
+
+  .reastock-error-container .error-title {
+    font-size: 22px;
+  }
+
+  .reastock-error-container .error-description {
+    font-size: 13px;
+  }
+
+  .reastock-error-container .error-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .reastock-error-container .error-actions button {
+    width: 100%;
+    flex: none;
+  }
+
+  .reastock-error-container .error-illustration-section {
+    padding: 24px 20px 8px;
+  }
+}
