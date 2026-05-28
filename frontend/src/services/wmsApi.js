@@ -473,6 +473,120 @@ export function gudangFinishRestockWithProof(id, proofImage) {
   });
 }
 
+/* =========================================================
+ * ADMIN -> GUDANG restock (Admin minta gudang menambah stok)
+ * ========================================================= */
+export function getAdminRestockToGudang() {
+  return dbLoad().adminRestockToGudang || [];
+}
+
+export function subscribeAdminRestockToGudang(callback) {
+  return makeSub(getAdminRestockToGudang, callback);
+}
+
+export function createAdminRestockToGudang(payload) {
+  const {
+    cabangGudang = "BRC-001",
+    cabangGudangNama = "Gudang Pusat",
+    kodeBarang = "",
+    namaBarang = "",
+    jenisBarang = "",
+    jumlah = 0,
+    satuan = "pcs",
+    supplier = "",
+    prioritas = "Normal",
+    catatan = "",
+  } = payload || {};
+
+  return dbUpdate((db) => {
+    const id = newId("ARST");
+    const createdAt = new Date().toISOString().slice(0, 10);
+
+    db.adminRestockToGudang = db.adminRestockToGudang || [];
+    db.notifications = db.notifications || [];
+
+    db.adminRestockToGudang.unshift({
+      id,
+      createdAt,
+      cabangGudang,
+      cabangGudangNama,
+      kodeBarang,
+      namaBarang,
+      jenisBarang,
+      jumlah: Number(jumlah),
+      satuan,
+      supplier,
+      prioritas,
+      catatan,
+      status: "Pending",
+      proofPhotos: null,
+    });
+
+    db.notifications.unshift({
+      id: newId("NTF"),
+      type: "admin_restock_new",
+      title: "Request Restock dari Admin",
+      message: `Admin mengirim permintaan restock ${namaBarang} (${jumlah} ${satuan}) ke ${cabangGudangNama} (${id})`,
+      time: nowTimeHHMM(),
+      isRead: false,
+      targetRoles: ["gudang"],
+    });
+
+    return db;
+  });
+}
+
+export function gudangAcceptAdminRestock(id) {
+  return dbUpdate((db) => {
+    const r = (db.adminRestockToGudang || []).find((x) => x.id === id);
+    if (!r) return db;
+    if (r.status !== "Pending") return db;
+
+    db.notifications = db.notifications || [];
+
+    r.status = "Diproses";
+
+    db.notifications.unshift({
+      id: newId("NTF"),
+      type: "admin_restock_accepted",
+      title: "Restock Diterima Gudang",
+      message: `Request restock ${id} telah diterima oleh Gudang dan sedang diproses`,
+      time: nowTimeHHMM(),
+      isRead: false,
+      targetRoles: ["admin"],
+    });
+
+    return db;
+  });
+}
+
+export function gudangUploadProofAndFinish(id, proofPhotos) {
+  // proofPhotos = { checkBarang: [base64...], resiDriver: [base64...], pemasukanBarang: [base64...] }
+  return dbUpdate((db) => {
+    const r = (db.adminRestockToGudang || []).find((x) => x.id === id);
+    if (!r) return db;
+    if (r.status !== "Diproses") return db;
+
+    db.notifications = db.notifications || [];
+
+    r.proofPhotos = proofPhotos;
+    r.status = "Selesai";
+    r.completedAt = new Date().toISOString().slice(0, 10);
+
+    db.notifications.unshift({
+      id: newId("NTF"),
+      type: "admin_restock_done",
+      title: "Restock Selesai",
+      message: `Proses restock ${id} (${r.namaBarang}) telah selesai. Bukti foto telah diunggah oleh Gudang.`,
+      time: nowTimeHHMM(),
+      isRead: false,
+      targetRoles: ["admin"],
+    });
+
+    return db;
+  });
+}
+
 /* =======================================================================
  * BACKWARD COMPATIBILITY ALIASES
  * ======================================================================= */
