@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import "./RiwayatToko.css";
+import { uploadTokoReport } from "../../../services/wmsApi";
 
 export default function RiwayatToko() {
   const [activeTab, setActiveTab] = useState("Semua (32)");
@@ -14,7 +15,7 @@ export default function RiwayatToko() {
     { label: "Penyesuaian Stok", value: "64", unit: "transaksi", icon: "⚖", iconClass: "summary-card__icon--blue" },
   ];
 
-  const reports = [
+  const [reports, setReports] = useState([
     { id: "RPT-2025-032", type: "Laporan Penjualan", period: "20 - 24 Mei 2025", author: "Admin Toko", format: "PDF", formatColor: "#ef4444", status: "Selesai" },
     { id: "RPT-2025-031", type: "Laporan Stok", period: "20 - 24 Mei 2025", author: "Admin Toko", format: "Excel", formatColor: "#16a34a", status: "Selesai" },
     { id: "RPT-2025-030", type: "Laporan Pengeluaran", period: "19 - 24 Mei 2025", author: "Sistem", format: "PDF", formatColor: "#ef4444", status: "Dijadwalkan" },
@@ -22,7 +23,67 @@ export default function RiwayatToko() {
     { id: "RPT-2025-028", type: "Laporan Penyesuaian", period: "18 - 24 Mei 2025", author: "Sistem", format: "Excel", formatColor: "#16a34a", status: "Selesai" },
     { id: "RPT-2025-027", type: "Laporan Transfer", period: "17 - 24 Mei 2025", author: "Admin Toko", format: "PDF", formatColor: "#ef4444", status: "Selesai" },
     { id: "RPT-2025-026", type: "Laporan Penerimaan", period: "17 - 24 Mei 2025", author: "Sistem", format: "Excel", formatColor: "#16a34a", status: "Selesai" },
-  ];
+  ]);
+
+  // Upload Modal State
+  const [openModal, setOpenModal] = useState(false);
+  const [form, setForm] = useState({ type: "Laporan Harian", period: "" });
+  const [file, setFile] = useState(null);
+  const [fileDataUrl, setFileDataUrl] = useState(null);
+  const [toast, setToast] = useState("");
+
+  const handleFileChange = (e) => {
+    const selected = e.target.files[0];
+    if (selected) {
+      if (selected.type !== "application/pdf") {
+        setToast("Hanya file PDF yang diperbolehkan!");
+        return;
+      }
+      // Limit file size to ~500KB to prevent localStorage QuotaExceededError
+      if (selected.size > 500 * 1024) {
+        setToast("Ukuran file terlalu besar! (Maks 500KB untuk versi demo ini)");
+        return;
+      }
+      setFile(selected);
+      setToast("");
+
+      // Read as base64
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFileDataUrl(reader.result);
+      };
+      reader.readAsDataURL(selected);
+    }
+  };
+
+  const handleUploadSubmit = () => {
+    if (!fileDataUrl || !form.period) {
+      setToast("Mohon lengkapi form dan pilih file PDF.");
+      return;
+    }
+
+    uploadTokoReport({
+      tokoId: "BRC-003",
+      tokoName: "Toko Utama", // Assuming logged in as Toko Utama
+      type: form.type,
+      period: form.period,
+      format: "PDF",
+      fileData: fileDataUrl,
+      author: "Admin Toko"
+    });
+
+    // Add dummy row to local view just for UI feedback
+    setReports(prev => [
+      { id: `RPT-${Math.floor(Math.random()*900)+100}`, type: form.type, period: form.period, author: "Admin Toko", format: "PDF", formatColor: "#ef4444", status: "Selesai" },
+      ...prev
+    ]);
+
+    setOpenModal(false);
+    setFile(null);
+    setFileDataUrl(null);
+    setForm({ type: "Laporan Harian", period: "" });
+  };
+
 
   return (
     <div className="riwayat-toko">
@@ -37,7 +98,7 @@ export default function RiwayatToko() {
             <h1>Laporan</h1>
             <p>Ringkasan laporan operasional toko, penjualan, stok, retur, dan aktivitas transaksi.</p>
           </div>
-          <button className="btn-buat">
+          <button className="btn-buat" onClick={() => setOpenModal(true)}>
             <span style={{ fontSize: "18px" }}>+</span> Buat Laporan
           </button>
         </header>
@@ -361,6 +422,77 @@ export default function RiwayatToko() {
           </aside>
         </div>
       </motion.div>
+
+      {/* UPLOAD MODAL */}
+      <AnimatePresence>
+        {openModal && (
+          <div className="rt-modal-overlay" onClick={() => setOpenModal(false)}>
+            <motion.div 
+              className="rt-modal"
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="rt-modal-header">
+                <div>
+                  <h3>Upload Laporan Harian</h3>
+                  <p>Laporan yang diupload akan dikirim ke halaman Manajemen Toko Pusat.</p>
+                </div>
+                <button className="rt-modal-close" onClick={() => setOpenModal(false)}>✕</button>
+              </div>
+
+              <div className="rt-modal-body">
+                {toast && (
+                  <div style={{ background: "#fff1f0", color: "#ff4d4f", padding: "10px", borderRadius: "8px", fontSize: "13px", fontWeight: "600" }}>
+                    {toast}
+                  </div>
+                )}
+                <div className="rt-form-group">
+                  <label>Jenis Laporan</label>
+                  <select value={form.type} onChange={(e) => setForm({...form, type: e.target.value})}>
+                    <option value="Laporan Harian">Laporan Harian</option>
+                    <option value="Laporan Penjualan">Laporan Penjualan</option>
+                    <option value="Laporan Stok">Laporan Stok</option>
+                    <option value="Laporan Audit">Laporan Audit</option>
+                  </select>
+                </div>
+
+                <div className="rt-form-group">
+                  <label>Periode Laporan</label>
+                  <input 
+                    type="text" 
+                    placeholder="Contoh: 25 Mei 2025" 
+                    value={form.period}
+                    onChange={(e) => setForm({...form, period: e.target.value})}
+                  />
+                </div>
+
+                <div className="rt-form-group">
+                  <label>File Laporan (PDF)</label>
+                  <label className="rt-file-upload">
+                    <div style={{ fontSize: "24px", marginBottom: "8px" }}>📄</div>
+                    {file ? (
+                      <div>
+                        <strong>{file.name}</strong>
+                        <div style={{ fontSize: "12px", color: "var(--muted)", marginTop: "4px" }}>Klik untuk mengganti file</div>
+                      </div>
+                    ) : (
+                      <div style={{ color: "var(--muted)", fontSize: "13px" }}>Klik untuk memilih file PDF laporan Anda</div>
+                    )}
+                    <input type="file" accept="application/pdf" style={{ display: "none" }} onChange={handleFileChange} />
+                  </label>
+                </div>
+              </div>
+
+              <div className="rt-modal-footer">
+                <button className="rt-btn-ghost" onClick={() => setOpenModal(false)}>Batal</button>
+                <button className="rt-btn-primary" onClick={handleUploadSubmit}>Upload & Kirim</button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

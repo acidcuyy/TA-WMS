@@ -46,9 +46,6 @@ export default function PenyesuaianStokToko() {
             <h1>Penyesuaian Stok</h1>
             <p>Kelola dan catat koreksi stok akibat selisih, kerusakan, kadaluarsa, atau audit stok.</p>
           </div>
-          <button className="btn-buat">
-            <span style={{ fontSize: "18px" }}>+</span> Buat Penyesuaian
-          </button>
         </header>
 
         {/* SUMMARY */}
@@ -91,8 +88,8 @@ export default function PenyesuaianStokToko() {
 
             <div className="penyesuaian-tabs">
               {["Semua (64)", "Menunggu (3)", "Disetujui (48)", "Ditolak (4)", "Draft (9)"].map(tab => (
-                <button 
-                  key={tab} 
+                <button
+                  key={tab}
                   className={`tab-item ${activeTab === tab ? "active" : ""}`}
                   onClick={() => setActiveTab(tab)}
                 >
@@ -116,7 +113,7 @@ export default function PenyesuaianStokToko() {
               </thead>
               <tbody>
                 {tableData.map((row, idx) => (
-                  <motion.tr 
+                  <motion.tr
                     key={row.id}
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}

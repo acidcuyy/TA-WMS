@@ -46,9 +46,6 @@ export default function TransferBarangToko() {
             <h1>Transfer Barang</h1>
             <p>Kelola dan pantau transfer barang antar toko, ke gudang, atau dari gudang ke toko.</p>
           </div>
-          <button className="btn-buat">
-            <span style={{ fontSize: "18px" }}>+</span> Buat Transfer
-          </button>
         </header>
 
         {/* SUMMARY */}
@@ -91,8 +88,8 @@ export default function TransferBarangToko() {
 
             <div className="transfer-tabs">
               {["Semua (76)", "Menunggu (5)", "Diproses (8)", "Dikirim (9)", "Selesai (50)", "Dibatalkan (4)"].map(tab => (
-                <button 
-                  key={tab} 
+                <button
+                  key={tab}
                   className={`tab-item ${activeTab === tab ? "active" : ""}`}
                   onClick={() => setActiveTab(tab)}
                 >
@@ -117,7 +114,7 @@ export default function TransferBarangToko() {
               </thead>
               <tbody>
                 {tableData.map((row, idx) => (
-                  <motion.tr 
+                  <motion.tr
                     key={row.id}
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}

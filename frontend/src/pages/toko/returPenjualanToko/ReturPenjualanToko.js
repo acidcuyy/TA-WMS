@@ -100,7 +100,7 @@ export default function ReturPenjualanToko() {
               </thead>
               <tbody>
                 {tableData.map((row, idx) => (
-                  <motion.tr 
+                  <motion.tr
                     key={row.id}
                     className={selectedRetur === row.id ? "row-selected" : ""}
                     onClick={() => setSelectedRetur(row.id)}
@@ -151,9 +151,9 @@ export default function ReturPenjualanToko() {
               <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--primary)" }}>📋 Detail Retur</span>
               <span className="status-badge status--menunggu">Menunggu</span>
             </div>
-            
+
             <h3 className="detail-title">{selectedRetur}</h3>
-            
+
             <div className="info-grid">
               <div className="info-item">
                 <span className="info-label">Tanggal</span>

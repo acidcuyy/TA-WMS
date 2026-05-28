@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Card from "../../../components/common/Card";
 import "../PageAdmin.css";
 import "./ManajemenTokoAdmin.css";
+import { subscribeTokoReports } from "../../../services/wmsApi";
 
 const fmtIDR = (n) =>
   new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 }).format(n);
@@ -10,14 +11,41 @@ const fmtIDR = (n) =>
 export default function ManajemenToko() {
   const easing = useMemo(() => [0.22, 1, 0.36, 1], []);
 
-  // Laporan Harian
-  const reports = [
-    { date: "03", month: "Feb 2026", toko: "Toko A", desc: "Pengiriman: 45 transaksi • Keluar: 1 • Stok kritis: 2 item", status: "Tersedia" },
-    { date: "02", month: "Feb 2026", toko: "Toko B", desc: "Pengiriman: 32 transaksi • Stok kritis: 1 item", status: "Tersedia" },
-    { date: "01", month: "Feb 2026", toko: "Toko C", desc: "—", status: "Belum upload" },
-    { date: "31", month: "Jan 2026", toko: "Toko A", desc: "Pengiriman: 28 transaksi • Penerimaan stok: 3 item", status: "Tersedia" },
-    { date: "30", month: "Jan 2026", toko: "Toko B", desc: "—", status: "Belum upload" },
-  ];
+  // API State
+  const [reports, setReports] = useState([]);
+  
+  // Dummy Initial Fallback matching original UI (will be replaced by real data if any)
+  const [dummyReports] = useState([
+    { id: "d1", date: "03", month: "Feb 2026", tokoName: "Toko A", type: "Laporan Harian", desc: "Pengiriman: 45 transaksi • Keluar: 1 • Stok kritis: 2 item", status: "Tersedia", fileData: null },
+    { id: "d2", date: "02", month: "Feb 2026", tokoName: "Toko B", type: "Laporan Harian", desc: "Pengiriman: 32 transaksi • Stok kritis: 1 item", status: "Tersedia", fileData: null },
+    { id: "d3", date: "01", month: "Feb 2026", tokoName: "Toko C", type: "Laporan Harian", desc: "—", status: "Belum upload", fileData: null },
+    { id: "d4", date: "31", month: "Jan 2026", tokoName: "Toko A", type: "Laporan Harian", desc: "Pengiriman: 28 transaksi • Penerimaan stok: 3 item", status: "Tersedia", fileData: null },
+    { id: "d5", date: "30", month: "Jan 2026", tokoName: "Toko B", type: "Laporan Harian", desc: "—", status: "Belum upload", fileData: null },
+  ]);
+
+  useEffect(() => {
+    return subscribeTokoReports((data) => {
+      // Map API data to the format used in UI
+      const mapped = data.map(r => {
+        const d = new Date(r.date);
+        const day = String(d.getDate()).padStart(2, "0");
+        const monthYear = d.toLocaleDateString("id-ID", { month: "short", year: "numeric" });
+        return {
+          id: r.id,
+          date: day,
+          month: monthYear,
+          tokoName: r.tokoName,
+          type: r.type,
+          desc: `Periode: ${r.period}`,
+          status: r.status,
+          fileData: r.fileData
+        };
+      });
+      setReports(mapped);
+    });
+  }, []);
+
+  const displayReports = reports.length > 0 ? reports.slice(0, 5) : dummyReports;
 
   // Stats
   const summary = {
@@ -49,6 +77,9 @@ export default function ManajemenToko() {
     { id: "T-REQ-019", toko: "Toko C", tanggal: "01 Feb 2026", item: 5, catatan: "Perlu pengganti item rusak", status: "Declined" },
     { id: "T-REQ-018", toko: "Toko A", tanggal: "31 Jan 2026", item: 3, catatan: "Fast moving", status: "Accepted" },
   ];
+
+  // Modal State
+  const [selectedReport, setSelectedReport] = useState(null);
 
   return (
     <div className="pageAdmin stokAdm">
@@ -116,22 +147,36 @@ export default function ManajemenToko() {
             <button className="btn-upload"><span>📤</span> Upload Laporan</button>
           </div>
           <div className="mtAdmin__reportList">
-            {reports.map((r, i) => (
-              <div key={i} className="mtAdmin__reportRow">
-                <div className="mtAdmin__reportDateBox">
-                  <span className="mtAdmin__reportDateDay">{r.date}</span>
-                  <span className="mtAdmin__reportDateMonth">{r.month}</span>
-                </div>
-                <div className="mtAdmin__reportMain">
-                  <p className="mtAdmin__reportTitle"><b>{r.toko}</b> • Laporan Harian</p>
-                  <p className="mtAdmin__reportDesc">{r.desc}</p>
-                </div>
-                <div className="mtAdmin__reportActions">
-                  <span className={`mtAdmin__pill ${r.status === 'Tersedia' ? 'mtAdmin__pill--success' : 'mtAdmin__pill--warning'}`}>{r.status}</span>
-                  <button className="mtAdmin__miniBtn">Preview</button>
-                </div>
-              </div>
-            ))}
+            <AnimatePresence>
+              {displayReports.map((r, i) => (
+                <motion.div 
+                  key={r.id} 
+                  className="mtAdmin__reportRow"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                >
+                  <div className="mtAdmin__reportDateBox">
+                    <span className="mtAdmin__reportDateDay">{r.date}</span>
+                    <span className="mtAdmin__reportDateMonth">{r.month}</span>
+                  </div>
+                  <div className="mtAdmin__reportMain">
+                    <p className="mtAdmin__reportTitle"><b>{r.tokoName}</b> • {r.type}</p>
+                    <p className="mtAdmin__reportDesc">{r.desc}</p>
+                  </div>
+                  <div className="mtAdmin__reportActions">
+                    <span className={`mtAdmin__pill ${r.status === 'Tersedia' ? 'mtAdmin__pill--success' : 'mtAdmin__pill--warning'}`}>{r.status}</span>
+                    <button 
+                      className="mtAdmin__miniBtn" 
+                      onClick={() => r.status === 'Tersedia' ? setSelectedReport(r) : alert("File belum diupload")}
+                      style={{ opacity: r.status === 'Tersedia' ? 1 : 0.5 }}
+                    >
+                      Preview
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
           <button className="btn-lihat-semua-link">Lihat semua laporan</button>
         </section>
@@ -264,6 +309,41 @@ export default function ManajemenToko() {
         <span className="info-icon">ℹ️</span>
         Semua data bersifat dummy untuk keperluan UI/UX. Integrasi realtime melalui websocket akan segera hadir.
       </footer>
+
+      {/* PDF PREVIEW MODAL */}
+      <AnimatePresence>
+        {selectedReport && (
+          <div className="mtAdmin-modal-overlay" onClick={() => setSelectedReport(null)}>
+            <motion.div 
+              className="mtAdmin-modal"
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="mtAdmin-modal-header">
+                <div>
+                  <h3>Preview: {selectedReport.type}</h3>
+                  <p>{selectedReport.tokoName} • {selectedReport.desc}</p>
+                </div>
+                <button className="mtAdmin-modal-close" onClick={() => setSelectedReport(null)}>✕</button>
+              </div>
+
+              <div className="mtAdmin-modal-body">
+                {selectedReport.fileData ? (
+                  <iframe src={selectedReport.fileData} title="PDF Preview" />
+                ) : (
+                  <div className="mtAdmin-modal-empty">
+                    <span style={{ fontSize: '48px', marginBottom: '16px' }}>📄</span>
+                    <h3 style={{ margin: '0 0 8px 0', color: '#333' }}>File Tidak Ditemukan</h3>
+                    <p style={{ margin: 0 }}>Laporan ini adalah data dummy atau tidak memiliki lampiran PDF.</p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

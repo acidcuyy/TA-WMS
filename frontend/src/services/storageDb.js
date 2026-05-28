@@ -98,6 +98,11 @@ const seed = () => ({
     // { id, createdAt, cabangGudang, cabangGudangNama, kodeBarang, namaBarang, jenisBarang, jumlah, satuan, supplier, prioritas, catatan, status, proofPhotos }
   ],
 
+  // Laporan Harian Toko -> Admin
+  tokoReports: [
+    // { id, tokoId, tokoName, type, period, date, format, fileData, status, author }
+  ],
+
   // Profile Driver
   driverProfile: {
     name: "Budi Santoso",

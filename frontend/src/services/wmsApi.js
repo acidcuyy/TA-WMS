@@ -612,3 +612,60 @@ export function deleteBranch(id) {
     return db;
   });
 }
+
+/* =======================================================================
+ * LAPORAN TOKO -> ADMIN
+ * ======================================================================= */
+export function getTokoReports() {
+  return dbLoad().tokoReports || [];
+}
+
+export function subscribeTokoReports(callback) {
+  return makeSub(getTokoReports, callback);
+}
+
+export function uploadTokoReport(payload) {
+  const {
+    tokoId = "BRC-003",
+    tokoName = "Toko Utama",
+    type = "Laporan Harian",
+    period = "",
+    date = new Date().toISOString().slice(0, 10),
+    format = "PDF",
+    fileData = null,
+    author = "Admin Toko"
+  } = payload || {};
+
+  return dbUpdate((db) => {
+    const id = newId("RPT");
+    
+    db.tokoReports = db.tokoReports || [];
+    db.notifications = db.notifications || [];
+
+    db.tokoReports.unshift({
+      id,
+      tokoId,
+      tokoName,
+      type,
+      period,
+      date,
+      format,
+      fileData,
+      status: "Tersedia",
+      author
+    });
+
+    db.notifications.unshift({
+      id: newId("NTF"),
+      type: "toko_report_new",
+      title: "Laporan Toko Baru",
+      message: `${tokoName} telah mengunggah ${type} (${id})`,
+      time: nowTimeHHMM(),
+      isRead: false,
+      targetRoles: ["admin"],
+    });
+
+    return db;
+  });
+}
+
