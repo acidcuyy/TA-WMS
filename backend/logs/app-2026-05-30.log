@@ -1,0 +1,34 @@
+[2026-05-30 00:01:34] [32minfo[39m: [32mKoneksi database berhasil[39m
+[2026-05-30 00:01:34] [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
+[2026-05-30 00:01:34] [32minfo[39m: [32mEnvironment: development[39m
+[2026-05-30 00:01:40] [32minfo[39m: [32mMematikan server...[39m
+[2026-05-30 00:01:45] [32minfo[39m: [32mKoneksi database berhasil[39m
+[2026-05-30 00:01:45] [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
+[2026-05-30 00:01:45] [32minfo[39m: [32mEnvironment: development[39m
+[2026-05-30 00:02:20] [32mhttp[39m: [32m[0mPOST /api/auth/login [33m400[0m 5.071 ms - 88[0m[39m
+[2026-05-30 00:02:41] [32mhttp[39m: [32m[0mGET /api/health [32m200[0m 1.092 ms - 113[0m[39m
+[2026-05-30 00:02:52] [32mhttp[39m: [32m[0mPOST /api/auth/login [33m400[0m 0.729 ms - 88[0m[39m
+[2026-05-30 00:07:35] [32minfo[39m: [32mKoneksi database berhasil[39m
+[2026-05-30 00:07:35] [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
+[2026-05-30 00:07:35] [32minfo[39m: [32mEnvironment: development[39m
+[2026-05-30 00:12:25] [32mhttp[39m: [32m[0mPOST /api/auth/login [32m200[0m 349.100 ms - 332[0m[39m
+[2026-05-30 00:18:18] [32mhttp[39m: [32m[0mPOST /api/auth/register [32m201[0m 198.355 ms - 99[0m[39m
+[2026-05-30 00:21:44] [32mhttp[39m: [32m[0mPOST /api/users [33m400[0m 69.692 ms - 17[0m[39m
+[2026-05-30 00:22:22] [32mhttp[39m: [32m[0mPOST /api/users/1 [31m500[0m 3.305 ms - 69[0m[39m
+[2026-05-30 00:22:39] [32mhttp[39m: [32m[0mPOST /api/users [33m400[0m 1.515 ms - 17[0m[39m
+[2026-05-30 00:23:01] [32mhttp[39m: [32m[0mPOST /api/users [33m400[0m 1.217 ms - 17[0m[39m
+[2026-05-30 00:26:55] [32mhttp[39m: [32m[0mPOST /api/users [33m400[0m 2.601 ms - 17[0m[39m
+[2026-05-30 00:27:34] [32minfo[39m: [32mKoneksi database berhasil[39m
+[2026-05-30 00:27:34] [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
+[2026-05-30 00:27:34] [32minfo[39m: [32mEnvironment: development[39m
+[2026-05-30 00:27:38] [32mhttp[39m: [32m[0mPOST /api/users [33m400[0m 12.578 ms - 17[0m[39m
+[2026-05-30 00:28:00] [32mhttp[39m: [32m[0mPOST /api/auth/login [32m200[0m 283.351 ms - 332[0m[39m
+[2026-05-30 00:28:24] [32mhttp[39m: [32m[0mPOST /api/users [33m400[0m 1.375 ms - 17[0m[39m
+[2026-05-30 00:29:26] [32mhttp[39m: [32m[0mPOST /api/users [33m400[0m 1.857 ms - 17[0m[39m
+[2026-05-30 00:30:41] [32mhttp[39m: [32m[0mGET /api/users [32m200[0m 69.319 ms - 194[0m[39m
+[2026-05-30 00:30:58] [32mhttp[39m: [32m[0mGET /api/users [32m200[0m 169.440 ms - 194[0m[39m
+[2026-05-30 00:31:01] [32mhttp[39m: [32m[0mGET /api/users [32m200[0m 3.666 ms - 194[0m[39m
+[2026-05-30 00:31:02] [32mhttp[39m: [32m[0mGET /api/users [32m200[0m 2.817 ms - 194[0m[39m
+[2026-05-30 00:31:07] [32mhttp[39m: [32m[0mGET /api/users [32m200[0m 3.708 ms - 194[0m[39m
+[2026-05-30 00:31:10] [32mhttp[39m: [32m[0mGET /api/users [32m200[0m 2.913 ms - 194[0m[39m
+[2026-05-30 00:32:21] [32minfo[39m: [32mMematikan server...[39m
