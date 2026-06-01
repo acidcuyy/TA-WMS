@@ -7,3 +7,5 @@ export const createUserSchema = z.object({
   age: z.number().int().positive().optional(),
   role: z.enum(["SUPER_ADMIN", "ADMIN", "TOKO", "DRIVER", "GUDANG"]).optional(),
 });
+
+export const updateUserSchema = createUserSchema.partial();

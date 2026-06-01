@@ -7,13 +7,39 @@ import { authorizeRole } from "../middlewares/role.middleware.js";
 
 const router = express.Router();
 
-router.get("/", authenticate, authorizeRole("SUPER_ADMIN", "ADMIN"), userController.getUsers);
+router.get(
+  "/",
+  authenticate,
+  authorizeRole("SUPER_ADMIN", "ADMIN"),
+  userController.getUsers,
+);
 
 router.post(
   "/",
   authenticate,
   authorizeRole("ADMIN", "SUPER_ADMIN"),
   userController.createUser,
+);
+
+router.get(
+  "/:id",
+  authenticate,
+  authorizeRole("SUPER_ADMIN", "ADMIN"),
+  userController.getUserById,
+);
+
+router.put(
+  "/:id",
+  authenticate,
+  authorizeRole("SUPER_ADMIN", "ADMIN"),
+  userController.updateUser,
+);
+
+router.post(
+  "/delete/:id",
+  authenticate,
+  authorizeRole("SUPER_ADMIN"),
+  userController.deleteUser,
 );
 
 export default router;
