@@ -27,6 +27,7 @@ model User {
   password String
   age      Int?
   role     Role   @default(GUDANG)
+  isDeleted Boolean @default(false)
 }
 
 model Warehouse {

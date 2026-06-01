@@ -1,0 +1,124 @@
+[2026-06-01 15:14:14] [32minfo[39m: [32mKoneksi database berhasil[39m
+[2026-06-01 15:14:14] [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
+[2026-06-01 15:14:14] [32minfo[39m: [32mEnvironment: development[39m
+[2026-06-01 15:14:32] [32minfo[39m: [32mMematikan server...[39m
+[2026-06-01 15:16:53] [32minfo[39m: [32mKoneksi database berhasil[39m
+[2026-06-01 15:16:53] [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
+[2026-06-01 15:16:53] [32minfo[39m: [32mEnvironment: development[39m
+[2026-06-01 15:16:57] [32mhttp[39m: [32m[0mPOST /api/auth/login [32m200[0m 191.948 ms - 334[0m[39m
+[2026-06-01 15:19:46] [32minfo[39m: [32mKoneksi database berhasil[39m
+[2026-06-01 15:19:47] [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
+[2026-06-01 15:19:47] [32minfo[39m: [32mEnvironment: development[39m
+[2026-06-01 15:20:37] [32minfo[39m: [32mKoneksi database berhasil[39m
+[2026-06-01 15:20:37] [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
+[2026-06-01 15:20:37] [32minfo[39m: [32mEnvironment: development[39m
+[2026-06-01 15:21:46] [32minfo[39m: [32mKoneksi database berhasil[39m
+[2026-06-01 15:21:46] [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
+[2026-06-01 15:21:46] [32minfo[39m: [32mEnvironment: development[39m
+[2026-06-01 15:23:15] [32minfo[39m: [32mKoneksi database berhasil[39m
+[2026-06-01 15:23:15] [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
+[2026-06-01 15:23:15] [32minfo[39m: [32mEnvironment: development[39m
+[2026-06-01 15:25:38] [32minfo[39m: [32mKoneksi database berhasil[39m
+[2026-06-01 15:25:38] [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
+[2026-06-01 15:25:38] [32minfo[39m: [32mEnvironment: development[39m
+[2026-06-01 15:26:25] [32minfo[39m: [32mKoneksi database berhasil[39m
+[2026-06-01 15:26:25] [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
+[2026-06-01 15:26:25] [32minfo[39m: [32mEnvironment: development[39m
+[2026-06-01 15:26:57] [32minfo[39m: [32mKoneksi database berhasil[39m
+[2026-06-01 15:26:57] [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
+[2026-06-01 15:26:57] [32minfo[39m: [32mEnvironment: development[39m
+[2026-06-01 15:27:44] [32minfo[39m: [32mKoneksi database berhasil[39m
+[2026-06-01 15:27:44] [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
+[2026-06-01 15:27:44] [32minfo[39m: [32mEnvironment: development[39m
+[2026-06-01 15:27:51] [32minfo[39m: [32mKoneksi database berhasil[39m
+[2026-06-01 15:27:51] [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
+[2026-06-01 15:27:51] [32minfo[39m: [32mEnvironment: development[39m
+[2026-06-01 15:28:11] [32mhttp[39m: [32m[0mPOST /api/auth/login [32m200[0m 159.080 ms - 334[0m[39m
+[2026-06-01 15:28:44] [32mhttp[39m: [32m[0mGET /api/users/ [32m200[0m 44.590 ms - 289[0m[39m
+[2026-06-01 15:28:49] [32mhttp[39m: [32m[0mGET /api/users/10 [31m500[0m 8.676 ms - 307[0m[39m
+[2026-06-01 15:29:06] [32mhttp[39m: [32m[0mGET /api/users/?id=9 [32m200[0m 37.862 ms - 289[0m[39m
+[2026-06-01 15:29:15] [32mhttp[39m: [32m[0mGET /api/users/?id=9 [32m200[0m 3.346 ms - 289[0m[39m
+[2026-06-01 15:29:21] [32mhttp[39m: [32m[0mGET /api/users/9 [31m500[0m 2.942 ms - 305[0m[39m
+[2026-06-01 15:31:25] [32minfo[39m: [32mKoneksi database berhasil[39m
+[2026-06-01 15:31:25] [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
+[2026-06-01 15:31:25] [32minfo[39m: [32mEnvironment: development[39m
+[2026-06-01 15:31:30] [32mhttp[39m: [32m[0mGET /api/users/9 [31m500[0m 5.337 ms - 70[0m[39m
+[2026-06-01 15:32:03] [32mhttp[39m: [32m[0mGET /api/users/ [32m200[0m 81.343 ms - 289[0m[39m
+[2026-06-01 15:34:14] [32minfo[39m: [32mKoneksi database berhasil[39m
+[2026-06-01 15:34:14] [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
+[2026-06-01 15:34:14] [32minfo[39m: [32mEnvironment: development[39m
+[2026-06-01 15:34:19] [32mhttp[39m: [32m[0mGET /api/users/9 [32m200[0m 93.063 ms - 107[0m[39m
+[2026-06-01 15:34:29] [32mhttp[39m: [32m[0mGET /api/users/9 [33m401[0m 1.292 ms - 43[0m[39m
+[2026-06-01 15:34:36] [32mhttp[39m: [32m[0mGET /api/users/9 [32m200[0m 37.184 ms - 107[0m[39m
+[2026-06-01 15:34:41] [32mhttp[39m: [32m[0mGET /api/users/10 [32m200[0m 4.152 ms - 109[0m[39m
+[2026-06-01 15:35:15] [32mhttp[39m: [32m[0mDELETE /api/users/10 [32m200[0m 50.434 ms - 109[0m[39m
+[2026-06-01 15:35:20] [32mhttp[39m: [32m[0mDELETE /api/users/ [31m500[0m 0.686 ms - 70[0m[39m
+[2026-06-01 15:35:27] [32mhttp[39m: [32m[0mGET /api/users/ [32m200[0m 39.686 ms - 203[0m[39m
+[2026-06-01 15:36:21] [32mhttp[39m: [32m[0mPUT /api/users/9 [32m200[0m 45.132 ms - 112[0m[39m
+[2026-06-01 15:36:27] [32mhttp[39m: [32m[0mGET /api/users/ [32m200[0m 2.784 ms - 208[0m[39m
+[2026-06-01 15:40:06] [32minfo[39m: [32mKoneksi database berhasil[39m
+[2026-06-01 15:40:06] [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
+[2026-06-01 15:40:06] [32minfo[39m: [32mEnvironment: development[39m
+[2026-06-01 15:40:11] [32minfo[39m: [32mKoneksi database berhasil[39m
+[2026-06-01 15:40:11] [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
+[2026-06-01 15:40:11] [32minfo[39m: [32mEnvironment: development[39m
+[2026-06-01 15:40:14] [32minfo[39m: [32mKoneksi database berhasil[39m
+[2026-06-01 15:40:14] [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
+[2026-06-01 15:40:14] [32minfo[39m: [32mEnvironment: development[39m
+[2026-06-01 15:40:16] [32minfo[39m: [32mKoneksi database berhasil[39m
+[2026-06-01 15:40:16] [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
+[2026-06-01 15:40:16] [32minfo[39m: [32mEnvironment: development[39m
+[2026-06-01 15:41:44] [32minfo[39m: [32mKoneksi database berhasil[39m
+[2026-06-01 15:41:44] [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
+[2026-06-01 15:41:44] [32minfo[39m: [32mEnvironment: development[39m
+[2026-06-01 15:41:51] [32minfo[39m: [32mKoneksi database berhasil[39m
+[2026-06-01 15:41:51] [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
+[2026-06-01 15:41:51] [32minfo[39m: [32mEnvironment: development[39m
+[2026-06-01 15:42:04] [32mhttp[39m: [32m[0mGET /api/warehouse/ [31m500[0m 248.196 ms - 155[0m[39m
+[2026-06-01 15:42:47] [32minfo[39m: [32mMematikan server...[39m
+[2026-06-01 15:43:25] [32minfo[39m: [32mKoneksi database berhasil[39m
+[2026-06-01 15:43:25] [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
+[2026-06-01 15:43:25] [32minfo[39m: [32mEnvironment: development[39m
+[2026-06-01 15:43:27] [32mhttp[39m: [32m[0mGET /api/warehouse/ [32m200[0m 75.686 ms - 26[0m[39m
+[2026-06-01 15:43:42] [32minfo[39m: [32mMematikan server...[39m
+[2026-06-01 15:47:41] [32minfo[39m: [32mKoneksi database berhasil[39m
+[2026-06-01 15:47:41] [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
+[2026-06-01 15:47:41] [32minfo[39m: [32mEnvironment: development[39m
+[2026-06-01 15:47:45] [32mhttp[39m: [32m[0mGET /api/warehouse/ [32m200[0m 81.261 ms - 123[0m[39m
+[2026-06-01 16:03:23] [32minfo[39m: [32mMematikan server...[39m
+[2026-06-01 16:07:18] [32minfo[39m: [32mKoneksi database berhasil[39m
+[2026-06-01 16:07:18] [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
+[2026-06-01 16:07:18] [32minfo[39m: [32mEnvironment: development[39m
+[2026-06-01 16:07:35] [32mhttp[39m: [32m[0mGET /api/users [32m200[0m 90.442 ms - 208[0m[39m
+[2026-06-01 16:07:48] [32mhttp[39m: [32m[0mGET /api/users/delete/9 [31m500[0m 0.605 ms - 75[0m[39m
+[2026-06-01 16:08:03] [32mhttp[39m: [32m[0mPOST /api/users/delete/9 [31m500[0m 9.005 ms - 368[0m[39m
+[2026-06-01 16:08:57] [32minfo[39m: [32mKoneksi database berhasil[39m
+[2026-06-01 16:08:57] [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
+[2026-06-01 16:08:57] [32minfo[39m: [32mEnvironment: development[39m
+[2026-06-01 16:09:01] [32mhttp[39m: [32m[0mPOST /api/users/delete/9 [31m500[0m 25.406 ms - 622[0m[39m
+[2026-06-01 16:10:13] [32minfo[39m: [32mMematikan server...[39m
+[2026-06-01 16:10:25] [32minfo[39m: [32mKoneksi database berhasil[39m
+[2026-06-01 16:10:25] [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
+[2026-06-01 16:10:25] [32minfo[39m: [32mEnvironment: development[39m
+[2026-06-01 16:10:28] [32mhttp[39m: [32m[0mPOST /api/users/delete/9 [32m200[0m 99.952 ms - 112[0m[39m
+[2026-06-01 16:11:05] [32minfo[39m: [32mKoneksi database berhasil[39m
+[2026-06-01 16:11:05] [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
+[2026-06-01 16:11:05] [32minfo[39m: [32mEnvironment: development[39m
+[2026-06-01 16:11:16] [32minfo[39m: [32mKoneksi database berhasil[39m
+[2026-06-01 16:11:16] [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
+[2026-06-01 16:11:16] [32minfo[39m: [32mEnvironment: development[39m
+[2026-06-01 16:11:20] [32minfo[39m: [32mKoneksi database berhasil[39m
+[2026-06-01 16:11:20] [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
+[2026-06-01 16:11:20] [32minfo[39m: [32mEnvironment: development[39m
+[2026-06-01 16:11:26] [32mhttp[39m: [32m[0mPOST /api/users/delete/ [31m500[0m 1.617 ms - 75[0m[39m
+[2026-06-01 16:11:33] [32mhttp[39m: [32m[0mGET /api/users [32m200[0m 91.025 ms - 119[0m[39m
+[2026-06-01 16:12:08] [32mhttp[39m: [32m[0mGET /api/users [32m200[0m 44.050 ms - 208[0m[39m
+[2026-06-01 16:12:21] [32mhttp[39m: [32m[0mPOST /api/users/delete/11 [32m200[0m 44.640 ms - 117[0m[39m
+[2026-06-01 16:12:34] [32mhttp[39m: [32m[0mGET /api/users [32m200[0m 41.455 ms - 114[0m[39m
+[2026-06-01 16:12:39] [32mhttp[39m: [32m[0mGET /api/users/11 [33m404[0m 3.759 ms - 44[0m[39m
+[2026-06-01 16:12:42] [32mhttp[39m: [32m[0mGET /api/users/9 [32m200[0m 2.712 ms - 112[0m[39m
+[2026-06-01 16:32:49] [32mhttp[39m: [32m[0mGET /api/users/9 [32m200[0m 162.821 ms - 112[0m[39m
+[2026-06-01 16:35:11] [32mhttp[39m: [32m[0mGET /api/users/9 [32m200[0m 41.532 ms - 112[0m[39m
+[2026-06-01 16:48:21] [32mhttp[39m: [32m[0mPOST /api/warehouse [32m201[0m 46.355 ms - 113[0m[39m
+[2026-06-01 16:48:26] [32mhttp[39m: [32m[0mGET /api/warehouse [32m200[0m 3.728 ms - 213[0m[39m
+[2026-06-01 16:50:59] [32minfo[39m: [32mMematikan server...[39m
