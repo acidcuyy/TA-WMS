@@ -29,4 +29,12 @@ model User {
   role     Role   @default(GUDANG)
 }
 
+model Warehouse {
+  id       Int      @id @default(autoincrement())
+  name     String
+  location String
+  capacity Int
+  category String
+}
+
 
