@@ -26,11 +26,11 @@ class warehouseController {
     try {
       const validateData = createWarehouseSchema.parse(req.body);
 
-      const warehosue = await warehouseService.createWarehouse(validateData);
+      const warehouse = await warehouseService.createWarehouse(validateData);
 
       return res.status(201).json({
         success: true,
-        data: warehosue,
+        data: warehouse,
       });
     } catch (error) {
       if (error.name === "ZodError") {
@@ -51,14 +51,14 @@ class warehouseController {
     try {
       const { id } = req.params;
       const validateData = updateWarehouseSchema.parse(req.body);
-      const warehosue = await warehouseService.updateWarehouse(
+      const warehouse = await warehouseService.updateWarehouse(
         id,
         validateData,
       );
 
       return res.status(200).json({
         success: true,
-        data: warehosue,
+        data: warehouse,
       });
     } catch (error) {
       if (error.name === "ZodError") {
@@ -71,6 +71,58 @@ class warehouseController {
         success: false,
         message: error.message,
       });
+    }
+  }
+
+  async getWarehousebyId(req, res) {
+    try {
+        const id = parseInt(req.params.id);
+        const warehouse = await warehouseService.getWarehouseById(id);
+
+        if (!warehouse) {
+            return res.status(404).json({
+                success: false,
+                message: "Warehouse not found",
+            });
+        }
+        return res.json({
+            success: true,
+            data: warehouse,
+        });
+    } catch (error) {
+        if (error.name === "ZodError") {
+            return res.status(400).json({
+                success: false,
+                errors: error.errrors,
+            });
+        }
+        return res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+  }
+
+  async deletedWarehouse(req, res) {
+    try {
+        const id = parseInt(req.params.id);
+        const deletedWarehouse = await warehouseService.deletedWarehouse(id);
+
+        if (!deletedWarehouse) {
+            return res.status(404).json({
+                success: false,
+                message: "Warehouse not found",
+            });
+        }
+        return res.json({
+            success: true,
+            data: deletedWarehouse,
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message,
+        });
     }
   }
 }

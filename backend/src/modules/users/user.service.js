@@ -31,7 +31,7 @@ class UserService {
 
   async getUserById(id) {
     return prisma.user.findUnique({
-      where: { id, isDeleted: false },
+      where: {id, isDeleted: false},
       select: {
         id: true,
         email: true,

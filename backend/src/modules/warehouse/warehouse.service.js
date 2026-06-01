@@ -41,6 +41,34 @@ class warehosueService {
       },
     });
   }
+
+  async getWarehouseById(id) {
+    return prisma.warehouse.findUnique({
+        where: {id, isDeleted: false},
+        select: {
+            id: true,
+            name: true,
+            location: true,
+            capacity: true,
+            category: true,
+        },
+    });
+  }
+
+  async deletedWarehouse(id) {
+    return prisma.warehouse.update({
+        where: { id },
+        data: {
+            isDeleted: true,
+        },
+        select: {
+            id: true,
+            name: true,
+            location: true,
+            category: true,
+        }
+    })
+  }
 }
 
 export default new warehosueService();

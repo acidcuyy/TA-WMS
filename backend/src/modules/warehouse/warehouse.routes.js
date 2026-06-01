@@ -28,4 +28,8 @@ router.put(
   warehouseController.updateWarehouse,
 );
 
+
+router.get("/:id", authenticate, authorizeRole("SUPER_ADMIN", "ADMIN"), warehouseController.getWarehousebyId);
+
+router.post("/delete/:id", authenticate, authorizeRole("SUPER_ADMIN", "ADMIN"), warehouseController.deletedWarehouse);
 export default router;

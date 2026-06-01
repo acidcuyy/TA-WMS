@@ -36,6 +36,7 @@ model Warehouse {
   location String
   capacity Int
   category String
+  isDeleted Boolean @default(false)
 }
 
 
