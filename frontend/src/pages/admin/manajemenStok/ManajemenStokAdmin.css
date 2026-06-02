@@ -482,4 +482,45 @@
 
 @media (max-width: 768px) {
   .stokAdm__cards { grid-template-columns: 1fr; }
+  .stokAdm__formGrid { grid-template-columns: 1fr; }
 }
+
+/* NEW STYLES FOR ADMIN RESTOCK FLOW */
+.stokAdm__status--processing {
+  background: #e6f7ff;
+  color: #1890ff;
+}
+
+.stokAdm__proofBody {
+  padding: 24px;
+}
+
+.proofViewer {
+  display: flex;
+  flex-direction: column;
+}
+
+.tag-urgent {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 10px;
+  background: #fff1f0;
+  color: #ff4d4f;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--primary);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0;
+  text-decoration: underline;
+  font-weight: 600;
+}
+.btn-link:hover {
+  color: var(--primary-hover);
+}

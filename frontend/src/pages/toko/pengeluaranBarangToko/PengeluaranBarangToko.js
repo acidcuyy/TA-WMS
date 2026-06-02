@@ -46,9 +46,6 @@ export default function PengeluaranBarangToko() {
             <h1>Pengeluaran Barang</h1>
             <p>Kelola dan catat semua barang yang keluar dari toko untuk penjualan, retur, atau penyesuaian.</p>
           </div>
-          <button className="btn-buat">
-            <span style={{ fontSize: "18px" }}>+</span> Buat Pengeluaran
-          </button>
         </header>
 
         {/* SUMMARY */}
@@ -91,8 +88,8 @@ export default function PengeluaranBarangToko() {
 
             <div className="pengeluaran-tabs">
               {["Semua (98)", "Menunggu (4)", "Proses (8)", "Dikeluarkan (82)", "Dibatalkan (4)"].map(tab => (
-                <button 
-                  key={tab} 
+                <button
+                  key={tab}
                   className={`tab-item ${activeTab === tab ? "active" : ""}`}
                   onClick={() => setActiveTab(tab)}
                 >
@@ -116,7 +113,7 @@ export default function PengeluaranBarangToko() {
               </thead>
               <tbody>
                 {tableData.map((row, idx) => (
-                  <motion.tr 
+                  <motion.tr
                     key={row.id}
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}

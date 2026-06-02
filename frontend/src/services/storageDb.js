@@ -93,6 +93,16 @@ const seed = () => ({
     // { id, createdAt, items:[{sku,qty}], note, decision:null|Approved|Declined, status:"Menunggu"|"Approved"|"Selesai", proofImage:null }
   ],
 
+  // Request admin -> gudang (admin minta gudang tambah stok)
+  adminRestockToGudang: [
+    // { id, createdAt, cabangGudang, cabangGudangNama, kodeBarang, namaBarang, jenisBarang, jumlah, satuan, supplier, prioritas, catatan, status, proofPhotos }
+  ],
+
+  // Laporan Harian Toko -> Admin
+  tokoReports: [
+    // { id, tokoId, tokoName, type, period, date, format, fileData, status, author }
+  ],
+
   // Profile Driver
   driverProfile: {
     name: "Budi Santoso",

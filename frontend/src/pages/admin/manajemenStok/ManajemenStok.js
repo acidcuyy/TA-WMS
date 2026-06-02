@@ -1,9 +1,8 @@
-import { useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useMemo, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import "../PageAdmin.css";
 import "./ManajemenStokAdmin.css";
-
-const LS_KEY_GUDANG_NOTIF = "reastock_notifications_gudang_v1";
+import { subscribeAdminRestockToGudang, createAdminRestockToGudang, subscribeBranches } from "../../../services/wmsApi";
 
 export default function ManajemenStok() {
   const summary = useMemo(() => {
@@ -14,44 +13,27 @@ export default function ManajemenStok() {
     };
   }, []);
 
-  const [requests, setRequests] = useState([
-    {
-      id: "ADD-001",
-      tanggal: "02 Feb 2026, 09:12",
-      barang: "BRG-002 (Lampu LED)",
-      kategori: "Elektronik",
-      jumlah: 50,
-      catatan: "Tambah stok untuk promo akhir pekan",
-      status: "Selesai",
-    },
-    {
-      id: "ADD-002",
-      tanggal: "02 Feb 2026, 14:30",
-      barang: "BRG-010 (Kabel 10m)",
-      kategori: "Elektronik",
-      jumlah: 20,
-      catatan: "Restock rutin",
-      status: "Pending",
-    },
-    {
-      id: "ADD-003",
-      tanggal: "03 Feb 2026, 10:05",
-      barang: "BRG-017 (Kran Air)",
-      kategori: "Plumbing",
-      jumlah: 15,
-      catatan: "Permintaan owner",
-      status: "Pending",
-    },
-  ]);
+  const [requests, setRequests] = useState([]);
+  const [branches, setBranches] = useState([]);
+
+  useEffect(() => {
+    const unsubReq = subscribeAdminRestockToGudang((data) => setRequests(data || []));
+    const unsubBranch = subscribeBranches((data) => setBranches(data || []));
+    return () => { unsubReq(); unsubBranch(); };
+  }, []);
+
+  const gudangBranches = useMemo(() => branches.filter(b => b.type === "gudang"), [branches]);
 
   const [openForm, setOpenForm] = useState(false);
   const [sentBanner, setSentBanner] = useState("");
   const [toast, setToast] = useState("");
 
   const [form, setForm] = useState({
+    cabangGudang: "",
     kodeBarang: "",
     namaBarang: "",
     kategori: "Elektronik",
+    kategoriLain: "",
     jumlah: "",
     satuan: "pcs",
     supplier: "",
@@ -59,41 +41,77 @@ export default function ManajemenStok() {
     catatan: "",
   });
 
+  const [proofModal, setProofModal] = useState({ open: false, data: null });
+
   const resetForm = () => {
     setForm({
+      cabangGudang: gudangBranches.length > 0 ? gudangBranches[0].id : "",
       kodeBarang: "",
       namaBarang: "",
       kategori: "Elektronik",
+      kategoriLain: "",
       jumlah: "",
       satuan: "pcs",
       supplier: "",
       prioritas: "Normal",
       catatan: "",
     });
+    setToast("");
   };
+
+  // Set default branch when opened
+  useEffect(() => {
+    if (openForm && !form.cabangGudang && gudangBranches.length > 0) {
+      setForm(prev => ({ ...prev, cabangGudang: gudangBranches[0].id }));
+    }
+  }, [openForm, gudangBranches]);
 
   const handleSend = (e) => {
     e.preventDefault();
-    if (!form.kodeBarang || !form.namaBarang || !form.jumlah) {
-      setToast("Mohon lengkapi data utama.");
+    if (!form.cabangGudang || !form.kodeBarang || !form.namaBarang || !form.jumlah || !form.supplier) {
+      setToast("Mohon lengkapi data utama (Cabang, Kode, Nama, Jumlah, Supplier).");
       return;
     }
 
-    const newReq = {
-      id: `ADD-${String(requests.length + 1).padStart(3, "0")}`,
-      tanggal: new Date().toLocaleString("id-ID", { day: "2d", month: "short", year: "numeric", hour: "2d", minute: "2d" }),
-      barang: `${form.kodeBarang} (${form.namaBarang})`,
-      kategori: form.kategori,
-      jumlah: Number(form.jumlah),
-      catatan: form.catatan || "Restock rutin",
-      status: "Pending",
-    };
+    const branchName = gudangBranches.find(b => b.id === form.cabangGudang)?.name || "Gudang Unknown";
+    const finalKategori = form.kategori === "Lainnya" ? form.kategoriLain : form.kategori;
 
-    setRequests([newReq, ...requests]);
+    if (form.kategori === "Lainnya" && !finalKategori.trim()) {
+      setToast("Mohon isi jenis barang.");
+      return;
+    }
+
+    createAdminRestockToGudang({
+      cabangGudang: form.cabangGudang,
+      cabangGudangNama: branchName,
+      kodeBarang: form.kodeBarang,
+      namaBarang: form.namaBarang,
+      jenisBarang: finalKategori,
+      jumlah: form.jumlah,
+      satuan: form.satuan,
+      supplier: form.supplier,
+      prioritas: form.prioritas,
+      catatan: form.catatan
+    });
+
     setOpenForm(false);
     resetForm();
-    setSentBanner("Request penambahan stok berhasil dikirim.");
+    setSentBanner("Request penambahan stok berhasil dikirim ke " + branchName + ".");
     setTimeout(() => setSentBanner(""), 3000);
+  };
+
+  const getStatusClass = (status) => {
+    const s = (status || "").toLowerCase();
+    if (s.includes("pending") || s.includes("menunggu")) return "stokAdm__status--pending";
+    if (s.includes("diproses")) return "stokAdm__status--processing";
+    if (s.includes("selesai")) return "stokAdm__status--done";
+    return "";
+  };
+
+  const openProofViewer = (req) => {
+    if (req.proofPhotos) {
+      setProofModal({ open: true, data: req });
+    }
   };
 
   return (
@@ -111,16 +129,19 @@ export default function ManajemenStok() {
         </div>
       </header>
 
-      {sentBanner && (
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }} 
-          animate={{ opacity: 1, y: 0 }}
-          className="stokAdm__banner"
-        >
-          <span className="stokAdm__bannerDot" />
-          {sentBanner}
-        </motion.div>
-      )}
+      <AnimatePresence>
+        {sentBanner && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }} 
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="stokAdm__banner"
+          >
+            <span className="stokAdm__bannerDot" />
+            {sentBanner}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* TOP SECTION: SUMMARY & ACTIONS */}
       <div className="stokAdm__topGrid">
@@ -175,7 +196,7 @@ export default function ManajemenStok() {
 
           <div className="stokAdm__note">
             <span className="info-icon">ℹ️</span>
-            <p>Saat ini pengiriman request penambahan stok disimulasikan dan disimpan ke <b>localStorage</b> untuk notifikasi gudang.</p>
+            <p>Admin dapat meminta penambahan stok ke gudang. Gudang akan memproses dan mengunggah bukti penerimaan.</p>
           </div>
         </aside>
       </div>
@@ -185,7 +206,7 @@ export default function ManajemenStok() {
         <div className="stokAdm__panelHead">
           <div>
             <h2>Riwayat Request Penambahan Stok ke Gudang</h2>
-            <p>Status akan berubah setelah gudang melakukan konfirmasi (dummy).</p>
+            <p>Status akan berubah setelah gudang melakukan proses dan konfirmasi.</p>
           </div>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
             <span style={{ fontSize: '13px', color: '#888', fontWeight: '600' }}>Total: {requests.length}</span>
@@ -199,32 +220,49 @@ export default function ManajemenStok() {
           <table className="stokAdm__table">
             <thead>
               <tr>
-                <th>ID</th>
-                <th>Tanggal</th>
-                <th>Barang</th>
+                <th>ID & Tanggal</th>
+                <th>Tujuan Gudang</th>
+                <th>Barang & Supplier</th>
                 <th>Jumlah</th>
-                <th>Catatan</th>
                 <th>Status</th>
                 <th>Aksi</th>
               </tr>
             </thead>
             <tbody>
+              {requests.length === 0 && (
+                <tr>
+                  <td colSpan={6} style={{ textAlign: "center", padding: "40px", color: "#888" }}>
+                    Belum ada riwayat request penambahan stok.
+                  </td>
+                </tr>
+              )}
               {requests.map((r) => (
                 <tr key={r.id}>
-                  <td className="stokAdm__id">{r.id}</td>
-                  <td>{r.tanggal}</td>
                   <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      {r.barang}
-                      <span className="tag-kategori">{r.kategori}</span>
-                    </div>
+                    <div className="stokAdm__id">{r.id}</div>
+                    <div style={{ fontSize: "11px", color: "#888" }}>{r.createdAt}</div>
+                    {r.prioritas === "Urgent" && <span className="tag-urgent" style={{display: 'inline-block', marginTop: '4px', fontSize: '10px', background: '#fff1f0', color: '#ff4d4f', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold'}}>URGENT</span>}
                   </td>
-                  <td className="stokAdm__qty">{r.jumlah}</td>
-                  <td>{r.catatan}</td>
+                  <td style={{ fontWeight: 600 }}>{r.cabangGudangNama}</td>
                   <td>
-                    <span className={`stokAdm__status stokAdm__status--${r.status.toLowerCase()}`}>
-                      ● {r.status}
-                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: "4px" }}>
+                      <b>{r.kodeBarang}</b> - {r.namaBarang}
+                      <span className="tag-kategori">{r.jenisBarang}</span>
+                    </div>
+                    <div style={{ fontSize: "12px", color: "#666" }}>Supplier: {r.supplier}</div>
+                  </td>
+                  <td className="stokAdm__qty">{r.jumlah} {r.satuan}</td>
+                  <td>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "6px", alignItems: "flex-start" }}>
+                      <span className={`stokAdm__status ${getStatusClass(r.status)}`}>
+                        ● {r.status}
+                      </span>
+                      {r.status === "Selesai" && r.proofPhotos && (
+                        <button className="btn-link" onClick={() => openProofViewer(r)} style={{background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontSize: '12px', padding: '0', textDecoration: 'underline'}}>
+                          Lihat Bukti 📸
+                        </button>
+                      )}
+                    </div>
                   </td>
                   <td>
                     <button className="btn-more">⋮</button>
@@ -234,69 +272,194 @@ export default function ManajemenStok() {
             </tbody>
           </table>
         </div>
-
-        <footer className="table-footer">
-          <div className="rows-per-page">
-            Rows per page: <select><option>10</option></select>
-          </div>
-          <div className="pagination">
-            <span>Menampilkan 1 - {requests.length} dari {requests.length}</span>
-            <div className="page-controls">
-              <button disabled>⟨</button>
-              <button className="active">1</button>
-              <button disabled>⟩</button>
-            </div>
-          </div>
-        </footer>
       </section>
 
       {/* MODAL FORM */}
-      {openForm && (
-        <div className="stokAdm__overlay" onClick={() => setOpenForm(false)}>
-          <motion.div 
-            className="stokAdm__modal" 
-            onClick={(e) => e.stopPropagation()}
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
+      <AnimatePresence>
+        {openForm && (
+          <div className="stokAdm__overlay" onClick={() => setOpenForm(false)}>
+            <motion.div 
+              className="stokAdm__modal" 
+              onClick={(e) => e.stopPropagation()}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+            >
+              <div className="stokAdm__modalHead">
+                <div>
+                  <h3>Form Penambahan Stok Gudang</h3>
+                  <p>Lengkapi instruksi penambahan stok untuk staf gudang.</p>
+                </div>
+                <button className="stokAdm__closeBtn" onClick={() => setOpenForm(false)}>×</button>
+              </div>
+              <form onSubmit={handleSend} className="stokAdm__form">
+                {toast && <div className="stokAdm__toastError" style={{background: '#fff1f0', color: '#ff4d4f', padding: '10px 16px', borderRadius: '8px', marginBottom: '16px', fontSize: '13px', fontWeight: 'bold'}}>{toast}</div>}
+                
+                <div className="stokAdm__formGrid">
+                  <div className="stokAdm__field" style={{ gridColumn: "1 / -1" }}>
+                    <span>Pilih Cabang Gudang Tujuan</span>
+                    <select value={form.cabangGudang} onChange={(e) => setForm({...form, cabangGudang: e.target.value})}>
+                      {gudangBranches.map(b => (
+                        <option key={b.id} value={b.id}>{b.name}</option>
+                      ))}
+                      {gudangBranches.length === 0 && <option value="">Tidak ada data gudang</option>}
+                    </select>
+                  </div>
+                  
+                  <div className="stokAdm__field">
+                    <span>Kode Barang</span>
+                    <input placeholder="contoh: BRG-021" value={form.kodeBarang} onChange={(e) => setForm({...form, kodeBarang: e.target.value})} />
+                  </div>
+                  <div className="stokAdm__field">
+                    <span>Nama Barang</span>
+                    <input placeholder="contoh: Pipa 1/2 inch" value={form.namaBarang} onChange={(e) => setForm({...form, namaBarang: e.target.value})} />
+                  </div>
+                  
+                  <div className="stokAdm__field">
+                    <span>Jenis Barang</span>
+                    <select value={form.kategori} onChange={(e) => setForm({...form, kategori: e.target.value})}>
+                      <option>Elektronik</option>
+                      <option>Plumbing</option>
+                      <option>Peralatan</option>
+                      <option>Material Bangunan</option>
+                      <option value="Lainnya">Pilihan Lain (Ketik sendiri)</option>
+                    </select>
+                  </div>
+                  {form.kategori === "Lainnya" && (
+                    <div className="stokAdm__field">
+                      <span>Sebutkan Jenis Barang</span>
+                      <input placeholder="Ketik jenis barang..." value={form.kategoriLain} onChange={(e) => setForm({...form, kategoriLain: e.target.value})} />
+                    </div>
+                  )}
+                  
+                  <div className="stokAdm__field" style={{ gridColumn: form.kategori === "Lainnya" ? "1 / -1" : "auto" }}>
+                    <span>Jumlah & Satuan</span>
+                    <div style={{ display: "flex", gap: "8px" }}>
+                      <input type="number" placeholder="50" style={{ flex: 2 }} value={form.jumlah} onChange={(e) => setForm({...form, jumlah: e.target.value})} />
+                      <select style={{ flex: 1 }} value={form.satuan} onChange={(e) => setForm({...form, satuan: e.target.value})}>
+                        <option value="pcs">Pcs</option>
+                        <option value="box">Box</option>
+                        <option value="roll">Roll</option>
+                        <option value="kg">Kg</option>
+                        <option value="sak">Sak</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="stokAdm__field">
+                    <span>Pembelian dari Supplier</span>
+                    <input placeholder="Nama PT / Supplier" value={form.supplier} onChange={(e) => setForm({...form, supplier: e.target.value})} />
+                  </div>
+
+                  <div className="stokAdm__field">
+                    <span>Prioritas</span>
+                    <select value={form.prioritas} onChange={(e) => setForm({...form, prioritas: e.target.value})}>
+                      <option value="Normal">Normal</option>
+                      <option value="Urgent">Urgent (Segera)</option>
+                    </select>
+                  </div>
+
+                  <div className="stokAdm__field" style={{ gridColumn: "1 / -1" }}>
+                    <span>Catatan untuk Gudang (Opsional)</span>
+                    <textarea 
+                      placeholder="Contoh: Tolong cek fisik barang dengan teliti..." 
+                      rows={2} 
+                      className="stokAdm__textarea"
+                      style={{ padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg-2)', resize: 'vertical', width: '100%', fontFamily: 'inherit', fontSize: '14px' }}
+                      value={form.catatan} 
+                      onChange={(e) => setForm({...form, catatan: e.target.value})} 
+                    />
+                  </div>
+                </div>
+                <div className="stokAdm__formActions">
+                  <button type="button" className="stokAdm__ghostBtn" onClick={resetForm}>Clear</button>
+                  <button type="submit" className="stokAdm__primaryBtn">Kirim Request Restock</button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* PROOF VIEWER MODAL */}
+      <AnimatePresence>
+        {proofModal.open && proofModal.data && (
+          <div className="stokAdm__overlay" onClick={() => setProofModal({ open: false, data: null })}>
+            <motion.div 
+              className="stokAdm__modal" 
+              style={{ maxWidth: "800px" }}
+              onClick={(e) => e.stopPropagation()}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+            >
+              <div className="stokAdm__modalHead">
+                <div>
+                  <h3>Bukti Penambahan Stok</h3>
+                  <p>Request ID: {proofModal.data.id} - {proofModal.data.namaBarang}</p>
+                </div>
+                <button className="stokAdm__closeBtn" onClick={() => setProofModal({ open: false, data: null })}>×</button>
+              </div>
+              <div className="stokAdm__proofBody" style={{ padding: '24px' }}>
+                <ProofViewer photos={proofModal.data.proofPhotos} />
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// Komponen kecil untuk menampilkan carousel foto
+function ProofViewer({ photos }) {
+  const [activeTab, setActiveTab] = useState("checkBarang");
+  
+  const tabs = [
+    { id: "checkBarang", label: "Cek Barang" },
+    { id: "resiDriver", label: "Resi & Driver" },
+    { id: "pemasukanBarang", label: "Pemasukan ke Rak" }
+  ];
+
+  const currentPhotos = photos[activeTab] || [];
+
+  return (
+    <div className="proofViewer">
+      <div className="proofViewer__tabs" style={{ display: 'flex', gap: '8px', marginBottom: '20px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '12px' }}>
+        {tabs.map(t => (
+          <button 
+            key={t.id} 
+            style={{ 
+              padding: '8px 16px', 
+              borderRadius: '8px', 
+              border: 'none', 
+              fontWeight: 600, 
+              fontSize: '13px',
+              cursor: 'pointer',
+              background: activeTab === t.id ? 'var(--primary)' : 'var(--bg-2)',
+              color: activeTab === t.id ? 'white' : 'var(--text)'
+            }}
+            onClick={() => setActiveTab(t.id)}
           >
-            <div className="stokAdm__modalHead">
-              <div>
-                <h3>Form Penambahan Stok Gudang</h3>
-                <p>Lengkapi data barang yang ingin ditambahkan ke gudang.</p>
+            {t.label} ({photos[t.id]?.length || 0})
+          </button>
+        ))}
+      </div>
+      <div className="proofViewer__content" style={{ minHeight: '300px' }}>
+        {currentPhotos.length === 0 ? (
+          <div className="proofViewer__empty" style={{ textAlign: 'center', padding: '60px', color: '#888' }}>
+            Tidak ada foto untuk kategori ini.
+          </div>
+        ) : (
+          <div className="proofViewer__grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px' }}>
+            {currentPhotos.map((img, idx) => (
+              <div key={idx} className="proofViewer__imgWrap" style={{ borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border)', background: '#f9f9f9', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '160px' }}>
+                <img src={img} alt={`Bukti ${idx}`} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
               </div>
-              <button className="stokAdm__closeBtn" onClick={() => setOpenForm(false)}>×</button>
-            </div>
-            <form onSubmit={handleSend} className="stokAdm__form">
-              <div className="stokAdm__formGrid">
-                <div className="stokAdm__field">
-                  <span>Kode Barang</span>
-                  <input placeholder="contoh: BRG-021" value={form.kodeBarang} onChange={(e) => setForm({...form, kodeBarang: e.target.value})} />
-                </div>
-                <div className="stokAdm__field">
-                  <span>Nama Barang</span>
-                  <input placeholder="contoh: Pipa 1/2 inch" value={form.namaBarang} onChange={(e) => setForm({...form, namaBarang: e.target.value})} />
-                </div>
-                <div className="stokAdm__field">
-                  <span>Kategori</span>
-                  <select value={form.kategori} onChange={(e) => setForm({...form, kategori: e.target.value})}>
-                    <option>Elektronik</option>
-                    <option>Plumbing</option>
-                    <option>Peralatan</option>
-                  </select>
-                </div>
-                <div className="stokAdm__field">
-                  <span>Jumlah</span>
-                  <input type="number" placeholder="50" value={form.jumlah} onChange={(e) => setForm({...form, jumlah: e.target.value})} />
-                </div>
-              </div>
-              <div className="stokAdm__formActions">
-                <button type="button" className="stokAdm__ghostBtn" onClick={resetForm}>Clear</button>
-                <button type="submit" className="stokAdm__primaryBtn">Send Request</button>
-              </div>
-            </form>
-          </motion.div>
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -52,9 +52,6 @@ export default function PesananPenjualanToko() {
             <h1>Pesanan Penjualan</h1>
             <p>Kelola pesanan penjualan toko, pantau status order, pembayaran, dan proses penyiapan barang.</p>
           </div>
-          <button className="btn-buat">
-            <span style={{ fontSize: "18px" }}>+</span> Buat Pesanan
-          </button>
         </header>
 
         {/* SUMMARY */}
@@ -96,8 +93,8 @@ export default function PesananPenjualanToko() {
 
             <div className="pesanan-tabs">
               {["Semua (156)", "Menunggu Pembayaran (12)", "Diproses (9)", "Dikemas (14)", "Dikirim (21)", "Selesai (92)", "Dibatalkan (8)"].map(tab => (
-                <button 
-                  key={tab} 
+                <button
+                  key={tab}
                   className={`tab-item ${activeTab === tab ? "active" : ""}`}
                   onClick={() => setActiveTab(tab)}
                 >
@@ -122,7 +119,7 @@ export default function PesananPenjualanToko() {
               </thead>
               <tbody>
                 {tableData.map((row, idx) => (
-                  <motion.tr 
+                  <motion.tr
                     key={row.id}
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}

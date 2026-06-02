@@ -49,9 +49,6 @@ export default function PenerimaanBarang() {
             <span>Gudang</span> <span>›</span> <span style={{ color: '#e4915a', fontWeight: 700 }}>Penerimaan Barang</span>
           </div>
         </div>
-        <button className="logout-btn" style={{ width: 'auto', padding: '12px 24px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '18px' }}>+</span> Terima Barang
-        </button>
       </header>
 
       {/* STATS */}

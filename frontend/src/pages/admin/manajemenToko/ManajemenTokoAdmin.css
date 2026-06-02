@@ -288,3 +288,76 @@
   .mtAdmin__stats { grid-template-columns: repeat(2, 1fr); }
   .mtAdmin__grid { grid-template-columns: 1fr; }
 }
+
+/* MODAL PREVIEW STYLES */
+.mtAdmin-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mtAdmin-modal {
+  background: var(--bg);
+  border-radius: 20px;
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.mtAdmin-modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mtAdmin-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.mtAdmin-modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.mtAdmin-modal-body {
+  flex: 1;
+  padding: 0;
+  background: #f1f5f9;
+  min-height: 500px;
+  display: flex;
+  flex-direction: column;
+}
+
+.mtAdmin-modal-body iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  flex: 1;
+}
+
+.mtAdmin-modal-empty {
+  padding: 40px;
+  text-align: center;
+  color: var(--muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}

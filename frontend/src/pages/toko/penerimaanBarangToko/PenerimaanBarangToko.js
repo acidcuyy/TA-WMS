@@ -46,9 +46,6 @@ export default function PenerimaanBarangToko() {
             <h1>Penerimaan Barang</h1>
             <p>Kelola dan catat semua barang yang masuk ke toko dari gudang atau transfer masuk.</p>
           </div>
-          <button className="btn-terima">
-            <span style={{ fontSize: "18px" }}>+</span> Terima Barang
-          </button>
         </header>
 
         {/* SUMMARY */}
@@ -91,8 +88,8 @@ export default function PenerimaanBarangToko() {
 
             <div className="penerimaan-tabs">
               {["Semua (124)", "Menunggu (6)", "Proses (10)", "Diterima (104)", "Ditolak (4)"].map(tab => (
-                <button 
-                  key={tab} 
+                <button
+                  key={tab}
                   className={`tab-item ${activeTab === tab ? "active" : ""}`}
                   onClick={() => setActiveTab(tab)}
                 >
@@ -116,7 +113,7 @@ export default function PenerimaanBarangToko() {
               </thead>
               <tbody>
                 {tableData.map((row, idx) => (
-                  <motion.tr 
+                  <motion.tr
                     key={row.id}
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}

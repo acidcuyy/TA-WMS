@@ -333,3 +333,252 @@
   display: flex;
   flex-direction: column;
 }
+
+/* NEW STYLES FOR PHOTO UPLOAD MODAL */
+.uploadSection {
+  margin-bottom: 24px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 16px;
+  background: var(--bg-2);
+}
+
+.uploadSection:last-child {
+  margin-bottom: 0;
+}
+
+.uploadSection__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.uploadSection__header h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.uploadBtn {
+  background: var(--primary);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  display: inline-block;
+}
+
+.uploadBtn:hover {
+  opacity: 0.9;
+}
+
+.photoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 12px;
+}
+
+.emptyText {
+  font-size: 12px;
+  color: var(--muted);
+  font-style: italic;
+  grid-column: 1 / -1;
+}
+
+.photoWrap {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: #f9f9f9;
+}
+
+.photoWrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.delBtn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 20px;
+  height: 20px;
+  background: rgba(0,0,0,0.6);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.delBtn:hover {
+  background: rgba(255, 77, 79, 0.9);
+}
+
+.rqGudang__modalHead {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.rqGudang__modalHead h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+.rqGudang__modalHead p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+.rqGudang__modalHead button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--muted);
+  cursor: pointer;
+}
+.rqGudang__modalFooter {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* NEW STYLES FOR CLICKABLE CARD & DETAIL MODAL */
+.clickable-card {
+  cursor: pointer;
+}
+
+.clickable-card:hover {
+  border-color: var(--primary);
+}
+
+.truncate-text {
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
+  vertical-align: bottom;
+}
+
+.detailCard {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+.detailRow:last-child { margin-bottom: 0; }
+.detailLabel { color: var(--muted); }
+.detailValue { color: var(--text); }
+
+.detailSection {
+  margin-bottom: 24px;
+}
+
+.detailSection h4 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: var(--text);
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 8px;
+}
+
+.detailTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.detailTable th, .detailTable td {
+  padding: 8px;
+  border-bottom: 1px solid var(--border-subtle);
+  text-align: left;
+}
+
+.detailTable th {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.detailNote {
+  margin-top: 16px;
+  padding: 12px;
+  background: #fff8f3;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text);
+}
+.detailNote p { margin: 4px 0 0; color: #666; }
+
+/* IMPROVED BUTTON STYLES */
+.rqGudang__btn {
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+}
+
+.rqGudang__btn--primary {
+  background: var(--primary);
+  color: white;
+  border: 1px solid var(--primary);
+}
+.rqGudang__btn--primary:hover {
+  background: var(--primary-hover);
+}
+
+.rqGudang__btn--ghost {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.rqGudang__btn--ghost:hover {
+  background: var(--bg-2);
+}
+
+.rqGudang__btn--action {
+  background: #1890ff;
+  color: white;
+  border: 1px solid #1890ff;
+}
+.rqGudang__btn--action:hover {
+  background: #40a9ff;
+}
+
+.rqGudang__btn--text {
+  background: none;
+  color: var(--primary);
+  border: none;
+  padding: 0;
+  text-decoration: underline;
+}
+.rqGudang__btn--text:hover {
+  color: var(--primary-hover);
+}

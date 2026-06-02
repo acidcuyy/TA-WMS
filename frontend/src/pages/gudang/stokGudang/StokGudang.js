@@ -55,9 +55,6 @@ export default function StokGudang() {
               <span>Gudang</span> <span>›</span> <span style={{ color: '#e4915a', fontWeight: 700 }}>Stok & Produk</span>
             </div>
           </div>
-          <button className="logout-btn" style={{ width: 'auto', padding: '12px 24px', display: 'flex', alignItems: 'center', gap: '8px', background: '#f86c14', color: 'white' }}>
-            <span style={{ fontSize: '18px' }}>+</span> Tambah Produk
-          </button>
         </header>
 
         {/* STATS */}
