@@ -8,6 +8,7 @@ import {
   getGudangTransfers,
   getGudangStock,
   getGudangRequests,
+  gudangDecideRequest,
   getShipmentTracking
 } from "../controllers/gudang.controller.js";
 
@@ -26,6 +27,7 @@ router.get("/transfers", getGudangTransfers);
 // Inventory & Requests
 router.get("/stock", getGudangStock);
 router.get("/requests", getGudangRequests);
+router.put("/requests/:id/decide", gudangDecideRequest);
 
 // Tracking
 router.get("/shipment/:id", getShipmentTracking);

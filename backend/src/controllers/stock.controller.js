@@ -1,66 +1,48 @@
-import { getCollection, updateCollection, readDB } from "../services/data.service.js";
+import { getAllProducts, getAllRequests, createRequest, updateRequestStatus } from "../services/data.service.js";
 
 export const getStockSummary = async (req, res) => {
-  const products = await getCollection("products");
-  
-  // Basic calculation for summary
-  const totalStokPerusahaan = products.reduce((acc, p) => acc + p.stock, 0);
-  // Simulating gudang vs toko for now
-  const stokGudang = Math.floor(totalStokPerusahaan * 0.8);
-  const stokToko = totalStokPerusahaan - stokGudang;
-
-  res.status(200).json({
-    totalPerusahaan: totalStokPerusahaan,
-    stokGudang,
-    stokToko,
-  });
+  try {
+    const products = await getAllProducts();
+    const total = products.reduce((acc, p) => acc + (p.stock || 0), 0);
+    res.status(200).json({
+      totalPerusahaan: total,
+      stokGudang: Math.floor(total * 0.7),
+      stokToko:   Math.ceil(total * 0.3),
+    });
+  } catch (err) {
+    console.error("Error getStockSummary:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
 };
 
 export const getStockRequests = async (req, res) => {
-  const requests = await getCollection("stock_requests");
-  res.status(200).json(requests);
+  try {
+    const requests = await getAllRequests();
+    res.status(200).json(requests);
+  } catch (err) {
+    console.error("Error getStockRequests:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
 };
 
 export const createStockRequest = async (req, res) => {
-  const requests = await getCollection("stock_requests");
-  
-  const newRequest = {
-    id: `ADD-${String(requests.length + 1).padStart(3, "0")}`,
-    tanggal: new Date().toLocaleString("id-ID", { 
-      day: "2d", 
-      month: "short", 
-      year: "numeric", 
-      hour: "2d", 
-      minute: "2d" 
-    }),
-    ...req.body,
-    status: "Pending",
-  };
-
-  requests.unshift(newRequest); // Newest first
-  await updateCollection("stock_requests", requests);
-
-  res.status(201).json({
-    message: "Request penambahan stok berhasil dikirim",
-    data: newRequest,
-  });
+  try {
+    const newReq = await createRequest(req.body);
+    res.status(201).json({ message: "Request berhasil dikirim", data: newReq });
+  } catch (err) {
+    console.error("Error createStockRequest:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
 };
 
 export const updateStockRequestStatus = async (req, res) => {
-  const requests = await getCollection("stock_requests");
-  const { id } = req.params;
-  const { status } = req.body;
-
-  const index = requests.findIndex((r) => r.id === id);
-  if (index === -1) {
-    return res.status(404).json({ message: "Request tidak ditemukan" });
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    await updateRequestStatus(id, status);
+    res.status(200).json({ message: "Status request berhasil diperbarui" });
+  } catch (err) {
+    console.error("Error updateStockRequestStatus:", err);
+    res.status(500).json({ message: "Internal server error" });
   }
-
-  requests[index].status = status;
-  await updateCollection("stock_requests", requests);
-
-  res.status(200).json({
-    message: "Status request berhasil diperbarui",
-    data: requests[index],
-  });
 };

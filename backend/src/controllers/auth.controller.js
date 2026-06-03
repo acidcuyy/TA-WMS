@@ -1,27 +1,39 @@
-import { readDB } from "../services/data.service.js";
+import pool from "../config/db.js";
+import jwt from "jsonwebtoken";
+import { catchAsync } from "../utils/catchAsync.js";
+import { AppError } from "../middlewares/error.middleware.js";
 
-export const login = async (req, res) => {
+export const login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return res.status(400).json({ message: "Email and password are required" });
+    return next(new AppError("Harap masukkan email dan password", 400));
   }
 
-  const db = await readDB();
-  const users = db ? db.users : [];
-
-  const user = users.find(
-    (u) => u.email.toLowerCase() === email.toLowerCase().trim() && u.pass === password.trim()
+  const { rows } = await pool.query(
+    "SELECT * FROM users WHERE email = $1 AND pass = $2",
+    [email, password]
   );
 
-  if (!user) {
-    return res.status(401).json({ message: "Email atau password salah." });
+  if (rows.length === 0) {
+    return next(new AppError("Email atau password salah", 401));
   }
 
-  // Return user info (excluding password for safety)
+  const user = rows[0];
+  
+  // Buat token JWT
+  const token = jwt.sign(
+    { id: user.id, email: user.email, role: user.role },
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPRES_IN || "1d" }
+  );
+
+  // Jangan kirim password kembali ke client
   const { pass, ...userWithoutPass } = user;
+
   res.status(200).json({
-    message: "Login successful",
-    user: userWithoutPass,
+    status: "success",
+    token,
+    user: userWithoutPass
   });
-};
+});

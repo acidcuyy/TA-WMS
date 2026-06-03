@@ -1,197 +1,146 @@
-import { readDB, writeDB } from "../services/data.service.js";
+import {
+  getUserByRole,
+  updateUser,
+  getAllProducts,
+  getAllRequests,
+  getTokoActivities,
+  getTokoOrders as dbGetTokoOrders,
+  getUserSettings,
+} from "../services/data.service.js";
 
-// GET Profile Admin
+// ─── ADMIN ────────────────────────────────────────────────────────────────────
+
 export const getAdminProfile = async (req, res) => {
   try {
-    const db = await readDB();
-    
-    // Cari user admin
-    const adminUser = db.users?.find(u => u.role === 'admin') || {};
-    
-    // Hitung request baru (misal status belum Selesai)
-    const stockRequests = db.stock_requests || [];
-    const pendingRequests = stockRequests.filter(r => r.status !== 'Selesai').length;
-    
-    // Hitung stok menipis
-    const products = db.products || [];
-    const lowStockCount = products.filter(p => p.stockStatus === 'Stok rendah' || p.stockStatus === 'Critical').length;
+    const user     = await getUserByRole("admin");
+    const products = await getAllProducts();
+    const requests = await getAllRequests();
 
-    // Ambil aktivitas
-    const rawActivities = db.activities || [];
-    const activities = rawActivities.slice(0, 3).map(a => ({
-      time: a.time,
-      text: a.message,
-      icon: a.icon || "👤",
-      color: a.type === 'order' ? '#e6f7ff' : a.type === 'stock' ? '#f6ffed' : '#fff7e6'
-    }));
+    const pendingRequests = requests.filter(r => r.status !== "Selesai").length;
+    const lowStockCount   = products.filter(p => p.status === "Menipis" || p.status === "Habis").length;
 
-    // Data profile
     const profile = {
-      name: adminUser.name || "Admin",
-      email: adminUser.email || "admin@gmail.com",
-      role: "Admin",
-      lastLogin: adminUser.lastLogin || "13 Mei 2026, 09:40",
-      joinedSince: adminUser.joinedSince || "10 Januari 2025",
-      preferences: adminUser.preferences || { notifStock: true, notifRequests: true }
+      name:        user?.name      || "Super Admin",
+      email:       user?.email     || "admin@gmail.com",
+      role:        "Admin",
+      lastLogin:   user?.last_login ? new Date(user.last_login).toLocaleString("id-ID") : "-",
+      joinedSince: user?.joined_since || "10 Januari 2025",
+      preferences: { notifStock: true, notifRequests: true },
     };
 
     const stats = [
-      { label: "Requests Baru", value: pendingRequests.toString(), sub: "Hari ini", icon: "🗒️" },
-      { label: "Stok Menipis", value: lowStockCount.toString(), sub: "Butuh perhatian", icon: "📦" },
-      { label: "Sinkronisasi", value: "Aktif", sub: "Realtime", icon: "🔄" },
+      { label: "Requests Baru", value: pendingRequests.toString(), sub: "Hari ini",       icon: "🗒️" },
+      { label: "Stok Menipis",  value: lowStockCount.toString(),   sub: "Butuh perhatian", icon: "📦" },
+      { label: "Sinkronisasi",  value: "Aktif",                    sub: "Realtime",        icon: "🔄" },
     ];
 
-    res.status(200).json({
-      profile,
-      stats,
-      activities
-    });
-  } catch (error) {
-    console.error("Error getAdminProfile:", error);
+    res.status(200).json({ profile, stats, activities: [] });
+  } catch (err) {
+    console.error("Error getAdminProfile:", err);
     res.status(500).json({ message: "Internal server error" });
   }
 };
 
-// PUT / UPDATE Profile Admin (termasuk preferensi)
 export const updateAdminProfile = async (req, res) => {
   try {
-    const db = await readDB();
-    const adminIndex = db.users?.findIndex(u => u.role === 'admin');
-    
-    if (adminIndex === -1 || adminIndex === undefined) {
-      return res.status(404).json({ message: "Admin user not found" });
-    }
+    const { name, email } = req.body;
+    const fields = {};
+    if (name)  fields.name  = name;
+    if (email) fields.email = email;
 
-    // Update field yang diperbolehkan
-    const { name, email, preferences } = req.body;
-    
-    if (name) db.users[adminIndex].name = name;
-    if (email) db.users[adminIndex].email = email;
-    if (preferences) {
-      db.users[adminIndex].preferences = {
-        ...db.users[adminIndex].preferences,
-        ...preferences
-      };
-    }
-
-    await writeDB(db);
-    
-    res.status(200).json({ 
-      message: "Profil admin berhasil diperbarui", 
-      user: db.users[adminIndex] 
-    });
-  } catch (error) {
-    console.error("Error updateAdminProfile:", error);
+    const updated = await updateUser("admin", fields);
+    res.status(200).json({ message: "Profil admin berhasil diperbarui", user: updated });
+  } catch (err) {
+    console.error("Error updateAdminProfile:", err);
     res.status(500).json({ message: "Internal server error" });
   }
 };
 
-// GET Profile Gudang
+// ─── GUDANG ───────────────────────────────────────────────────────────────────
+
 export const getGudangProfile = async (req, res) => {
   try {
-    const db = await readDB();
-    const user = db.users?.find(u => u.role === 'gudang') || {};
-    
-    // Stats for ProfileGudang.js
-    const products = db.products || [];
-    const stockRequests = db.stock_requests || [];
+    const user     = await getUserByRole("gudang");
+    const products = await getAllProducts();
+    const requests = await getAllRequests();
+    const settings = await getUserSettings("gudang");
 
     const profile = {
-      name: user.name || "Admin Gudang",
-      email: user.email || "gudang@reastock.com",
-      role: "Gudang",
-      lastLogin: user.lastLogin || "13 Mei 2025, 09:40",
-      joinedSince: user.joinedSince || "10 Januari 2025",
-      preferences: (db.user_settings || []).find(s => s.role === 'gudang') || { notifStock: true, notifRequests: true }
+      name:        user?.name      || "Admin Gudang",
+      email:       user?.email     || "gudang@wms.com",
+      role:        "Gudang",
+      lastLogin:   user?.last_login ? new Date(user.last_login).toLocaleString("id-ID") : "-",
+      joinedSince: user?.joined_since || "10 Januari 2025",
+      preferences: { notifStock: settings.notif_stock, notifRequests: settings.notif_requests },
     };
 
     const stats = [
-      { label: "Request Baru", value: stockRequests.filter(r => r.status === "Pending").length.toString(), sub: "Hari ini", icon: "📄" },
-      { label: "Stok Menipis", value: products.filter(p => p.status === "Menipis").length.toString(), sub: "Butuh perhatian", icon: "📦" },
-      { label: "Sinkronisasi", value: "Aktif", sub: "Realtime", icon: "🔄" },
+      { label: "Request Baru",  value: requests.filter(r => r.status === "Menunggu").length.toString(), sub: "Hari ini",       icon: "📄" },
+      { label: "Stok Menipis",  value: products.filter(p => p.status === "Menipis").length.toString(),  sub: "Butuh perhatian", icon: "📦" },
+      { label: "Sinkronisasi",  value: "Aktif",                                                          sub: "Realtime",        icon: "🔄" },
     ];
 
-    // Mock activities for ProfileGudang.js
     const activities = [
-      { time: "10:12", desc: "Request REQ-014 masuk dari Toko A", type: "request" },
-      { time: "09:40", desc: "Stok Barang SKA-001 menipis", type: "stock" },
-      { time: "Kemarin", desc: "Update profil gudang", type: "profile" }
+      { time: "10:12",  desc: "Request REQ-014 masuk dari Toko A", type: "request" },
+      { time: "09:40",  desc: "Stok Barang SKA-001 menipis",       type: "stock"   },
+      { time: "Kemarin",desc: "Update profil gudang",               type: "profile" },
     ];
 
     res.status(200).json({ profile, stats, activities });
-  } catch (error) {
-    console.error("Error getGudangProfile:", error);
+  } catch (err) {
+    console.error("Error getGudangProfile:", err);
     res.status(500).json({ message: "Internal server error" });
   }
 };
 
-// PUT Update Profile Gudang
 export const updateGudangProfile = async (req, res) => {
   try {
-    const db = await readDB();
-    const idx = db.users?.findIndex(u => u.role === 'gudang');
-    if (idx === -1) return res.status(404).json({ message: "Gudang user not found" });
+    const { name, email } = req.body;
+    const fields = {};
+    if (name)  fields.name  = name;
+    if (email) fields.email = email;
 
-    const { name, email, preferences } = req.body;
-    if (name) db.users[idx].name = name;
-    if (email) db.users[idx].email = email;
-
-    if (preferences) {
-      const sIdx = db.user_settings?.findIndex(s => s.role === 'gudang');
-      if (sIdx !== -1) {
-        db.user_settings[sIdx] = { ...db.user_settings[sIdx], ...preferences };
-      }
-    }
-
-    await writeDB(db);
-    res.status(200).json({ message: "Profil gudang diperbarui", user: db.users[idx] });
-  } catch (error) {
-    console.error("Error updateGudangProfile:", error);
+    const updated = await updateUser("gudang", fields);
+    res.status(200).json({ message: "Profil gudang diperbarui", user: updated });
+  } catch (err) {
+    console.error("Error updateGudangProfile:", err);
     res.status(500).json({ message: "Internal server error" });
   }
 };
 
-/**
- * GET /api/profile/toko
- */
+// ─── TOKO ─────────────────────────────────────────────────────────────────────
+
 export const getTokoProfile = async (req, res) => {
   try {
-    const db = await readDB();
-    const user = db.users.find(u => u.role === "toko");
-    const products = db.products || [];
-    const orders = db.toko_orders || [];
-    const activities = db.toko_activities || [];
+    const user       = await getUserByRole("toko");
+    const products   = await getAllProducts();
+    const orders     = await dbGetTokoOrders();
+    const activities = await getTokoActivities();
 
     const stats = {
       pesananBaru: orders.filter(o => o.status === "Menunggu" || o.status === "Diproses").length,
       stokMenipis: products.filter(p => p.status === "Menipis").length,
-      syncStatus: "Aktif"
+      syncStatus:  "Aktif",
     };
 
     res.status(200).json({ profile: user, stats, activities });
-  } catch (error) {
-    console.error("Error getTokoProfile:", error);
+  } catch (err) {
+    console.error("Error getTokoProfile:", err);
     res.status(500).json({ message: "Internal server error" });
   }
 };
 
-/**
- * PUT /api/profile/toko
- */
 export const updateTokoProfile = async (req, res) => {
   try {
     const { name, email } = req.body;
-    let db = await readDB();
-    const userIndex = db.users.findIndex(u => u.role === "toko");
+    const fields = {};
+    if (name)  fields.name  = name;
+    if (email) fields.email = email;
 
-    if (userIndex === -1) return res.status(404).json({ message: "User not found" });
-
-    db.users[userIndex] = { ...db.users[userIndex], name, email };
-    await writeDB(db);
-
-    res.status(200).json({ message: "Profile updated successfully", profile: db.users[userIndex] });
-  } catch (error) {
-    console.error("Error updateTokoProfile:", error);
+    const updated = await updateUser("toko", fields);
+    res.status(200).json({ message: "Profil toko diperbarui", profile: updated });
+  } catch (err) {
+    console.error("Error updateTokoProfile:", err);
     res.status(500).json({ message: "Internal server error" });
   }
 };

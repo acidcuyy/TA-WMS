@@ -14,6 +14,7 @@ import gudangRoutes from "./routes/gudang.routes.js";
 import tokoRoutes from "./routes/toko.routes.js";
 import driverRoutes from "./routes/driver.routes.js";
 import notificationRoutes from "./routes/notification.routes.js";
+import { errorHandler, AppError } from "./middlewares/error.middleware.js";
 
 const app = express();
 
@@ -38,5 +39,13 @@ app.use("/api/gudang", gudangRoutes);
 app.use("/api/toko", tokoRoutes);
 app.use("/api/driver", driverRoutes);
 app.use("/api/notifications", notificationRoutes);
+
+// 404 Handler
+app.use((req, res, next) => {
+  next(new AppError(`Tidak dapat menemukan ${req.originalUrl} di server ini!`, 404));
+});
+
+// Global Error Handler
+app.use(errorHandler);
 
 export default app;
