@@ -15,7 +15,7 @@ class UserController {
         success: false,
         message: error.message,
       });
-    }
+    } 
   }
 
   async createUser(req, res) {

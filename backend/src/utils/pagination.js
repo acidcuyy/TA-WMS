@@ -9,7 +9,7 @@ export const getPagination = (query) => {
 export const getPaginationMeta = (total, page, limit) => {
     return {
         page,
-        limit, 
+        limit,
         total,
         totalPages: Math.ceil(total / limit)
     };

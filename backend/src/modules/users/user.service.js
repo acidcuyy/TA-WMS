@@ -4,13 +4,13 @@ class UserService {
   async getUsers() {
     return prisma.user.findMany({
       where: {
-        isDeleted: false,
+        isActived: true,
       },
       select: {
         id: true,
         email: true,
         name: true,
-        age: true,
+        phoneNumber: true,
         role: true,
       },
     });
@@ -23,7 +23,7 @@ class UserService {
         id: true,
         email: true,
         name: true,
-        age: true,
+        phoneNumber: true,
         role: true,
       },
     });
@@ -31,12 +31,12 @@ class UserService {
 
   async getUserById(id) {
     return prisma.user.findUnique({
-      where: {id, isDeleted: false},
+      where: {id, isActived: true},
       select: {
         id: true,
         email: true,
         name: true,
-        age: true,
+        phoneNumber: true,
         role: true,
       },
     });
@@ -44,13 +44,13 @@ class UserService {
 
   async updateUser(id, data) {
     return prisma.user.update({
-      where: { id, isDeleted: false },
+      where: { id, isActived: true },
       data,
       select: {
         id: true,
         email: true,
         name: true,
-        age: true,
+        phoneNumber: true,
         role: true,
       },
     });
@@ -66,7 +66,7 @@ class UserService {
         id: true,
         email: true,
         name: true,
-        age: true,
+        phoneNumber: true,
         role: true,
       },
     });

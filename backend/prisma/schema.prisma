@@ -27,7 +27,9 @@ model User {
   password String
   age      Int?
   role     Role   @default(GUDANG)
-  isDeleted Boolean @default(false)
+  isActive Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
 }
 
 model Warehouse {
@@ -39,4 +41,11 @@ model Warehouse {
   isDeleted Boolean @default(false)
 }
 
+model Product {
+  id      Int       @id @default(autoincrement())
+  name    String
+  category String
+  heavy    Int
+  isDeleted Boolean @default(false)
+}
 
