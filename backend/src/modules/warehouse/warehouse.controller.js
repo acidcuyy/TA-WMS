@@ -1,4 +1,3 @@
-import { success } from "zod";
 import warehouseService from "./warehouse.service.js";
 import {
   createWarehouseSchema,
@@ -6,13 +5,14 @@ import {
 } from "./warehouse.validate.js";
 
 class warehouseController {
-  async getWarehouse(req, res) {
+  async getAll(req, res) {
     try {
-      const warehouse = await warehouseService.getWarehouse();
+      const warehouses = await warehouseService.findAll(req.body);
 
       return res.json({
         success: true,
-        data: warehouse,
+        data: warehouses.data,
+        meta: warehouses.meta,
       });
     } catch (error) {
       return res.status(500).json({
@@ -22,11 +22,11 @@ class warehouseController {
     }
   }
 
-  async createWarehouse(req, res) {
+  async create(req, res) {
     try {
-      const validateData = createWarehouseSchema.parse(req.body);
+      const validatedData = createWarehouseSchema.parse(req.body);
 
-      const warehouse = await warehouseService.createWarehouse(validateData);
+      const warehouse = await warehouseService.create(validatedData);
 
       return res.status(201).json({
         success: true,
@@ -39,7 +39,6 @@ class warehouseController {
           errors: error.errors,
         });
       }
-
       return res.status(500).json({
         success: false,
         message: error.message,
@@ -47,24 +46,50 @@ class warehouseController {
     }
   }
 
-  async updateWarehouse(req, res) {
+  async getById(req, res) {
     try {
-      const { id } = req.params;
-      const validateData = updateWarehouseSchema.parse(req.body);
-      const warehouse = await warehouseService.updateWarehouse(
-        id,
-        validateData,
-      );
-
-      return res.status(200).json({
+      const id = parseInt(req.params.id);
+      const warehouse = await warehouseService.getByid(id);
+      if (!warehouse) {
+        return res.status(404).json({
+          success: false,
+          message: "Warehouse not found",
+        });
+      }
+      return res.json({
         success: true,
         data: warehouse,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
+
+  async update(req, res) {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = updateWarehouseSchema.parse(req.body);
+
+      const updateWarehouse = await warehouseService.update(id, validatedData);
+      if (!updateWarehouse) {
+        return res.status(404).json({
+          success: false,
+          message: "Warehouse not found",
+        });
+      }
+
+      return res.json({
+        success: true,
+        data: updateWarehouse,
       });
     } catch (error) {
       if (error.name === "ZodError") {
         return res.status(400).json({
           success: false,
-          error: error.errors,
+          errors: error.errors,
         });
       }
       return res.status(500).json({
@@ -74,55 +99,25 @@ class warehouseController {
     }
   }
 
-  async getWarehousebyId(req, res) {
+  async deleted(req, res) {
     try {
-        const id = parseInt(req.params.id);
-        const warehouse = await warehouseService.getWarehouseById(id);
-
-        if (!warehouse) {
-            return res.status(404).json({
-                success: false,
-                message: "Warehouse not found",
-            });
-        }
-        return res.json({
-            success: true,
-            data: warehouse,
+      const id = parseInt(req.params.id);
+      const deletedWarehouse = await warehouseService.delete(id);
+      if (!deletedWarehouse) {
+        return res.status(404).json({
+          success: false,
+          message: "Warehouse not found",
         });
+      }
+      return res.json({
+        success: true,
+        data: deletedWarehouse,
+      });
     } catch (error) {
-        if (error.name === "ZodError") {
-            return res.status(400).json({
-                success: false,
-                errors: error.errrors,
-            });
-        }
-        return res.status(500).json({
-            success: false,
-            message: error.message,
-        });
-    }
-  }
-
-  async deletedWarehouse(req, res) {
-    try {
-        const id = parseInt(req.params.id);
-        const deletedWarehouse = await warehouseService.deletedWarehouse(id);
-
-        if (!deletedWarehouse) {
-            return res.status(404).json({
-                success: false,
-                message: "Warehouse not found",
-            });
-        }
-        return res.json({
-            success: true,
-            data: deletedWarehouse,
-        });
-    } catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: error.message,
-        });
+      return res.status(500).json({
+        success: false,
+        message: error.message,
+      });
     }
   }
 }

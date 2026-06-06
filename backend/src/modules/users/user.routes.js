@@ -35,7 +35,7 @@ router.put(
   userController.updateUser,
 );
 
-router.post(
+router.put(
   "/delete/:id",
   authenticate,
   authorizeRole("SUPER_ADMIN"),

@@ -17,7 +17,7 @@ class UserController {
         success: false,
         message: error.message,
       });
-    } 
+    }
   }
 
   async createUser(req, res) {
@@ -37,7 +37,6 @@ class UserController {
           errors: error.errors,
         });
       }
-
       return res.status(500).json({
         success: false,
         message: error.message,

@@ -11,25 +11,26 @@ router.get(
   "/",
   authenticate,
   authorizeRole("SUPER_ADMIN", "ADMIN"),
-  warehouseController.getWarehouse,
+  warehouseController.getAll,
 );
 
 router.post(
   "/",
   authenticate,
   authorizeRole("SUPER_ADMIN", "ADMIN"),
-  warehouseController.createWarehouse,
+  warehouseController.create,
 );
 
 router.put(
   "/:id",
   authenticate,
   authorizeRole("SUPER_ADMIN", "ADMIN"),
-  warehouseController.updateWarehouse,
+  warehouseController.update,
 );
 
 
-router.get("/:id", authenticate, authorizeRole("SUPER_ADMIN", "ADMIN"), warehouseController.getWarehousebyId);
+router.get("/:id", authenticate, authorizeRole("SUPER_ADMIN", "ADMIN"), warehouseController.getById);
 
-router.post("/delete/:id", authenticate, authorizeRole("SUPER_ADMIN", "ADMIN"), warehouseController.deletedWarehouse);
+router.put("/delete/:id", authenticate, authorizeRole("SUPER_ADMIN", "ADMIN"), warehouseController.deleted);
+
 export default router;
