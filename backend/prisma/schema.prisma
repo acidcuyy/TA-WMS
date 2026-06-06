@@ -1,0 +1,236 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum TransferStatus {
+  PENDING
+  APPROVED
+  PREPARING
+  DELIVERED
+  CANCELLED
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum Role {
+  ADMIN
+  SUPER_ADMIN
+  TOKO
+  DRIVER
+  GUDANG
+}
+
+model User {
+  id                    Int                    @id @default(autoincrement())
+  email                 String                 @unique
+  name                  String
+  password              String
+  age                   Int?
+  role                  Role                   @default(GUDANG)
+  isActive              Boolean                @default(true)
+  isDeleted             Boolean                @default(false)
+  companiesId           Int?
+  warehouseId           Int?
+  storeId               Int?
+  store                 Stores?                @relation(fields: [storeId], references: [id])
+  warehouse             Warehouse?             @relation(fields: [warehouseId], references: [id])
+  company               Companies?             @relation(fields: [companiesId], references: [id])
+  transfers             Transfer[]
+  purchaseRequestPhotos purchaseRequestPhoto[]
+  transferPhotos        transferPhoto[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}
+
+model Warehouse {
+  id               Int               @id @default(autoincrement())
+  name             String
+  address          String
+  phone            String
+  isActive         Boolean           @default(true)
+  isDeleted        Boolean           @default(false)
+  companiesId      Int?
+  company          Companies?        @relation(fields: [companiesId], references: [id])
+  users            User[]
+  transfers        Transfer[]
+  warehouseStocks  WarehouseStock[]
+  purchaseRequests purchaseRequest[]
+}
+
+model WarehouseStock {
+  id          Int       @id @default(autoincrement())
+  quantity    Int
+  productId   Int
+  warehouseId Int
+  product     Product   @relation(fields: [productId], references: [id])
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
+  isDeleted   Boolean   @default(false)
+}
+
+model Stores {
+  id            Int            @id @default(autoincrement())
+  name          String
+  address       String
+  phone         String
+  isActive      Boolean        @default(true)
+  isDeleted     Boolean        @default(false)
+  companiesId   Int?
+  company       Companies?     @relation(fields: [companiesId], references: [id])
+  users         User[]
+  transfers     Transfer[]
+  stockRequests stockRequest[]
+  storeStocks   StoreStock[]
+}
+
+model Transfer {
+  id              Int             @id @default(autoincrement())
+  code            String
+  status          TransferStatus  @default(PENDING)
+  isDeleted       Boolean         @default(false)
+  driverId        Int
+  requestId       Int
+  toStoreId       Int
+  fromWarehouseId Int
+  driver          User            @relation(fields: [driverId], references: [id])
+  request         stockRequest    @relation(fields: [requestId], references: [id])
+  toStore         Stores          @relation(fields: [toStoreId], references: [id])
+  fromWarehouse   Warehouse       @relation(fields: [fromWarehouseId], references: [id])
+  transferItems   transferItems[]
+  transferPhotos  transferPhoto[]
+}
+
+model transferItems {
+  id         Int      @id @default(autoincrement())
+  quantity   Int
+  productId  Int
+  transferId Int
+  product    Product  @relation(fields: [productId], references: [id])
+  transfer   Transfer @relation(fields: [transferId], references: [id])
+  isDeleted  Boolean  @default(false)
+}
+
+model Product {
+  id                   Int                    @id @default(autoincrement())
+  name                 String
+  code                 String
+  unit                 String
+  isDeleted            Boolean                @default(false)
+  companiesId          Int
+  company              Companies              @relation(fields: [companiesId], references: [id])
+  transferItems        transferItems[]
+  warehouseStocks      WarehouseStock[]
+  requestItems         RequestItems[]
+  storeStocks          StoreStock[]
+  purchaseRequestItems purchaseRequestItems[]
+}
+
+model Companies {
+  id               Int               @id @default(autoincrement())
+  name             String
+  address          String
+  phone            String
+  isActive         Boolean           @default(true)
+  isDeleted        Boolean           @default(false)
+  users            User[]
+  stores           Stores[]
+  warehouses       Warehouse[]
+  stockRequests    stockRequest[]
+  products         Product[]
+  purchaseRequests purchaseRequest[]
+}
+
+model stockRequest {
+  id           Int            @id @default(autoincrement())
+  code         String
+  status       TransferStatus @default(PENDING)
+  isDeleted    Boolean        @default(false)
+  approvedAt   DateTime?
+  deliveredAt  DateTime?
+  companiesId  Int
+  company      Companies      @relation(fields: [companiesId], references: [id])
+  storeId      Int
+  store        Stores         @relation(fields: [storeId], references: [id])
+  transfers    Transfer[]
+  requestItems RequestItems[]
+}
+
+model RequestItems {
+  id        Int          @id @default(autoincrement())
+  quantity  Int
+  productId Int
+  requestId Int
+  product   Product      @relation(fields: [productId], references: [id])
+  request   stockRequest @relation(fields: [requestId], references: [id])
+  isDeleted Boolean      @default(false)
+}
+
+model StoreStock {
+  id        Int     @id @default(autoincrement())
+  quantity  Int
+  productId Int
+  storeId   Int
+  product   Product @relation(fields: [productId], references: [id])
+  store     Stores  @relation(fields: [storeId], references: [id])
+  isDeleted Boolean @default(false)
+}
+
+model purchaseRequestItems {
+  id        Int             @id @default(autoincrement())
+  quantity  Int
+  requestId Int
+  productId Int
+  product   Product         @relation(fields: [productId], references: [id])
+  request   purchaseRequest @relation(fields: [requestId], references: [id])
+  isDeleted Boolean         @default(false)
+}
+
+model purchaseRequest {
+  id                    Int                    @id @default(autoincrement())
+  code                  String
+  status                RequestStatus          @default(PENDING)
+  isDeleted             Boolean                @default(false)
+  approvedAt            DateTime?
+  deliveredAt           DateTime?
+  companiesId           Int
+  company               Companies              @relation(fields: [companiesId], references: [id])
+  warehouseId           Int
+  warehouse             Warehouse              @relation(fields: [warehouseId], references: [id])
+  purchaseRequestItems  purchaseRequestItems[]
+  purchaseRequestPhotos purchaseRequestPhoto[]
+}
+
+model purchaseRequestPhoto {
+  id              Int             @id @default(autoincrement())
+  url             String
+  requestId       Int
+  purchaseRequest purchaseRequest @relation(fields: [requestId], references: [id])
+  uploadById      Int
+  uploadBy        User            @relation(fields: [uploadById], references: [id])
+  isDeleted       Boolean         @default(false)
+}
+
+model transferPhoto {
+  id         Int      @id @default(autoincrement())
+  url        String
+  transferId Int
+  transfer   Transfer @relation(fields: [transferId], references: [id])
+  uploadById Int
+  uploadBy   User     @relation(fields: [uploadById], references: [id])
+  uploadAt   DateTime @default(now())
+  isDeleted  Boolean  @default(false)
+}
