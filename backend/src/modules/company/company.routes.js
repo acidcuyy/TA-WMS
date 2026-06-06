@@ -1,9 +1,9 @@
 import express from "express";
-import userController from "./user.controller.js";
 
 import { authenticate } from "../middlewares/auth.middleware.js";
 
 import { authorizeRole } from "../middlewares/role.middleware.js";
+import companyController from "./company.controller.js";
 
 const router = express.Router();
 
@@ -11,35 +11,35 @@ router.get(
   "/",
   authenticate,
   authorizeRole("SUPER_ADMIN", "ADMIN"),
-  userController.getAll,
+  companyController.getAll,
 );
 
 router.post(
   "/",
   authenticate,
   authorizeRole("ADMIN", "SUPER_ADMIN"),
-  userController.create,
+  companyController.create,
 );
 
 router.get(
   "/:id",
   authenticate,
   authorizeRole("SUPER_ADMIN", "ADMIN"),
-  userController.getById,
+  companyController.getById,
 );
 
 router.put(
   "/:id",
   authenticate,
   authorizeRole("SUPER_ADMIN", "ADMIN"),
-  userController.update,
+  companyController.update,
 );
 
 router.put(
   "/delete/:id",
   authenticate,
   authorizeRole("SUPER_ADMIN"),
-  userController.delete,
+  companyController.delete,
 );
 
 export default router;

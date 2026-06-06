@@ -8,6 +8,7 @@ import { sendError } from "./utils/response.js";
 import userRoute from "./modules/users/user.routes.js";
 import authRoute from "./modules/auth/auth.routes.js";
 import warehouseRoute from "./modules/warehouse/warehouse.routes.js";
+import companyRoute from "./modules/company/company.routes.js";
 
 import { success } from "zod";
 
@@ -38,7 +39,7 @@ app.use(
 app.use("/api/users", userRoute);
 app.use("/api/auth", authRoute);
 app.use("/api/warehouse", warehouseRoute);
-
+app.use("/api/company", companyRoute);
 // Health Check
 app.get("/api/health", (req, res) => {
   res.status(200).json({

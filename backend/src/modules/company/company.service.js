@@ -1,10 +1,10 @@
 import prisma from "../../config/database.js";
 import { buildQueryOptions } from "../../utils/buildQueryOptions.js";
-import userQueryConfig from "./user.model.config.js";
+import companyQueryConfig from "./company.model.config.js";
 
-class UserService {
+class CompanyService {
   async findAll(query) {
-    const options = buildQueryOptions(userQueryConfig, query);
+    const options = buildQueryOptions(companyQueryConfig, query);
 
     console.log("Query options:", options);
 
@@ -13,20 +13,13 @@ class UserService {
       isDeleted: false,
     };
 
-    const [users, count] = await Promise.all([
-      prisma.user.findMany({
-        ...options,
-      }),
+    const [data, count] = await Promise.all([
+      prisma.companies.findMany(options),
 
-      prisma.user.count({
+      prisma.companies.count({
         where: options.where,
       }),
     ]);
-
-    const data = users.map((user) => {
-      const { password, ...userWithoutPassword } = user;
-      return userWithoutPassword;
-    });
 
     const currentPage = query?.pagination?.page ?? 1;
 
@@ -48,60 +41,56 @@ class UserService {
   }
 
   async create(data) {
-    return prisma.user.create({
+    return prisma.companies.create({
       data,
       select: {
         id: true,
-        email: true,
         name: true,
-        age: true,
-        role: true,
+        address: true,
+        phone: true,
       },
     });
   }
 
   async findById(id) {
-    return prisma.user.findUnique({
+    return prisma.companies.findUnique({
       where: { id, isDeleted: false },
       select: {
         id: true,
-        email: true,
         name: true,
-        age: true,
-        role: true,
+        address: true,
+        phone: true,
       },
     });
   }
 
   async update(id, data) {
-    return prisma.user.update({
+    return prisma.companies.update({
       where: { id, isDeleted: false },
       data,
       select: {
         id: true,
-        email: true,
         name: true,
-        age: true,
-        role: true,
+        address: true,
+        phone: true,
       },
     });
   }
 
   async delete(id) {
-    return prisma.user.update({
+    return prisma.companies.update({
       where: { id, isDeleted: false },
       data: {
         isDeleted: true,
       },
       select: {
         id: true,
-        email: true,
         name: true,
-        age: true,
-        role: true,
+        address: true,
+        phone: true,
       },
     });
   }
 }
 
-export default new UserService();
+export default new CompanyService();
