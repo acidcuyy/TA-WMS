@@ -47,6 +47,7 @@ class StoreService {
                 name: true,
                 address: true,
                 phone: true,
+                companiesId: true,
             },
         });
     }
@@ -59,6 +60,7 @@ class StoreService {
                 name: true,
                 address: true,
                 phone: true,
+                companiesId: true,
             },
         });
     }
@@ -72,6 +74,7 @@ class StoreService {
                 name: true,
                 address: true,
                 phone: true,
+                companiesId: true,
             },
         });
     }
@@ -85,6 +88,7 @@ class StoreService {
                 name: true,
                 address: true,
                 phone: true,
+                companiesId: true,
             },
         });
     }
