@@ -6,7 +6,7 @@ class UserService {
       where: {
         isActived: true,
       },
-      select: {
+      select: { 
         id: true,
         email: true,
         name: true,

@@ -2,13 +2,15 @@ import userService from "./user.service.js";
 import { createUserSchema, updateUserSchema } from "./user.validation.js";
 
 class UserController {
-  async getUsers(req, res) {
+  async getAll(req, res) {
     try {
-      const users = await userService.getUsers();
+      const users = await userService.findAll(req.body);
 
       return res.json({
         success: true,
-        data: users,
+        message: "Users retrieved successfully",
+        data: users.data,
+        meta: users.meta,
       });
     } catch (error) {
       return res.status(500).json({
