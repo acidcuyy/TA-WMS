@@ -11,7 +11,7 @@ router.get(
   "/",
   authenticate,
   authorizeRole("SUPER_ADMIN", "ADMIN"),
-  userController.getUsers,
+  userController.getAll,
 );
 
 router.post(
