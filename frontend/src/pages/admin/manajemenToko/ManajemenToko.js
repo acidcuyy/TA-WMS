@@ -3,7 +3,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import Card from "../../../components/common/Card";
 import "../PageAdmin.css";
 import "./ManajemenTokoAdmin.css";
-import { subscribeTokoReports } from "../../../services/wmsApi";
+import {
+  subscribeTokoReports,
+  subscribeRequests,
+  getShipment,
+  gudangDecideRequest
+} from "../../../services/wmsApi";
 
 const fmtIDR = (n) =>
   new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 }).format(n);
@@ -13,7 +18,9 @@ export default function ManajemenToko() {
 
   // API State
   const [reports, setReports] = useState([]);
-  
+  const [requestsList, setRequestsList] = useState([]);
+  const [tick, setTick] = useState(0);
+
   // Dummy Initial Fallback matching original UI (will be replaced by real data if any)
   const [dummyReports] = useState([
     { id: "d1", date: "03", month: "Feb 2026", tokoName: "Toko A", type: "Laporan Harian", desc: "Pengiriman: 45 transaksi • Keluar: 1 • Stok kritis: 2 item", status: "Tersedia", fileData: null },
@@ -23,9 +30,28 @@ export default function ManajemenToko() {
     { id: "d5", date: "30", month: "Jan 2026", tokoName: "Toko B", type: "Laporan Harian", desc: "—", status: "Belum upload", fileData: null },
   ]);
 
+  const dummyTransactions = [
+    { id: "TRX-301", toko: "Toko A", tanggal: "02 Feb 2026", tipe: "Pengiriman", item: 14, nilai: 3250000, status: "Diproses", tracking: "Sedang diproses gudang" },
+    { id: "TRX-300", toko: "Toko B", tanggal: "02 Feb 2026", tipe: "Pengiriman", item: 9, nilai: 1750000, status: "Dalam perjalanan", tracking: "Terkirim - 100% - ETA: Selesai" },
+    { id: "TRX-299", toko: "Toko C", tanggal: "01 Feb 2026", tipe: "Pengiriman", item: 6, nilai: 980000, status: "Selesai", tracking: "—" },
+    { id: "TRX-298", toko: "Toko A", tanggal: "31 Jan 2026", tipe: "Retur", item: 2, nilai: 180000, status: "Selesai", tracking: "—" },
+  ];
+
+  const dummyRequests = [
+    { id: "T-REQ-021", toko: "Toko A", tanggal: "03 Feb 2026", item: 12, catatan: "Butuh untuk weekend", status: "Pending", rawStatus: "Menunggu" },
+    { id: "T-REQ-020", toko: "Toko B", tanggal: "02 Feb 2026", item: 8, catatan: "Stok kritis di etalase", status: "Dalam perjalanan", rawStatus: "Mengirim" },
+    { id: "T-REQ-019", toko: "Toko C", tanggal: "01 Feb 2026", item: 5, catatan: "Perlu pengganti item rusak", status: "Declined", rawStatus: "Declined" },
+    { id: "T-REQ-018", toko: "Toko A", tanggal: "31 Jan 2026", item: 3, catatan: "Fast moving", status: "Accepted", rawStatus: "Memproses" },
+  ];
+
+  const dummyShipments = [
+    { id: "SHP-210", to: "Toko A", driver: "Kurir 01", eta: "2:20 menit", status: "Dalam perjalanan", progress: 75, route: "Gudang → Jl. Melati → Toko A" },
+    { id: "SHP-208", to: "Toko B", driver: "Kurir 02", eta: "0:45 menit", status: "Terkirim", progress: 100, route: "Gudang → Ringroad → Toko B" },
+    { id: "SHP-205", to: "Toko C", driver: "Kurir 03", eta: "1:10 menit", status: "Dalam perjalanan", progress: 40, route: "Gudang → Jl. Sudirman → Toko C" },
+  ];
+
   useEffect(() => {
-    return subscribeTokoReports((data) => {
-      // Map API data to the format used in UI
+    const unsubReports = subscribeTokoReports((data) => {
       const mapped = data.map(r => {
         const d = new Date(r.date);
         const day = String(d.getDate()).padStart(2, "0");
@@ -43,40 +69,181 @@ export default function ManajemenToko() {
       });
       setReports(mapped);
     });
+
+    const unsubRequests = subscribeRequests((data) => {
+      setRequestsList(data || []);
+    });
+
+    const timer = setInterval(() => setTick((t) => t + 1), 1000);
+
+    return () => {
+      unsubReports();
+      unsubRequests();
+      clearInterval(timer);
+    };
   }, []);
 
   const displayReports = reports.length > 0 ? reports.slice(0, 5) : dummyReports;
 
-  // Stats
-  const summary = {
-    tokoAktif: 3,
-    transaksiHariIni: 76,
-    pendingRestock: 4,
-    estimasiOmzet: 12500000,
+  // Handler for Accept/Decline action
+  const handleDecide = (id, decision) => {
+    gudangDecideRequest(id, decision);
   };
 
-  // Shipments
-  const shipments = [
-    { id: "SHP-210", to: "Toko A", driver: "Kurir 01", eta: "2:20 menit", status: "Dalam perjalanan", progress: 75, route: "Gudang → Jl. Melati → Toko A" },
-    { id: "SHP-208", to: "Toko B", driver: "Kurir 02", eta: "0:45 menit", status: "Terkirim", progress: 100, route: "Gudang → Ringroad → Toko B" },
-    { id: "SHP-205", to: "Toko C", driver: "Kurir 03", eta: "1:10 menit", status: "Dalam perjalanan", progress: 40, route: "Gudang → Jl. Sudirman → Toko C" },
-  ];
+  // Stats calculation from real database
+  const summary = useMemo(() => {
+    if (requestsList.length === 0) {
+      return {
+        tokoAktif: 3,
+        transaksiHariIni: 76,
+        pendingRestock: 4,
+        estimasiOmzet: 12500000,
+      };
+    }
 
-  // Transactions
-  const transactions = [
-    { id: "TRX-301", toko: "Toko A", tanggal: "02 Feb 2026", tipe: "Pengiriman", item: 14, nilai: 3250000, status: "Diproses", tracking: "Sedang diproses gudang" },
-    { id: "TRX-300", toko: "Toko B", tanggal: "02 Feb 2026", tipe: "Pengiriman", item: 9, nilai: 1750000, status: "Dalam perjalanan", tracking: "Terkirim - 100% - ETA: Selesai" },
-    { id: "TRX-299", toko: "Toko C", tanggal: "01 Feb 2026", tipe: "Pengiriman", item: 6, nilai: 980000, status: "Selesai", tracking: "—" },
-    { id: "TRX-298", toko: "Toko A", tanggal: "31 Jan 2026", tipe: "Retur", item: 2, nilai: 180000, status: "Selesai", tracking: "—" },
-  ];
+    const uniqueShops = new Set(requestsList.map(r => r.fromName)).size;
+    const pendingCount = requestsList.filter(r => r.status === "Menunggu").length;
 
-  // Requests
-  const requests = [
-    { id: "T-REQ-021", toko: "Toko A", tanggal: "03 Feb 2026", item: 12, catatan: "Butuh untuk weekend", status: "Pending" },
-    { id: "T-REQ-020", toko: "Toko B", tanggal: "02 Feb 2026", item: 8, catatan: "Stok kritis di etalase", status: "Dalam perjalanan" },
-    { id: "T-REQ-019", toko: "Toko C", tanggal: "01 Feb 2026", item: 5, catatan: "Perlu pengganti item rusak", status: "Declined" },
-    { id: "T-REQ-018", toko: "Toko A", tanggal: "31 Jan 2026", item: 3, catatan: "Fast moving", status: "Accepted" },
-  ];
+    // Transactions today
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const todayReqs = requestsList.filter(r => r.createdAt === todayStr);
+    const totalTransactionsToday = todayReqs.length;
+
+    const omzetToday = todayReqs.reduce((sum, r) => {
+      const qty = (r.items || []).reduce((s, i) => s + i.qty, 0);
+      return sum + (qty * 150000);
+    }, 0);
+
+    return {
+      tokoAktif: uniqueShops || 3,
+      transaksiHariIni: totalTransactionsToday || 4,
+      pendingRestock: pendingCount,
+      estimasiOmzet: omzetToday || 12500000
+    };
+  }, [requestsList]);
+
+  // Shipments (live tracking database integration)
+  const shipments = useMemo(() => {
+    if (requestsList.length === 0) return dummyShipments;
+
+    const shippingReqs = requestsList.filter(
+      r => r.status === "Mengirim" || r.status === "Pickup"
+    );
+
+    return shippingReqs.map(r => {
+      const sh = getShipment(r.id);
+      let progressPercent = 0;
+      let eta = "—";
+
+      if (sh) {
+        const elapsed = Date.now() - sh.startedAt;
+        const progress = Math.max(0, Math.min(1, elapsed / sh.durationMs));
+        progressPercent = Math.round(progress * 100);
+        eta = progressPercent >= 100 ? "Tiba di tujuan" : `${Math.ceil((sh.durationMs - elapsed) / 60000)} menit`;
+      }
+
+      return {
+        id: r.id,
+        to: r.fromName || "Toko",
+        driver: r.driverName || "Driver",
+        eta: eta,
+        status: r.status === "Pickup" ? "Pickup" : progressPercent >= 100 ? "Tiba" : "Dalam perjalanan",
+        progress: progressPercent,
+        route: `Gudang → ${r.fromName || "Toko"}`
+      };
+    });
+  }, [requestsList, tick]);
+
+  // Transactions database integration
+  const transactions = useMemo(() => {
+    if (requestsList.length === 0) return dummyTransactions;
+
+    return requestsList.map(r => {
+      const totalQty = (r.items || []).reduce((sum, item) => sum + item.qty, 0);
+      const value = totalQty * 150000;
+
+      let statusLabel = r.status;
+      let trackingText = "—";
+
+      if (r.status === "Menunggu") {
+        statusLabel = "Pending";
+        trackingText = "Menunggu persetujuan";
+      } else if (r.status === "Memproses") {
+        statusLabel = "Diproses";
+        trackingText = "Sedang diproses gudang";
+      } else if (r.status === "Siap Dikirim") {
+        statusLabel = "Diproses";
+        trackingText = "Siap dikirim - mencari driver";
+      } else if (r.status === "Pickup") {
+        statusLabel = "Diproses";
+        trackingText = "Barang sedang dipickup driver";
+      } else if (r.status === "Mengirim") {
+        statusLabel = "Dalam perjalanan";
+        const sh = getShipment(r.id);
+        if (sh) {
+          const elapsed = Date.now() - sh.startedAt;
+          const progress = Math.max(0, Math.min(100, Math.round((elapsed / sh.durationMs) * 100)));
+          if (progress >= 100) {
+            trackingText = "Tiba di tujuan - menunggu konfirmasi";
+          } else {
+            trackingText = `Dalam perjalanan - ${progress}% - ETA: ${Math.ceil((sh.durationMs - elapsed) / 60000)} mnt`;
+          }
+        } else {
+          trackingText = "Dalam perjalanan";
+        }
+      } else if (r.status === "Diterima Toko") {
+        statusLabel = "Selesai";
+        trackingText = "Telah diterima toko - menunggu konfirmasi driver";
+      } else if (r.status === "Selesai") {
+        statusLabel = "Selesai";
+        trackingText = "Selesai";
+      } else if (r.status === "Declined" || r.status === "Ditolak") {
+        statusLabel = "Declined";
+        trackingText = "Ditolak";
+      }
+
+      return {
+        id: r.id,
+        toko: r.fromName || "Toko",
+        tanggal: r.createdAt ? new Date(r.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : "—",
+        tipe: "Pengiriman",
+        item: totalQty,
+        nilai: value,
+        status: statusLabel,
+        tracking: trackingText
+      };
+    });
+  }, [requestsList, tick]);
+
+  // Requests database integration
+  const requests = useMemo(() => {
+    if (requestsList.length === 0) return dummyRequests;
+
+    return requestsList.map(r => {
+      const totalQty = (r.items || []).reduce((sum, item) => sum + item.qty, 0);
+
+      let displayStatus = "Pending";
+      if (r.status === "Declined" || r.status === "Ditolak") {
+        displayStatus = "Declined";
+      } else if (r.status === "Memproses" || r.status === "Siap Dikirim" || r.status === "Pickup") {
+        displayStatus = "Accepted";
+      } else if (r.status === "Mengirim") {
+        displayStatus = "Dalam perjalanan";
+      } else if (r.status === "Diterima Toko" || r.status === "Selesai") {
+        displayStatus = "Selesai";
+      }
+
+      return {
+        id: r.id,
+        toko: r.fromName || "Toko",
+        tanggal: r.createdAt ? new Date(r.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : "—",
+        item: totalQty,
+        catatan: r.note || "—",
+        status: displayStatus,
+        rawStatus: r.status
+      };
+    });
+  }, [requestsList]);
 
   // Modal State
   const [selectedReport, setSelectedReport] = useState(null);
@@ -149,8 +316,8 @@ export default function ManajemenToko() {
           <div className="mtAdmin__reportList">
             <AnimatePresence>
               {displayReports.map((r, i) => (
-                <motion.div 
-                  key={r.id} 
+                <motion.div
+                  key={r.id}
                   className="mtAdmin__reportRow"
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -166,8 +333,8 @@ export default function ManajemenToko() {
                   </div>
                   <div className="mtAdmin__reportActions">
                     <span className={`mtAdmin__pill ${r.status === 'Tersedia' ? 'mtAdmin__pill--success' : 'mtAdmin__pill--warning'}`}>{r.status}</span>
-                    <button 
-                      className="mtAdmin__miniBtn" 
+                    <button
+                      className="mtAdmin__miniBtn"
                       onClick={() => r.status === 'Tersedia' ? setSelectedReport(r) : alert("File belum diupload")}
                       style={{ opacity: r.status === 'Tersedia' ? 1 : 0.5 }}
                     >
@@ -243,7 +410,15 @@ export default function ManajemenToko() {
                     <td>{t.tipe}</td>
                     <td>{t.item} item</td>
                     <td>Rp {fmtIDR(t.nilai)}</td>
-                    <td><span className={`mtAdmin__pill ${t.status === 'Selesai' ? 'mtAdmin__pill--success' : t.status === 'Diproses' ? 'mtAdmin__pill--process' : 'mtAdmin__pill--pending'}`}>{t.status}</span></td>
+                    <td>
+                      <span className={`mtAdmin__pill ${t.status === 'Selesai' ? 'mtAdmin__pill--success' :
+                        t.status === 'Diproses' || t.status === 'Dalam perjalanan' ? 'mtAdmin__pill--process' :
+                          t.status === 'Declined' || t.status === 'Batal' ? 'mtAdmin__pill--warning' :
+                            'mtAdmin__pill--pending'
+                        }`}>
+                        {t.status}
+                      </span>
+                    </td>
                     <td style={{ fontSize: '11px', color: '#888' }}>{t.tracking}</td>
                     <td><button className="btn-more">⋮</button></td>
                   </tr>
@@ -252,7 +427,9 @@ export default function ManajemenToko() {
             </table>
           </div>
           <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '12px', color: '#888' }}>Menampilkan 1 - 4 dari 24 data</span>
+            <span style={{ fontSize: '12px', color: '#888' }}>
+              Menampilkan {transactions.length > 0 ? `1 - ${transactions.length} dari ${transactions.length}` : '0 - 0 dari 0'} data
+            </span>
           </div>
         </section>
 
@@ -289,8 +466,20 @@ export default function ManajemenToko() {
                     <td>
                       {r.status === 'Pending' ? (
                         <div style={{ display: 'flex', gap: '8px' }}>
-                          <button className="mtAdmin__btn mgAdmin__btn--ghost" style={{ background: '#fff1f0', color: '#ff4d4f', border: '1px solid #ffa39e' }}>Decline</button>
-                          <button className="mtAdmin__btn mgAdmin__btn--primary" style={{ background: '#f6ffed', color: '#52c41a', border: '1px solid #b7eb8f' }}>Accept</button>
+                          <button
+                            className="mtAdmin__btn mgAdmin__btn--ghost"
+                            style={{ background: '#fff1f0', color: '#ff4d4f', border: '1px solid #ffa39e' }}
+                            onClick={() => handleDecide(r.id, "Declined")}
+                          >
+                            Decline
+                          </button>
+                          <button
+                            className="mtAdmin__btn mgAdmin__btn--primary"
+                            style={{ background: '#f6ffed', color: '#52c41a', border: '1px solid #b7eb8f' }}
+                            onClick={() => handleDecide(r.id, "Accepted")}
+                          >
+                            Accept
+                          </button>
                         </div>
                       ) : <span style={{ color: '#888', fontSize: '20px' }}>—</span>}
                     </td>
@@ -314,7 +503,7 @@ export default function ManajemenToko() {
       <AnimatePresence>
         {selectedReport && (
           <div className="mtAdmin-modal-overlay" onClick={() => setSelectedReport(null)}>
-            <motion.div 
+            <motion.div
               className="mtAdmin-modal"
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}

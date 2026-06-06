@@ -290,26 +290,59 @@ export function driverAcceptTask(id, driverName = "Driver 01") {
 
     if (r.status !== "Siap Dikirim") return db;
 
+    db.notifications = db.notifications || [];
+
+    // Status Pickup: driver sudah ambil tugas, belum upload bukti
+    r.status = "Pickup";
+    r.driverName = driverName;
+    r.acceptedAt = new Date().toISOString();
+
+    db.notifications.unshift({
+      id: newId("NTF"),
+      type: "pickup",
+      title: "Driver Mengambil Tugas",
+      message: `Pesanan ${id} diambil oleh ${driverName}. Driver sedang menyiapkan bukti barang.`,
+      time: nowTimeHHMM(),
+      isRead: false,
+      targetRoles: ["toko", "gudang", "admin"],
+    });
+
+    return db;
+  });
+}
+
+/**
+ * Driver upload bukti (resi + foto barang) lalu siap mengirim
+ * Status: Pickup -> Mengirim, buat shipment
+ */
+export function driverUploadBuktiSiapKirim(id, driverName = "Driver 01", proofData = {}) {
+  return dbUpdate((db) => {
+    const r = (db.requests || []).find((x) => x.id === id);
+    if (!r) return db;
+
+    if (r.status !== "Pickup") return db;
+
     db.shipments = db.shipments || {};
     db.notifications = db.notifications || [];
 
     r.status = "Mengirim";
-    r.driverName = driverName;
+    r.driverProof = proofData; // { resi: base64, foto: base64 }
+    r.shippingStartedAt = new Date().toISOString();
 
     db.shipments[id] = {
-      start: { lat: -6.2, lng: 106.8166 }, // gudang dummy
-      end: { lat: -6.1754, lng: 106.8272 }, // toko dummy
+      start: { lat: -6.2, lng: 106.8166 },
+      end:   { lat: -6.1754, lng: 106.8272 },
       startedAt: Date.now(),
       durationMs: 1000 * 60 * 18,
       driver: { lat: -6.197, lng: 106.8177 },
-      driverName: driverName
+      driverName: driverName,
     };
 
     db.notifications.unshift({
       id: newId("NTF"),
       type: "shipping",
-      title: "Driver Mengambil Tugas",
-      message: `Pesanan ${id} sedang dikirim oleh ${driverName}`,
+      title: "Pengiriman Dimulai",
+      message: `Pesanan ${id} sedang dalam perjalanan oleh ${driverName}. Bukti telah diunggah.`,
       time: nowTimeHHMM(),
       isRead: false,
       targetRoles: ["toko", "gudang", "admin"],
@@ -320,10 +353,10 @@ export function driverAcceptTask(id, driverName = "Driver 01") {
 }
 
 /* ===========================
- * TOKO selesai terima barang
- * Flow sesuai skema:
+ * TOKO terima barang (konfirmasi)
+ * Flow:
  * - hanya boleh saat status Mengirim
- * - status Selesai (dua sisi sama karena data 1 sumber)
+ * - status -> Diterima Toko (driver masih perlu menyelesaikan)
  * =========================== */
 export function tokoSelesaiTerima(id, proofImage = null) {
   return dbUpdate((db) => {
@@ -334,17 +367,48 @@ export function tokoSelesaiTerima(id, proofImage = null) {
 
     db.notifications = db.notifications || [];
 
-    r.status = "Selesai";
+    r.status = "Diterima Toko";
     r.proofImage = proofImage;
+    r.receivedAt = new Date().toISOString();
+
+    db.notifications.unshift({
+      id: newId("NTF"),
+      type: "received",
+      title: "Barang Diterima Toko",
+      message: `Toko ${r.fromName} telah mengkonfirmasi penerimaan barang (${id}). Driver silakan selesaikan pengiriman.`,
+      time: nowTimeHHMM(),
+      isRead: false,
+      targetRoles: ["driver", "gudang", "admin"],
+    });
+
+    return db;
+  });
+}
+
+/**
+ * Driver menyelesaikan pengiriman (setelah toko konfirmasi penerimaan)
+ * Status: Diterima Toko -> Selesai
+ */
+export function driverSelesaikanPengiriman(id) {
+  return dbUpdate((db) => {
+    const r = (db.requests || []).find((x) => x.id === id);
+    if (!r) return db;
+
+    if (r.status !== "Diterima Toko") return db;
+
+    db.notifications = db.notifications || [];
+
+    r.status = "Selesai";
+    r.completedAt = new Date().toISOString();
 
     db.notifications.unshift({
       id: newId("NTF"),
       type: "done",
-      title: "Barang Diterima",
-      message: `Permintaan ${id} telah selesai diterima oleh ${r.fromName}. Bukti foto telah diunggah.`,
+      title: "Pengiriman Selesai",
+      message: `Pengiriman ${id} telah diselesaikan oleh ${r.driverName || "Driver"}.`,
       time: nowTimeHHMM(),
       isRead: false,
-      targetRoles: ["gudang", "admin"],
+      targetRoles: ["gudang", "admin", "toko"],
     });
 
     return db;

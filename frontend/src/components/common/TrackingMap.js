@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 
-export default function TrackingMap({ start, end, progress = 0, height = 520 }) {
+export default function TrackingMap({ start, end, progress = 0, height = "100%" }) {
   const clamp = (n) => Math.max(0, Math.min(1, n));
   const p = clamp(progress);
 

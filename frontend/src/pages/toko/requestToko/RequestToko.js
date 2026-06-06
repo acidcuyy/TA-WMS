@@ -158,8 +158,8 @@ export default function RequestToko() {
               <div className="form-grid">
                 <div className="input-group">
                   <label>Pilih Gudang</label>
-                  <select 
-                    className="input-field" 
+                  <select
+                    className="input-field"
                     value={targetGudang}
                     onChange={(e) => setTargetGudang(e.target.value)}
                   >
@@ -269,7 +269,7 @@ export default function RequestToko() {
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                                   <span style={{ color: "#52c41a", fontSize: "11px", fontWeight: 600 }}>Diterima</span>
                                   {r.proofImage && (
-                                    <span 
+                                    <span
                                       style={{ fontSize: '10px', color: 'var(--primary)', cursor: 'pointer', textDecoration: 'underline' }}
                                       onClick={() => openProof(r.proofImage)}
                                     >
@@ -310,8 +310,8 @@ export default function RequestToko() {
       <AnimatePresence>
         {showConfirm && (
           <div className="mgAdmin__modalOverlay" onClick={() => setShowConfirm(false)}>
-            <motion.div 
-              className="mgAdmin__modal" 
+            <motion.div
+              className="mgAdmin__modal"
               onClick={e => e.stopPropagation()}
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -326,9 +326,9 @@ export default function RequestToko() {
                 <p style={{ fontSize: '14px', color: '#64748b', marginBottom: '20px', lineHeight: '1.5' }}>
                   Silakan upload foto bukti bahwa barang telah diterima dalam kondisi baik untuk menyelesaikan pesanan.
                 </p>
-                <div 
-                  className="upload-area" 
-                  style={{ border: '2px dashed #cbd5e1', borderRadius: '20px', padding: '40px 20px', textAlign: 'center', cursor: 'pointer', background: '#f8fafc', transition: 'all 0.2s' }} 
+                <div
+                  className="upload-area"
+                  style={{ border: '2px dashed #cbd5e1', borderRadius: '20px', padding: '40px 20px', textAlign: 'center', cursor: 'pointer', background: '#f8fafc', transition: 'all 0.2s' }}
                   onClick={() => document.getElementById('proof-upload').click()}
                 >
                   {selectedFile ? (
@@ -356,11 +356,11 @@ export default function RequestToko() {
       <AnimatePresence>
         {showProof && (
           <div className="mgAdmin__modalOverlay" onClick={() => setShowProof(false)}>
-            <motion.div 
-              className="mgAdmin__modal" 
-              onClick={e => e.stopPropagation()} 
-              initial={{ scale: 0.9, opacity: 0, y: 20 }} 
-              animate={{ scale: 1, opacity: 1, y: 0 }} 
+            <motion.div
+              className="mgAdmin__modal"
+              onClick={e => e.stopPropagation()}
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
               style={{ maxWidth: '500px' }}
             >
