@@ -27,7 +27,7 @@ export function buildQueryOptions(modelConfig, query = {}, unitId) {
 
       // Build nested object, e.g. { discount: { shareable_code: { contains: search } } }
       return parts.reduceRight((acc, curr) => ({ [curr]: acc }), {
-        [last]: { contains: searchTermForPrisma },
+        [last]: { contains: searchTermForPrisma, mode: "insensitive" },
       });
     });
   }

@@ -1,16 +1,15 @@
-import userService from "./user.service.js";
-import { createUserSchema, updateUserSchema } from "./user.validation.js";
+import productService from "./product.service.js";
+import { createUserSchema, updateUserSchema } from "./product.validate.js";
 
-class UserController {
+class ProductController {
   async getAll(req, res) {
     try {
-      const users = await userService.findAll(req.body);
-
+      const products = await productService.findAll(req.body);
       return res.json({
         success: true,
-        message: "Users retrieved successfully",
-        data: users.data,
-        meta: users.meta,
+        message: "Products retrieved successfully",
+        data: products.data,
+        meta: products.meta,
       });
     } catch (error) {
       return res.status(500).json({
@@ -23,12 +22,10 @@ class UserController {
   async create(req, res) {
     try {
       const validatedData = createUserSchema.parse(req.body);
-
-      const user = await userService.create(validatedData);
-
+      const product = await productService.create(validatedData);
       return res.status(201).json({
         success: true,
-        data: user,
+        data: product,
       });
     } catch (error) {
       if (error.name === "ZodError") {
@@ -47,16 +44,16 @@ class UserController {
   async getById(req, res) {
     try {
       const id = parseInt(req.params.id);
-      const user = await userService.findById(id);
-      if (!user) {
+      const product = await productService.findById(id);
+      if (!product) {
         return res.status(404).json({
           success: false,
-          message: "User not found",
+          message: "Product not found",
         });
       }
       return res.json({
         success: true,
-        data: user,
+        data: product,
       });
     } catch (error) {
       return res.status(500).json({
@@ -69,18 +66,19 @@ class UserController {
   async update(req, res) {
     try {
       const id = parseInt(req.params.id);
-      const validatedData = updateUserSchema.parse(req.body);
+      const validateData = updateUserSchema.parse(req.body);
 
-      const updatedUser = await userService.update(id, validatedData);
-      if (!updatedUser) {
+      const updatedProduct = await productService.update(id, validateData);
+
+      if (!updatedProduct) {
         return res.status(404).json({
           success: false,
-          message: "User not found",
+          message: "Product not found",
         });
       }
       return res.json({
         success: true,
-        data: updatedUser,
+        data: updatedProduct,
       });
     } catch (error) {
       if (error.name === "ZodError") {
@@ -99,16 +97,16 @@ class UserController {
   async delete(req, res) {
     try {
       const id = parseInt(req.params.id);
-      const deletedUser = await userService.delete(id);
-      if (!deletedUser) {
+      const deletedProduct = await productService.delete(id);
+      if (!deletedProduct) {
         return res.status(404).json({
           success: false,
-          message: "User not found",
+          message: "Product not found",
         });
       }
       return res.json({
         success: true,
-        data: deletedUser,
+        data: deletedProduct,
       });
     } catch (error) {
       return res.status(500).json({
@@ -119,4 +117,4 @@ class UserController {
   }
 }
 
-export default new UserController();
+export default new ProductController();
