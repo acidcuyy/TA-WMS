@@ -15,19 +15,11 @@ export default function RiwayatToko() {
     { label: "Penyesuaian Stok", value: "64", unit: "transaksi", icon: "⚖", iconClass: "summary-card__icon--blue" },
   ];
 
-  const [reports, setReports] = useState([
-    { id: "RPT-2025-032", type: "Laporan Penjualan", period: "20 - 24 Mei 2025", author: "Admin Toko", format: "PDF", formatColor: "#ef4444", status: "Selesai" },
-    { id: "RPT-2025-031", type: "Laporan Stok", period: "20 - 24 Mei 2025", author: "Admin Toko", format: "Excel", formatColor: "#16a34a", status: "Selesai" },
-    { id: "RPT-2025-030", type: "Laporan Pengeluaran", period: "19 - 24 Mei 2025", author: "Sistem", format: "PDF", formatColor: "#ef4444", status: "Dijadwalkan" },
-    { id: "RPT-2025-029", type: "Laporan Retur", period: "18 - 24 Mei 2025", author: "Admin Toko", format: "PDF", formatColor: "#ef4444", status: "Draft" },
-    { id: "RPT-2025-028", type: "Laporan Penyesuaian", period: "18 - 24 Mei 2025", author: "Sistem", format: "Excel", formatColor: "#16a34a", status: "Selesai" },
-    { id: "RPT-2025-027", type: "Laporan Transfer", period: "17 - 24 Mei 2025", author: "Admin Toko", format: "PDF", formatColor: "#ef4444", status: "Selesai" },
-    { id: "RPT-2025-026", type: "Laporan Penerimaan", period: "17 - 24 Mei 2025", author: "Sistem", format: "Excel", formatColor: "#16a34a", status: "Selesai" },
-  ]);
+  const [reports, setReports] = useState([]);
 
   // Upload Modal State
   const [openModal, setOpenModal] = useState(false);
-  const [form, setForm] = useState({ type: "Laporan Harian", period: "" });
+  const [form, setForm] = useState({ type: "Laporan Harian" });
   const [file, setFile] = useState(null);
   const [fileDataUrl, setFileDataUrl] = useState(null);
   const [toast, setToast] = useState("");
@@ -57,8 +49,8 @@ export default function RiwayatToko() {
   };
 
   const handleUploadSubmit = () => {
-    if (!fileDataUrl || !form.period) {
-      setToast("Mohon lengkapi form dan pilih file PDF.");
+    if (!fileDataUrl) {
+      setToast("Mohon pilih file PDF terlebih dahulu.");
       return;
     }
 
@@ -66,7 +58,6 @@ export default function RiwayatToko() {
       tokoId: "BRC-003",
       tokoName: "Toko Utama", // Assuming logged in as Toko Utama
       type: form.type,
-      period: form.period,
       format: "PDF",
       fileData: fileDataUrl,
       author: "Admin Toko"
@@ -74,14 +65,14 @@ export default function RiwayatToko() {
 
     // Add dummy row to local view just for UI feedback
     setReports(prev => [
-      { id: `RPT-${Math.floor(Math.random()*900)+100}`, type: form.type, period: form.period, author: "Admin Toko", format: "PDF", formatColor: "#ef4444", status: "Selesai" },
+      { id: `RPT-${Math.floor(Math.random()*900)+100}`, type: form.type, author: "Admin Toko", format: "PDF", formatColor: "#ef4444", status: "Selesai" },
       ...prev
     ]);
 
     setOpenModal(false);
     setFile(null);
     setFileDataUrl(null);
-    setForm({ type: "Laporan Harian", period: "" });
+    setForm({ type: "Laporan Harian" });
   };
 
 
@@ -260,7 +251,6 @@ export default function RiwayatToko() {
                 <tr>
                   <th>No. Laporan</th>
                   <th>Jenis Laporan</th>
-                  <th>Periode</th>
                   <th>Dibuat Oleh</th>
                   <th>Format</th>
                   <th>Status</th>
@@ -277,7 +267,6 @@ export default function RiwayatToko() {
                   >
                     <td style={{ fontWeight: 600 }}>{r.id}</td>
                     <td>{r.type}</td>
-                    <td>{r.period}</td>
                     <td>{r.author}</td>
                     <td>
                       <div className="format-badge" style={{ color: r.formatColor }}>
@@ -458,15 +447,7 @@ export default function RiwayatToko() {
                   </select>
                 </div>
 
-                <div className="rt-form-group">
-                  <label>Periode Laporan</label>
-                  <input 
-                    type="text" 
-                    placeholder="Contoh: 25 Mei 2025" 
-                    value={form.period}
-                    onChange={(e) => setForm({...form, period: e.target.value})}
-                  />
-                </div>
+
 
                 <div className="rt-form-group">
                   <label>File Laporan (PDF)</label>

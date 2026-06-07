@@ -17,16 +17,15 @@ import ManajemenGudang from "../pages/admin/manajemenGudang/ManajemenGudang";
 import ManajemenToko from "../pages/admin/manajemenToko/ManajemenToko";
 import ManajemenProduk from "../pages/admin/manajemenProduk/ManajemenProduk";
 import ManajemenOrder from "../pages/admin/manajemenOrder/ManajemenOrder";
-import LaporanStok from "../pages/admin/laporanStok/LaporanStok";
-import LaporanOrder from "../pages/admin/laporanOrder/LaporanOrder";
-import LaporanPergerakanStok from "../pages/admin/laporanPergerakanStok/LaporanPergerakanStok";
-import LaporanProduksi from "../pages/admin/laporanProduksi/LaporanProduksi";
+import LaporanAdmin from "../pages/admin/laporanAdmin/LaporanAdmin";
+import RegistrasiEntitas from "../pages/admin/registrasi/RegistrasiEntitas";
 import PenerimaanBarang from "../pages/gudang/penerimaanBarang/PenerimaanBarang";
 
 // Gudang
 import GudangLayout from "../pages/gudang/GudangLayout";
 import GudangDashboard from "../pages/gudang/dashboard/GudangDashboard";
 import RequestsGudang from "../pages/gudang/requestGudang/RequestsGudang";
+import BuatRequestGudang from "../pages/gudang/buatRequestGudang/BuatRequestGudang";
 import ProfileGudang from "../pages/gudang/ProfileGudang";
 import SettingsGudang from "../pages/gudang/settingsGudang/SettingsGudang";
 import StokGudang from "../pages/gudang/stokGudang/StokGudang";
@@ -34,14 +33,14 @@ import PengirimanGudang from "../pages/gudang/PengirimanGudang";
 import PengeluaranBarang from "../pages/gudang/pengeluaranBarang/PengeluaranBarang";
 import TransferBarang from "../pages/gudang/transferBarang/TransferBarang";
 import OrdersGudang from "../pages/gudang/ordersGudang/OrdersGudang";
-import LaporanGudang from "../pages/gudang/laporanGudang/LaporanGudang";
+
 
 // Toko
 import TokoLayout from "../pages/toko/TokoLayout";
 import TokoDashboard from "../pages/toko/dashboardToko/TokoDashboard";
 import RequestToko from "../pages/toko/requestToko/RequestToko";
 import StokToko from "../pages/toko/stokToko/StokToko";
-import RiwayatToko from "../pages/toko/riwayatToko/RiwayatToko";
+
 import ProfileToko from "../pages/toko/ProfileToko";
 import SettingsToko from "../pages/toko/SettingsToko";
 import PengirimanToko from "../pages/toko/PengirimanToko";
@@ -83,10 +82,8 @@ export const router = createBrowserRouter([
           { path: "toko", element: <ManajemenToko /> },
           { path: "produk", element: <ManajemenProduk /> },
           { path: "order", element: <ManajemenOrder /> },
-          { path: "laporan-stok", element: <LaporanStok /> },
-          { path: "laporan-order", element: <LaporanOrder /> },
-          { path: "laporan-pergerakan", element: <LaporanPergerakanStok /> },
-          { path: "laporan-produksi", element: <LaporanProduksi /> },
+          { path: "laporan", element: <LaporanAdmin /> },
+          { path: "registrasi", element: <RegistrasiEntitas /> },
           { path: "pengiriman/:id", element: <PengirimanGudang /> },
         ],
       },
@@ -114,10 +111,11 @@ export const router = createBrowserRouter([
       { path: "pengeluaran", element: <PengeluaranBarang /> },
       { path: "transfer", element: <TransferBarang /> },
       { path: "requests", element: <RequestsGudang /> },
+      { path: "buat-request", element: <BuatRequestGudang /> },
       { path: "orders", element: <OrdersGudang /> },
       { path: "profile", element: <ProfileGudang /> },
       { path: "settings", element: <SettingsGudang /> },
-      { path: "laporan", element: <LaporanGudang /> },
+
       { path: "stok", element: <StokGudang /> },
 
       // ✅ Gudang pengiriman (benar)
@@ -146,7 +144,7 @@ export const router = createBrowserRouter([
       { path: "transfer", element: <TransferBarangToko /> },
       { path: "adj", element: <PenyesuaianStokToko /> },
       { path: "retur", element: <ReturPenjualanToko /> },
-      { path: "riwayat", element: <RiwayatToko /> },
+
       { path: "profile", element: <ProfileToko /> },
       { path: "settings", element: <SettingsToko /> },
 

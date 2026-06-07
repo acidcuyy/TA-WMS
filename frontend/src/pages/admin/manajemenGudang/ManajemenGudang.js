@@ -25,13 +25,7 @@ export default function ManajemenGudang() {
 
   useEffect(() => {
     const unsubReq = subscribeRequests((rows) => setRequests(rows || []));
-    const unsubBranch = subscribeBranches((rows) => {
-      setBranches(rows || []);
-    });
-    return () => {
-      unsubReq();
-      unsubBranch();
-    };
+    return () => unsubReq();
   }, []);
 
   const stats = useMemo(() => {
@@ -50,20 +44,7 @@ export default function ManajemenGudang() {
     await gudangDecideRequest(id, dec);
   };
 
-  const handleAddBranch = async () => {
-    if (!newBranch.name || !newBranch.location) return alert("Isi semua data!");
-    await createBranchAccount(newBranch);
-    setShowAddBranch(false);
-    setNewBranch({ name: "", type: "gudang", location: "" });
-  };
-
-  const handleDeleteBranch = async () => {
-    if (branchToDelete) {
-      await deleteBranch(branchToDelete);
-      setShowDeleteConfirm(false);
-      setBranchToDelete(null);
-    }
-  };
+  // Branch handling is moved to RegistrasiEntitas
 
   const openProof = (img) => {
     setProofImg(img);
@@ -124,49 +105,7 @@ export default function ManajemenGudang() {
         </Card>
       </div>
 
-      {/* BRANCHES MONITORING */}
-      <div className="mgAdmin__grid" style={{ marginBottom: '30px' }}>
-        <section className="mgAdmin__card" style={{ gridColumn: '1 / -1' }}>
-          <div className="mgAdmin__cardHead">
-            <h3><span>🏢</span> Daftar Cabang (Gudang & Toko)</h3>
-            <button className="btn-upload" onClick={() => setShowAddBranch(true)}>+ Tambah Cabang</button>
-          </div>
-          <div className="mgAdmin__tableWrap">
-            <table className="mgAdmin__table">
-              <thead>
-                <tr>
-                  <th>ID Cabang</th>
-                  <th>Nama Cabang</th>
-                  <th>Tipe</th>
-                  <th>Lokasi</th>
-                  <th>Status</th>
-                  <th style={{ textAlign: 'center' }}>Aksi</th>
-                </tr>
-              </thead>
-              <tbody>
-                {branches.map(b => (
-                  <tr key={b.id}>
-                    <td className="mgAdmin__mono">{b.id}</td>
-                    <td><b>{b.name}</b></td>
-                    <td><span className={`mgAdmin__pill ${b.type === 'gudang' ? 'mgAdmin__pill--success' : ''}`}>{b.type.toUpperCase()}</span></td>
-                    <td>{b.location}</td>
-                    <td><span className="mgAdmin__pill mgAdmin__pill--success">Aktif</span></td>
-                    <td style={{ textAlign: 'center' }}>
-                      <button 
-                        style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '16px' }}
-                        onClick={() => { setBranchToDelete(b.id); setShowDeleteConfirm(true); }}
-                        title="Hapus Cabang"
-                      >
-                        🗑️
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      </div>
+      {/* BRANCHES MONITORING REMOVED */}
 
       {/* ALL REQUEST MONITORING */}
       <section className="mgAdmin__card" style={{ width: '100%' }}>
@@ -231,62 +170,7 @@ export default function ManajemenGudang() {
         </div>
       </section>
 
-      {/* MODAL TAMBAH CABANG */}
-      <AnimatePresence>
-        {showAddBranch && (
-          <div className="mgAdmin__modalOverlay" onClick={() => setShowAddBranch(false)}>
-            <motion.div 
-              className="mgAdmin__modal" 
-              onClick={e => e.stopPropagation()}
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            >
-              <div className="mgAdmin__modalHead">
-                <h3><span>🏢</span> Tambah Cabang Baru</h3>
-                <button className="mgAdmin__modalClose" onClick={() => setShowAddBranch(false)}>✕</button>
-              </div>
-              <div className="mgAdmin__modalBody">
-                <div className="mgAdmin__formGroup">
-                  <label className="mgAdmin__formLabel">Nama Cabang</label>
-                  <input 
-                    className="mgAdmin__inputField" 
-                    placeholder="Contoh: Gudang Surabaya" 
-                    value={newBranch.name}
-                    onChange={e => setNewBranch({ ...newBranch, name: e.target.value })}
-                    autoFocus
-                  />
-                </div>
-                <div className="mgAdmin__formGroup">
-                  <label className="mgAdmin__formLabel">Tipe Cabang</label>
-                  <select 
-                    className="mgAdmin__inputField"
-                    value={newBranch.type}
-                    onChange={e => setNewBranch({ ...newBranch, type: e.target.value })}
-                  >
-                    <option value="gudang">🏢 GUDANG (Penyimpanan)</option>
-                    <option value="toko">🏪 TOKO (Retail)</option>
-                  </select>
-                </div>
-                <div className="mgAdmin__formGroup" style={{ marginBottom: 0 }}>
-                  <label className="mgAdmin__formLabel">Lokasi / Kota</label>
-                  <input 
-                    className="mgAdmin__inputField" 
-                    placeholder="Contoh: Surabaya, Jawa Timur" 
-                    value={newBranch.location}
-                    onChange={e => setNewBranch({ ...newBranch, location: e.target.value })}
-                  />
-                </div>
-              </div>
-              <div className="mgAdmin__modalFooter">
-                <button className="mgAdmin__btnAction mgAdmin__btnAction--cancel" onClick={() => setShowAddBranch(false)}>Batal</button>
-                <button className="mgAdmin__btnAction mgAdmin__btnAction--save" onClick={handleAddBranch}>Simpan Cabang</button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      {/* MODAL TAMBAH CABANG REMOVED */}
 
       {/* MODAL LIHAT BUKTI */}
       <AnimatePresence>
@@ -318,43 +202,7 @@ export default function ManajemenGudang() {
           </div>
         )}
       </AnimatePresence>
-      {/* MODAL HAPUS CABANG CONFIRMATION */}
-      <AnimatePresence>
-        {showDeleteConfirm && (
-          <div className="mgAdmin__modalOverlay" onClick={() => setShowDeleteConfirm(false)}>
-            <motion.div 
-              className="mgAdmin__modal" 
-              onClick={e => e.stopPropagation()}
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              style={{ maxWidth: '400px' }}
-            >
-              <div className="mgAdmin__modalHead">
-                <h3><span>⚠️</span> Konfirmasi Hapus</h3>
-                <button className="mgAdmin__modalClose" onClick={() => setShowDeleteConfirm(false)}>✕</button>
-              </div>
-              <div className="mgAdmin__modalBody" style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '50px', marginBottom: '16px' }}>🗑️</div>
-                <h4 style={{ margin: '0 0 8px', fontSize: '16px', fontWeight: 800 }}>Hapus Cabang Ini?</h4>
-                <p style={{ margin: 0, fontSize: '13px', color: '#64748b', lineHeight: '1.5' }}>
-                  Tindakan ini tidak dapat dibatalkan. Data cabang <b>{branchToDelete}</b> akan dihapus secara permanen dari sistem.
-                </p>
-              </div>
-              <div className="mgAdmin__modalFooter">
-                <button className="mgAdmin__btnAction mgAdmin__btnAction--cancel" onClick={() => setShowDeleteConfirm(false)}>Batal</button>
-                <button 
-                  className="mgAdmin__btnAction" 
-                  style={{ background: '#ff4d4f', color: 'white', border: 'none' }} 
-                  onClick={handleDeleteBranch}
-                >
-                  Ya, Hapus Cabang
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      {/* MODAL HAPUS CABANG CONFIRMATION REMOVED */}
     </div>
   );
 }

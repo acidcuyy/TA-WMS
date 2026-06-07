@@ -13,11 +13,16 @@ function nowTimeHHMM() {
 
 function normalizeItems(payload = {}) {
   // skema utama: items: [{ sku, qty }]
-  if (Array.isArray(payload.items) && payload.items.length) return payload.items;
+  if (Array.isArray(payload.items) && payload.items.length) {
+    return payload.items.map(item => ({
+      ...item,
+      sku: item.sku || item.code || item.itemCode || `SKU-${Math.floor(Math.random() * 1000)}`
+    }));
+  }
 
   // fallback lama: itemCode + qty
   if (payload.itemCode && payload.qty != null) {
-    return [{ sku: payload.itemCode, qty: Number(payload.qty) || 0 }];
+    return [{ sku: payload.itemCode, name: payload.name || payload.itemCode, qty: Number(payload.qty) || 0 }];
   }
 
   return [];
@@ -137,7 +142,7 @@ export function subscribeDriverProfile(callback) {
 export function updateDriverProfile(payload) {
   return dbUpdate((db) => {
     db.driverProfile = { ...(db.driverProfile || {}), ...payload };
-    
+
     // Sinkronisasi nama driver di request/shipment yang sedang aktif
     if (payload.name) {
       (db.requests || []).forEach(r => {
@@ -153,7 +158,7 @@ export function updateDriverProfile(payload) {
         });
       }
     }
-    
+
     return db;
   });
 }
@@ -163,9 +168,11 @@ export function updateDriverProfile(payload) {
  * ========================================================= */
 export function createTokoRequest(payload) {
   const fromName = payload?.fromName || payload?.from || "Toko";
+  const fromBranchId = payload?.fromBranchId || "BRC-003";
   const toBranchId = payload?.toBranchId || "BRC-001";
   const toBranchName = payload?.toBranchName || "Gudang Pusat";
   const note = payload?.note || "";
+  const satuan = payload?.satuan || "pcs";
   const items = normalizeItems(payload);
 
   return dbUpdate((db) => {
@@ -179,11 +186,13 @@ export function createTokoRequest(payload) {
       id,
       fromRole: "toko",
       fromName,
+      fromBranchId,
       toRole: "gudang",
       toBranchId,
       toName: toBranchName,
       createdAt,
       items,
+      satuan,
       note,
       decision: null,
       status: "Menunggu",
@@ -331,7 +340,7 @@ export function driverUploadBuktiSiapKirim(id, driverName = "Driver 01", proofDa
 
     db.shipments[id] = {
       start: { lat: -6.2, lng: 106.8166 },
-      end:   { lat: -6.1754, lng: 106.8272 },
+      end: { lat: -6.1754, lng: 106.8272 },
       startedAt: Date.now(),
       durationMs: 1000 * 60 * 18,
       driver: { lat: -6.197, lng: 106.8177 },
@@ -401,6 +410,32 @@ export function driverSelesaikanPengiriman(id) {
     r.status = "Selesai";
     r.completedAt = new Date().toISOString();
 
+    // TRANSFER STOK SECARA FISIK
+    db.warehouseStock = db.warehouseStock || [];
+    (r.items || []).forEach(item => {
+      // 1. Kurangi dari Gudang (Sumber)
+      const gudangStock = db.warehouseStock.find(s => s.branchId === r.toBranchId && s.sku === item.sku);
+      if (gudangStock) {
+        gudangStock.qty = Math.max(0, gudangStock.qty - item.qty);
+      }
+
+      // 2. Tambah ke Toko (Tujuan)
+      const tokoStock = db.warehouseStock.find(s => s.branchId === (r.fromBranchId || "BRC-003") && s.sku === item.sku);
+      if (tokoStock) {
+        tokoStock.qty += item.qty;
+      } else {
+        db.warehouseStock.push({
+          sku: item.sku,
+          name: item.name || item.sku,
+          type: item.category || item.type || "General",
+          qty: item.qty,
+          minQty: 10,
+          image: null,
+          branchId: r.fromBranchId || "BRC-003"
+        });
+      }
+    });
+
     db.notifications.unshift({
       id: newId("NTF"),
       type: "done",
@@ -420,7 +455,10 @@ export function driverSelesaikanPengiriman(id) {
  * ========================================================= */
 export function createRestockToAdmin(payload) {
   const fromName = payload?.fromName || payload?.from || "Gudang";
+  const fromBranchId = payload?.fromBranchId || "BRC-001";
   const note = payload?.note || "";
+  const supplier = payload?.supplier || "";
+  const satuan = payload?.satuan || "pcs";
   const items = normalizeItems(payload);
 
   return dbUpdate((db) => {
@@ -434,11 +472,14 @@ export function createRestockToAdmin(payload) {
       id,
       fromRole: "gudang",
       fromName,
+      fromBranchId,
       toRole: "admin",
       toName: "Admin",
       createdAt,
       items,
       note,
+      supplier,
+      satuan,
       decision: null,     // "Accepted" | "Declined" | null
       status: "Menunggu", // "Menunggu" | "Diproses" | "Selesai" | "Ditolak"
       proofImage: null,   // base64
@@ -522,6 +563,25 @@ export function gudangFinishRestockWithProof(id, proofImage) {
 
     r.proofImage = proofImage || null;
     r.status = "Selesai";
+
+    // TAMBAH STOK FISIK GUDANG
+    db.warehouseStock = db.warehouseStock || [];
+    (r.items || []).forEach(item => {
+      const stock = db.warehouseStock.find(s => s.branchId === (r.fromBranchId || "BRC-001") && s.sku === item.sku);
+      if (stock) {
+        stock.qty += item.qty;
+      } else {
+        db.warehouseStock.push({
+          sku: item.sku,
+          name: item.name || item.sku,
+          type: item.category || item.type || "General",
+          qty: item.qty,
+          minQty: 30,
+          image: null,
+          branchId: r.fromBranchId || "BRC-001"
+        });
+      }
+    });
 
     db.notifications.unshift({
       id: newId("NTF"),
@@ -637,6 +697,23 @@ export function gudangUploadProofAndFinish(id, proofPhotos) {
     r.status = "Selesai";
     r.completedAt = new Date().toISOString().slice(0, 10);
 
+    // TAMBAH STOK FISIK GUDANG
+    db.warehouseStock = db.warehouseStock || [];
+    const stock = db.warehouseStock.find(s => s.branchId === r.cabangGudang && s.sku === r.kodeBarang);
+    if (stock) {
+      stock.qty += r.jumlah;
+    } else {
+      db.warehouseStock.push({
+        sku: r.kodeBarang,
+        name: r.namaBarang || r.kodeBarang,
+        type: r.jenisBarang || "General",
+        qty: r.jumlah,
+        minQty: 30,
+        image: null,
+        branchId: r.cabangGudang
+      });
+    }
+
     db.notifications.unshift({
       id: newId("NTF"),
       type: "admin_restock_done",
@@ -702,7 +779,7 @@ export function uploadTokoReport(payload) {
 
   return dbUpdate((db) => {
     const id = newId("RPT");
-    
+
     db.tokoReports = db.tokoReports || [];
     db.notifications = db.notifications || [];
 
@@ -733,3 +810,58 @@ export function uploadTokoReport(payload) {
   });
 }
 
+/* =======================================================================
+ * LAPORAN GUDANG -> ADMIN
+ * ======================================================================= */
+export function getGudangReports() {
+  return dbLoad().gudangReports || [];
+}
+
+export function subscribeGudangReports(callback) {
+  return makeSub(getGudangReports, callback);
+}
+
+export function uploadGudangReport(payload) {
+  const {
+    gudangId = "WH-001",
+    gudangName = "Gudang Pusat",
+    type = "Laporan Harian",
+    period = "",
+    date = new Date().toISOString().slice(0, 10),
+    format = "PDF",
+    fileData = null,
+    author = "Admin Gudang"
+  } = payload || {};
+
+  return dbUpdate((db) => {
+    const id = newId("RPT-GDG-");
+
+    db.gudangReports = db.gudangReports || [];
+    db.notifications = db.notifications || [];
+
+    db.gudangReports.unshift({
+      id,
+      gudangId,
+      gudangName,
+      type,
+      period,
+      date,
+      format,
+      fileData,
+      status: "Tersedia",
+      author
+    });
+
+    db.notifications.unshift({
+      id: newId("NTF"),
+      type: "gudang_report_new",
+      title: "Laporan Gudang Baru",
+      message: `${gudangName} telah mengunggah ${type} (${id})`,
+      time: nowTimeHHMM(),
+      isRead: false,
+      targetRoles: ["admin"],
+    });
+
+    return db;
+  });
+}

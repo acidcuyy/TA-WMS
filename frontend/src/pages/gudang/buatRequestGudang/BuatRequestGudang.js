@@ -1,40 +1,36 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import "./RequestToko.css";
+import "../../toko/requestToko/RequestToko.css";
 import {
-  createTokoRequest,
-  subscribeRequests,
-  tokoSelesaiTerima,
-  subscribeBranches,
+  createRestockToAdmin,
+  subscribeRestockToAdmin,
+  gudangFinishRestockWithProof,
 } from "../../../services/wmsApi";
 
 const getBadgeClass = (status) => {
   const s = (status || "").toLowerCase();
   if (!s || s.includes("menunggu") || s.includes("pending")) return "badge--pending";
   if (s.includes("accepted")) return "badge--accepted";
-  if (s.includes("mengirim") || s.includes("ship")) return "badge--ship";
+  if (s.includes("mengirim") || s.includes("ship") || s.includes("diproses")) return "badge--process";
   if (s.includes("siap")) return "badge--ready";
   if (s.includes("selesai") || s.includes("done")) return "badge--done";
   if (s.includes("declined") || s.includes("ditolak")) return "badge--declined";
-  if (s.includes("memproses") || s.includes("processing")) return "badge--process";
   return "";
 };
 
-export default function RequestToko() {
+export default function BuatRequestGudang() {
   const navigate = useNavigate();
   const [allReq, setAllReq] = useState([]);
-  const [branches, setBranches] = useState([]);
   const [kode, setKode] = useState("");
   const [namaBarang, setNamaBarang] = useState("");
   const [kategori, setKategori] = useState("Elektronik");
   const [kategoriLain, setKategoriLain] = useState("");
   const [jumlah, setJumlah] = useState("");
   const [satuan, setSatuan] = useState("pcs");
+  const [supplier, setSupplier] = useState("");
   const [prioritas, setPrioritas] = useState("Normal");
-  const [tanggalKebutuhan, setTanggalKebutuhan] = useState("");
   const [catatan, setCatatan] = useState("");
-  const [targetGudang, setTargetGudang] = useState("");
 
   // Confirmation Modal
   const [showConfirm, setShowConfirm] = useState(false);
@@ -47,54 +43,46 @@ export default function RequestToko() {
 
   const easing = [0.22, 1, 0.36, 1];
 
-  useEffect(() => {
-    const unsubReq = subscribeRequests((rows) => setAllReq(rows || []));
-    const unsubBranch = subscribeBranches((rows) => {
-      const gudangs = rows.filter(b => b.type === 'gudang');
-      setBranches(gudangs);
-      if (gudangs.length > 0 && !targetGudang) setTargetGudang(gudangs[0].id);
-    });
-    return () => {
-      unsubReq();
-      unsubBranch();
-    };
-  }, [targetGudang]);
-
   const openProof = (img) => {
     setProofImg(img);
     setShowProof(true);
   };
 
-  const tokoReq = useMemo(() => {
-    return allReq.filter((r) => (r.fromRole || "").toLowerCase() === "toko");
+  useEffect(() => {
+    const unsubReq = subscribeRestockToAdmin((rows) => setAllReq(rows || []));
+    return () => unsubReq();
+  }, []);
+
+  const gudangReq = useMemo(() => {
+    // Only fetch requests made by Gudang to Admin
+    return allReq.filter((r) => (r.fromRole || "").toLowerCase() === "gudang");
   }, [allReq]);
 
   const stats = useMemo(() => {
-    const total = tokoReq.length;
-    const pending = tokoReq.filter(r => (r.status || "").toLowerCase().includes("menunggu")).length;
-    const process = tokoReq.filter(r => (r.status || "").toLowerCase().includes("memproses")).length;
-    const shipping = tokoReq.filter(r => (r.status || "").toLowerCase().includes("mengirim")).length;
-    const done = tokoReq.filter(r => (r.status || "").toLowerCase().includes("selesai")).length;
-    return { total, pending, process, shipping, done };
-  }, [tokoReq]);
+    const total = gudangReq.length;
+    const pending = gudangReq.filter(r => (r.status || "").toLowerCase().includes("menunggu")).length;
+    const process = gudangReq.filter(r => (r.status || "").toLowerCase().includes("diproses")).length;
+    const done = gudangReq.filter(r => (r.status || "").toLowerCase().includes("selesai")).length;
+    return { total, pending, process, done };
+  }, [gudangReq]);
 
   const sendRequest = async () => {
-    if (!kode || !namaBarang || !jumlah || !targetGudang) return;
-    const branch = branches.find(b => b.id === targetGudang);
+    if (!kode || !namaBarang || !jumlah || !supplier) {
+      alert("Mohon lengkapi data utama (Kode, Nama, Jumlah, Supplier).");
+      return;
+    }
     const finalKategori = kategori === "Lainnya" ? kategoriLain : kategori;
     if (kategori === "Lainnya" && !finalKategori.trim()) {
       alert("Mohon isi jenis barang.");
       return;
     }
 
-    await createTokoRequest({
-      fromName: "Toko Utama", // Cabang toko yang sedang login
-      toBranchId: targetGudang,
-      toBranchName: branch?.name || "Gudang",
+    await createRestockToAdmin({
+      fromName: "Gudang Pusat", // Cabang gudang yang sedang login
       items: [{ code: kode, name: namaBarang, category: finalKategori, qty: Number(jumlah) || 0 }],
       priority: prioritas,
+      supplier: supplier,
       satuan: satuan,
-      dueDate: tanggalKebutuhan,
       note: catatan,
     });
     setKode("");
@@ -103,8 +91,8 @@ export default function RequestToko() {
     setKategoriLain("");
     setJumlah("");
     setSatuan("pcs");
+    setSupplier("");
     setPrioritas("Normal");
-    setTanggalKebutuhan("");
     setCatatan("");
   };
 
@@ -121,7 +109,7 @@ export default function RequestToko() {
 
   const submitTerima = async () => {
     if (!selectedFile) return alert("Pilih foto bukti terlebih dahulu!");
-    await tokoSelesaiTerima(confirmId, selectedFile);
+    await gudangFinishRestockWithProof(confirmId, selectedFile);
     setShowConfirm(false);
     setConfirmId(null);
     setSelectedFile(null);
@@ -130,8 +118,7 @@ export default function RequestToko() {
   const summaryCards = [
     { label: "Total Request", value: stats.total, unit: "Permintaan", icon: "📝", iconClass: "summary-card__icon--purple" },
     { label: "Menunggu ACC", value: stats.pending, unit: "Pending", icon: "⏳", iconClass: "summary-card__icon--orange" },
-    { label: "Dalam Proses", value: stats.process, unit: "Gudang", icon: "🏭", iconClass: "summary-card__icon--blue" },
-    { label: "Dalam Pengiriman", value: stats.shipping, unit: "Kurir", icon: "🚚", iconClass: "summary-card__icon--cyan" },
+    { label: "Sedang Diproses", value: stats.process, unit: "Admin", icon: "🏭", iconClass: "summary-card__icon--blue" },
     { label: "Selesai", value: stats.done, unit: "Diterima", icon: "✅", iconClass: "summary-card__icon--green" },
   ];
 
@@ -145,13 +132,13 @@ export default function RequestToko() {
         {/* HEADER */}
         <header className="request-toko__header">
           <div className="request-toko__title-section">
-            <h1>Request Stok</h1>
-            <p>Kirim permintaan stok barang ke gudang pusat dan pantau status pemenuhannya.</p>
+            <h1>Request Stok (ke Admin)</h1>
+            <p>Kirim permintaan stok barang ke Admin / Supplier dan pantau status pemenuhannya.</p>
           </div>
         </header>
 
         {/* SUMMARY */}
-        <section className="request-toko__summary">
+        <section className="request-toko__summary" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
           {summaryCards.map((card, idx) => (
             <motion.div
               key={idx}
@@ -173,9 +160,8 @@ export default function RequestToko() {
           <div className="request-left-col">
             {/* FORM CARD */}
             <section className="request-form-card">
-              <div className="form-title">Buat Request Baru</div>
-              <p className="form-sub">Pilih gudang dan isi detail barang yang Anda butuhkan.</p>
-
+              <div className="form-title">Buat Request Baru ke Admin</div>
+              <p className="form-sub">Isi detail barang yang Anda butuhkan dari supplier.</p>
               <style>{`
                 .request-form-card .input-group label {
                   text-align: left !important;
@@ -184,17 +170,12 @@ export default function RequestToko() {
 
               <div className="form-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
                 <div className="input-group">
-                  <label>Pilih Gudang</label>
-                  <select
+                  <label>Tujuan</label>
+                  <input
                     className="input-field"
-                    value={targetGudang}
-                    onChange={(e) => setTargetGudang(e.target.value)}
-                  >
-                    {branches.length === 0 && <option value="">Memuat gudang...</option>}
-                    {branches.map(b => (
-                      <option key={b.id} value={b.id}>{b.name} ({b.location})</option>
-                    ))}
-                  </select>
+                    value="Admin / Supplier Pusat"
+                    disabled
+                  />
                 </div>
                 <div className="input-group">
                   <label>Kode Barang</label>
@@ -274,6 +255,18 @@ export default function RequestToko() {
                   </div>
                 </div>
                 <div className="input-group">
+                  <label>Pembelian dari Supplier</label>
+                  <input
+                    className="input-field"
+                    value={supplier}
+                    onChange={(e) => setSupplier(e.target.value)}
+                    placeholder="Nama PT / Supplier"
+                  />
+                </div>
+              </div>
+
+              <div className="form-grid" style={{ marginTop: '15px', gridTemplateColumns: '1fr 2fr' }}>
+                <div className="input-group">
                   <label>Prioritas</label>
                   <select
                     className="input-field"
@@ -283,18 +276,6 @@ export default function RequestToko() {
                     <option value="Normal">Normal</option>
                     <option value="Urgent">Urgent (Segera)</option>
                   </select>
-                </div>
-              </div>
-
-              <div className="form-grid" style={{ marginTop: '15px', gridTemplateColumns: '1fr 2fr' }}>
-                <div className="input-group">
-                  <label>Tgl Dibutuhkan</label>
-                  <input
-                    className="input-field"
-                    type="date"
-                    value={tanggalKebutuhan}
-                    onChange={(e) => setTanggalKebutuhan(e.target.value)}
-                  />
                 </div>
                 <div className="input-group">
                   <label>Catatan Tambahan</label>
@@ -308,14 +289,14 @@ export default function RequestToko() {
               </div>
 
               <button className="btn-submit" style={{ marginTop: '20px' }} onClick={sendRequest}>
-                Kirim Request ke Gudang
+                Kirim Request ke Admin
               </button>
             </section>
 
             {/* LIST CARD */}
             <section className="request-list-card">
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-                <div className="form-title">Daftar Riwayat Request</div>
+                <div className="form-title">Riwayat Pengajuan Gudang</div>
               </div>
 
               <table className="request-table">
@@ -329,20 +310,16 @@ export default function RequestToko() {
                   </tr>
                 </thead>
                 <tbody>
-                  {tokoReq.length === 0 ? (
-                    <tr><td colSpan="5" style={{ textAlign: "center", padding: "40px", color: "#94a3b8" }}>Belum ada data request.</td></tr>
+                  {gudangReq.length === 0 ? (
+                    <tr><td colSpan="4" style={{ textAlign: "center", padding: "40px", color: "#94a3b8" }}>Belum ada data request.</td></tr>
                   ) : (
-                    tokoReq.map((r, idx) => {
+                    gudangReq.map((r, idx) => {
                       const item = r.items?.[0];
                       const itemName = item?.name || "Item Request";
                       const itemCode = item?.code || "";
                       const itemQty = item?.qty || 0;
                       const itemText = `${itemName} ${itemCode ? `(${itemCode})` : ""} - ${itemQty} Pcs`;
                       const priorityTag = r.priority ? `[Prioritas: ${r.priority}]` : "";
-                      const status = (r.status || "").toLowerCase();
-                      const canSeeTrack = status.includes("mengirim");
-                      const canFinish = status.includes("mengirim");
-                      const done = status.includes("selesai");
 
                       return (
                         <motion.tr
@@ -352,7 +329,7 @@ export default function RequestToko() {
                           transition={{ delay: 0.2 + idx * 0.05 }}
                         >
                           <td style={{ fontWeight: 600 }}>{r.id}</td>
-                          <td>{r.toName || "Gudang"}</td>
+                          <td>Admin / Pusat</td>
                           <td>
                             <div style={{ fontWeight: 600 }}>{itemText}</div>
                             <div style={{ fontSize: "11px", color: "#94a3b8" }}>{priorityTag} {r.note ? `- ${r.note}` : ""}</div>
@@ -364,17 +341,10 @@ export default function RequestToko() {
                           </td>
                           <td>
                             <div className="action-group">
-                              {!done && (
-                                <>
-                                  {canSeeTrack && (
-                                    <button className="btn-action-small" onClick={() => navigate(`/toko/pengiriman/${r.id}`)}>Lihat Pengiriman</button>
-                                  )}
-                                  {canFinish && (
-                                    <button className="btn-action-small primary" onClick={() => { setConfirmId(r.id); setShowConfirm(true); }}>Terima Barang</button>
-                                  )}
-                                </>
+                              {r.status === "Diproses" && (
+                                <button className="btn-action-small primary" onClick={() => { setConfirmId(r.id); setShowConfirm(true); }}>Terima Barang</button>
                               )}
-                              {done && (
+                              {r.status === "Selesai" && (
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                                   <span style={{ color: "#52c41a", fontSize: "11px", fontWeight: 600 }}>Diterima</span>
                                   {r.proofImage && (
@@ -401,14 +371,12 @@ export default function RequestToko() {
           {/* SIDEBAR */}
           <aside className="request-sidebar">
             <div className="sidebar-widget">
-              <h3 className="widget-title">Alur Request Barang</h3>
+              <h3 className="widget-title">Alur Request Gudang</h3>
               <ul style={{ paddingLeft: "16px", margin: 0, fontSize: "12px", color: "#64748b", lineHeight: "1.8" }}>
-                <li><b>1. Request:</b> Toko memilih gudang dan input barang.</li>
-                <li><b>2. Approval:</b> Gudang menyetujui (Status: Memproses).</li>
-                <li><b>3. Persiapan:</b> Gudang menyiapkan barang (Status: Siap Dikirim).</li>
-                <li><b>4. Pengiriman:</b> Driver mengambil tugas (Status: Mengirim).</li>
-                <li><b>5. Pelacakan:</b> Pantau posisi driver di Maps secara realtime.</li>
-                <li><b>6. Selesai:</b> Toko klik Terima Barang & upload bukti foto.</li>
+                <li><b>1. Request:</b> Gudang membuat permintaan restok ke Admin Pusat/Supplier.</li>
+                <li><b>2. Approval:</b> Admin Pusat akan mengecek ketersediaan dan menyetujui request.</li>
+                <li><b>3. Pemrosesan:</b> Barang dikirim dari Supplier (Status: Diproses).</li>
+                <li><b>4. Selesai:</b> Admin menandai request selesai saat stok tiba di Gudang.</li>
               </ul>
             </div>
           </aside>
@@ -428,12 +396,12 @@ export default function RequestToko() {
               style={{ maxWidth: '440px' }}
             >
               <div className="mgAdmin__modalHead">
-                <h3><span>📸</span> Konfirmasi Penerimaan</h3>
+                <h3><span>📸</span> Konfirmasi Penerimaan Supplier</h3>
                 <button className="mgAdmin__modalClose" onClick={() => setShowConfirm(false)}>✕</button>
               </div>
               <div className="mgAdmin__modalBody">
                 <p style={{ fontSize: '14px', color: '#64748b', marginBottom: '20px', lineHeight: '1.5' }}>
-                  Silakan upload foto bukti bahwa barang telah diterima dalam kondisi baik untuk menyelesaikan pesanan.
+                  Upload foto bukti surat jalan / barang dari Supplier untuk menyelesaikan Request ini.
                 </p>
                 <div
                   className="upload-area"
@@ -446,7 +414,7 @@ export default function RequestToko() {
                     <>
                       <div style={{ fontSize: '40px', marginBottom: '12px' }}>📤</div>
                       <div style={{ fontSize: '14px', fontWeight: 700, color: '#334155' }}>Klik untuk Pilih Foto</div>
-                      <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>Ambil foto barang yang Anda terima</div>
+                      <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>Ambil foto barang / surat jalan supplier</div>
                     </>
                   )}
                   <input type="file" id="proof-upload" hidden accept="image/*" onChange={handleFileChange} />

@@ -14,7 +14,7 @@ const fmtIDR = (n) =>
   new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 }).format(n);
 
 export default function ManajemenToko() {
-  const easing = useMemo(() => [0.22, 1, 0.36, 1], []);
+
 
   // API State
   const [reports, setReports] = useState([]);
@@ -30,25 +30,6 @@ export default function ManajemenToko() {
     { id: "d5", date: "30", month: "Jan 2026", tokoName: "Toko B", type: "Laporan Harian", desc: "—", status: "Belum upload", fileData: null },
   ]);
 
-  const dummyTransactions = [
-    { id: "TRX-301", toko: "Toko A", tanggal: "02 Feb 2026", tipe: "Pengiriman", item: 14, nilai: 3250000, status: "Diproses", tracking: "Sedang diproses gudang" },
-    { id: "TRX-300", toko: "Toko B", tanggal: "02 Feb 2026", tipe: "Pengiriman", item: 9, nilai: 1750000, status: "Dalam perjalanan", tracking: "Terkirim - 100% - ETA: Selesai" },
-    { id: "TRX-299", toko: "Toko C", tanggal: "01 Feb 2026", tipe: "Pengiriman", item: 6, nilai: 980000, status: "Selesai", tracking: "—" },
-    { id: "TRX-298", toko: "Toko A", tanggal: "31 Jan 2026", tipe: "Retur", item: 2, nilai: 180000, status: "Selesai", tracking: "—" },
-  ];
-
-  const dummyRequests = [
-    { id: "T-REQ-021", toko: "Toko A", tanggal: "03 Feb 2026", item: 12, catatan: "Butuh untuk weekend", status: "Pending", rawStatus: "Menunggu" },
-    { id: "T-REQ-020", toko: "Toko B", tanggal: "02 Feb 2026", item: 8, catatan: "Stok kritis di etalase", status: "Dalam perjalanan", rawStatus: "Mengirim" },
-    { id: "T-REQ-019", toko: "Toko C", tanggal: "01 Feb 2026", item: 5, catatan: "Perlu pengganti item rusak", status: "Declined", rawStatus: "Declined" },
-    { id: "T-REQ-018", toko: "Toko A", tanggal: "31 Jan 2026", item: 3, catatan: "Fast moving", status: "Accepted", rawStatus: "Memproses" },
-  ];
-
-  const dummyShipments = [
-    { id: "SHP-210", to: "Toko A", driver: "Kurir 01", eta: "2:20 menit", status: "Dalam perjalanan", progress: 75, route: "Gudang → Jl. Melati → Toko A" },
-    { id: "SHP-208", to: "Toko B", driver: "Kurir 02", eta: "0:45 menit", status: "Terkirim", progress: 100, route: "Gudang → Ringroad → Toko B" },
-    { id: "SHP-205", to: "Toko C", driver: "Kurir 03", eta: "1:10 menit", status: "Dalam perjalanan", progress: 40, route: "Gudang → Jl. Sudirman → Toko C" },
-  ];
 
   useEffect(() => {
     const unsubReports = subscribeTokoReports((data) => {
@@ -124,7 +105,7 @@ export default function ManajemenToko() {
 
   // Shipments (live tracking database integration)
   const shipments = useMemo(() => {
-    if (requestsList.length === 0) return dummyShipments;
+    if (requestsList.length === 0) return [];
 
     const shippingReqs = requestsList.filter(
       r => r.status === "Mengirim" || r.status === "Pickup"
@@ -152,14 +133,16 @@ export default function ManajemenToko() {
         route: `Gudang → ${r.fromName || "Toko"}`
       };
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [requestsList, tick]);
 
   // Transactions database integration
   const transactions = useMemo(() => {
-    if (requestsList.length === 0) return dummyTransactions;
+    if (requestsList.length === 0) return [];
 
     return requestsList.map(r => {
       const totalQty = (r.items || []).reduce((sum, item) => sum + item.qty, 0);
+      const itemName = r.items?.[0]?.name ? `${r.items[0].name} ` : "";
       const value = totalQty * 150000;
 
       let statusLabel = r.status;
@@ -207,20 +190,23 @@ export default function ManajemenToko() {
         toko: r.fromName || "Toko",
         tanggal: r.createdAt ? new Date(r.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : "—",
         tipe: "Pengiriman",
-        item: totalQty,
+        item: `${itemName}(${totalQty} pcs)`,
         nilai: value,
         status: statusLabel,
         tracking: trackingText
       };
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [requestsList, tick]);
 
   // Requests database integration
   const requests = useMemo(() => {
-    if (requestsList.length === 0) return dummyRequests;
+    if (requestsList.length === 0) return [];
 
     return requestsList.map(r => {
       const totalQty = (r.items || []).reduce((sum, item) => sum + item.qty, 0);
+      const itemName = r.items?.[0]?.name ? `${r.items[0].name} ` : "";
+      const priorityStr = r.priority ? `[${r.priority}] ` : "";
 
       let displayStatus = "Pending";
       if (r.status === "Declined" || r.status === "Ditolak") {
@@ -237,8 +223,8 @@ export default function ManajemenToko() {
         id: r.id,
         toko: r.fromName || "Toko",
         tanggal: r.createdAt ? new Date(r.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : "—",
-        item: totalQty,
-        catatan: r.note || "—",
+        item: `${itemName}(${totalQty} pcs)`,
+        catatan: `${priorityStr}${r.note || "—"}`,
         status: displayStatus,
         rawStatus: r.status
       };
@@ -408,7 +394,7 @@ export default function ManajemenToko() {
                     <td>{t.toko}</td>
                     <td>{t.tanggal}</td>
                     <td>{t.tipe}</td>
-                    <td>{t.item} item</td>
+                    <td>{t.item}</td>
                     <td>Rp {fmtIDR(t.nilai)}</td>
                     <td>
                       <span className={`mtAdmin__pill ${t.status === 'Selesai' ? 'mtAdmin__pill--success' :
@@ -460,7 +446,7 @@ export default function ManajemenToko() {
                     <td className="mtAdmin__mono">{r.id}</td>
                     <td>{r.toko}</td>
                     <td>{r.tanggal}</td>
-                    <td>{r.item} item</td>
+                    <td>{r.item}</td>
                     <td style={{ color: '#888' }}>{r.catatan}</td>
                     <td><span className={`mtAdmin__pill ${r.status === 'Accepted' ? 'mtAdmin__pill--success' : r.status === 'Declined' ? 'mtAdmin__pill--warning' : r.status === 'Pending' ? 'mtAdmin__pill--pending' : 'mtAdmin__pill--process'}`}>{r.status}</span></td>
                     <td>

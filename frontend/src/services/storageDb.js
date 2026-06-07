@@ -86,6 +86,24 @@ const seed = () => ({
       image: null,
       branchId: "BRC-001"
     },
+    {
+      sku: "BRG-002",
+      name: "Barang Contoh A",
+      type: "Sembako",
+      qty: 15,
+      minQty: 30,
+      image: null,
+      branchId: "BRC-003"
+    },
+    {
+      sku: "BRG-010",
+      name: "Barang Contoh B",
+      type: "Minuman",
+      qty: 0,
+      minQty: 25,
+      image: null,
+      branchId: "BRC-004"
+    },
   ],
 
   // Request gudang -> admin (restok masuk gudang)

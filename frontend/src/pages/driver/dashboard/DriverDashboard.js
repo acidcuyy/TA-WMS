@@ -10,8 +10,8 @@ import {
 } from "../../../services/wmsApi";
 
 export default function DriverDashboard() {
-  const [allReq, setAllReq]     = useState([]);
-  const [profile, setProfile]   = useState({});
+  const [allReq, setAllReq] = useState([]);
+  const [profile, setProfile] = useState({});
   const [resiFile, setResiFile] = useState(null);
   const [fotoFile, setFotoFile] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -19,7 +19,7 @@ export default function DriverDashboard() {
   const fotoInputRef = useRef(null);
 
   useEffect(() => {
-    const unsubReq     = subscribeRequests((rows) => setAllReq(rows || []));
+    const unsubReq = subscribeRequests((rows) => setAllReq(rows || []));
     const unsubProfile = subscribeDriverProfile((data) => setProfile(data || {}));
     return () => { unsubReq(); unsubProfile(); };
   }, []);
@@ -56,10 +56,37 @@ export default function DriverDashboard() {
   const handleFileChange = (e, type) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      alert("Harap pilih file gambar.");
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = (ev) => {
-      if (type === "resi") setResiFile(ev.target.result);
-      else setFotoFile(ev.target.result);
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const MAX_WIDTH = 600;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > MAX_WIDTH) {
+          height = Math.round((height * MAX_WIDTH) / width);
+          width = MAX_WIDTH;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const compressedBase64 = canvas.toDataURL("image/jpeg", 0.5); // Compress heavily to prevent localStorage limit
+
+        if (type === "resi") setResiFile(compressedBase64);
+        else setFotoFile(compressedBase64);
+      };
+      img.src = ev.target.result;
     };
     reader.readAsDataURL(file);
   };
@@ -107,10 +134,10 @@ export default function DriverDashboard() {
               ? "Toko telah menerima barang. Segera selesaikan pengiriman di halaman tracking."
               : "Anda sedang melakukan pengiriman aktif."
             : pickupTask
-            ? "Upload bukti resi & foto barang sebelum memulai pengiriman."
-            : readyTasks.length > 0
-            ? `Ada ${readyTasks.length} tugas baru yang menunggu Anda.`
-            : "Tidak ada tugas baru saat ini. Tunggu notifikasi."}
+              ? "Upload bukti resi & foto barang sebelum memulai pengiriman."
+              : readyTasks.length > 0
+                ? `Ada ${readyTasks.length} tugas baru yang menunggu Anda.`
+                : "Tidak ada tugas baru saat ini. Tunggu notifikasi."}
         </p>
       </header>
 
@@ -144,7 +171,7 @@ export default function DriverDashboard() {
                       className="task-priority"
                       style={{
                         background: activeTask.status === "Diterima Toko" ? "#f6ffed" : "#e6f7ff",
-                        color:      activeTask.status === "Diterima Toko" ? "#52c41a" : "#1890ff",
+                        color: activeTask.status === "Diterima Toko" ? "#52c41a" : "#1890ff",
                       }}
                     >
                       {activeTask.status === "Diterima Toko" ? "✅ DITERIMA TOKO" : "🔵 DALAM PENGIRIMAN"}
@@ -263,8 +290,8 @@ export default function DriverDashboard() {
                       {uploading
                         ? "⏳ Memproses..."
                         : !resiFile || !fotoFile
-                        ? "Upload kedua foto terlebih dahulu"
-                        : "Siap Mengirim 🚚"}
+                          ? "Upload kedua foto terlebih dahulu"
+                          : "Siap Mengirim 🚚"}
                     </button>
                   </div>
                 </Card>

@@ -34,13 +34,8 @@ export default function GudangLayout() {
         { label: "Transfer Barang", path: "/gudang/transfer", icon: "⇄" },
         { label: "Stok & Produk", path: "/gudang/stok", icon: "📦" },
         { label: "Request Masuk", path: "/gudang/requests", icon: "📥" },
+        { label: "Buat Request", path: "/gudang/buat-request", icon: "📝" },
         { label: "Order Masuk", path: "/gudang/orders", icon: "🗒" },
-      ]
-    },
-    {
-      title: "LAPORAN",
-      items: [
-        { label: "Laporan", path: "/gudang/laporan", icon: "🗒" },
       ]
     }
   ];

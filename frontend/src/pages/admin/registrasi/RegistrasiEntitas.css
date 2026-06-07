@@ -1,0 +1,218 @@
+/* RegistrasiEntitas.css */
+
+.registrasi-page {
+  padding: 32px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.registrasi-header {
+  margin-bottom: 32px;
+}
+
+.registrasi-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #1e293b;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.5px;
+}
+
+.registrasi-subtitle {
+  color: #64748b;
+  font-size: 15px;
+  margin: 0;
+}
+
+/* Tabs */
+.registrasi-tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 32px;
+  background: #fff;
+  padding: 8px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  width: fit-content;
+}
+
+.registrasi-tab {
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  background: transparent;
+}
+
+.registrasi-tab:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.registrasi-tab.active {
+  background: #3b82f6;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* Form Container */
+.registrasi-card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 32px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0,0,0,0.02);
+}
+
+.registrasi-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 8px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 14px;
+  color: #1e293b;
+  transition: all 0.2s ease;
+  outline: none;
+  background: #f8fafc;
+}
+
+.form-input:focus {
+  border-color: #3b82f6;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+select.form-input {
+  appearance: none;
+  cursor: pointer;
+}
+
+/* Map Picker */
+.map-picker-container {
+  width: 100%;
+  height: 300px;
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  border: 2px solid #e2e8f0;
+  cursor: crosshair;
+  background-color: #f1f5f9;
+}
+
+.map-picker-bg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.map-marker {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  font-size: 32px;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+  animation: bounce 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes bounce {
+  0% { transform: translate(-50%, -200%); opacity: 0; }
+  100% { transform: translate(-50%, -100%); opacity: 1; }
+}
+
+.map-overlay-text {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 23, 42, 0.8);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  pointer-events: none;
+  backdrop-filter: blur(4px);
+}
+
+.coordinate-display {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.coordinate-box {
+  flex: 1;
+  background: #f1f5f9;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-family: monospace;
+  font-size: 13px;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+/* Submit Button */
+.btn-submit-reg {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 16px 32px;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  margin-top: 32px;
+}
+
+.btn-submit-reg:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+}
+
+/* Toast Success */
+.reg-toast {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #10b981;
+  color: white;
+  padding: 14px 28px;
+  border-radius: 100px;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 1000;
+}

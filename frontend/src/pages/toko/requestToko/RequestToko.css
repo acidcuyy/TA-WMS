@@ -35,7 +35,7 @@
 }
 
 .summary-card {
-  background: var(--bg);
+  background: #ffffff;
   padding: 20px;
   border-radius: 16px;
   border: 1px solid var(--border);
@@ -94,7 +94,7 @@
 
 /* FORM SECTION */
 .request-form-card {
-  background: var(--bg);
+  background: #ffffff;
   border-radius: 20px;
   border: 1px solid var(--border);
   padding: 24px;
@@ -189,7 +189,7 @@
 
 /* TABLE SECTION */
 .request-list-card {
-  background: var(--bg);
+  background: #ffffff;
   border-radius: 20px;
   border: 1px solid var(--border);
   padding: 20px;
@@ -264,7 +264,7 @@
 }
 
 .sidebar-widget {
-  background: var(--bg);
+  background: #ffffff;
   border-radius: 20px;
   border: 1px solid var(--border);
   padding: 20px;

@@ -1,8 +1,6 @@
 .card{
-  background: var(--panel);
-  border: 1px solid rgba(255,255,255,0.35);
+  background: #ffffff !important;
+  border: 1px solid rgba(0,0,0,0.05);
   border-radius: var(--radius-md);
-  backdrop-filter: var(--blur);
-  -webkit-backdrop-filter: var(--blur);
   box-shadow: var(--shadow-soft);
 }

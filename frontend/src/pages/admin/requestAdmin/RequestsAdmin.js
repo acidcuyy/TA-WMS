@@ -1,8 +1,9 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Card from "../../../components/common/Card";
 import "../PageAdmin.css";
 import "./RequestsAdmin.css";
+import { subscribeRestockToAdmin, subscribeRequests, adminDecideRestock } from "../../../services/wmsApi";
 
 const fmtIDR = (n) =>
   new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 }).format(n);
@@ -10,6 +11,14 @@ const fmtIDR = (n) =>
 export default function RequestsAdmin() {
   const [activeTab, setActiveTab] = useState("Dari Admin ke Gudang (Saya)");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [actualGudangReqs, setActualGudangReqs] = useState([]);
+  const [actualTokoReqs, setActualTokoReqs] = useState([]);
+
+  useEffect(() => {
+    const unsubGudang = subscribeRestockToAdmin((data) => setActualGudangReqs(data || []));
+    const unsubToko = subscribeRequests((data) => setActualTokoReqs(data || []));
+    return () => { unsubGudang(); unsubToko(); };
+  }, []);
 
   // Stats
   const stats = [
@@ -30,16 +39,37 @@ export default function RequestsAdmin() {
   ];
 
   // Data Request: Dari Gudang ke Admin
-  const gudangToAdmin = [
-    { id: "REQ-GUD-0012", date: "03 Feb 2026", time: "14:15", source: "Gudang Pusat", city: "Jakarta", items: 50, note: "Stok semen habis total", status: "Menunggu", createdBy: "Staff Gudang" },
-    { id: "REQ-GUD-0011", date: "02 Feb 2026", time: "09:00", source: "Gudang Timur", city: "Lampung", items: 100, note: "Pipa PVC menipis", status: "Disetujui", createdBy: "Staff Gudang" },
-  ];
+  const gudangToAdmin = actualGudangReqs.map(r => {
+    const qty = r.items ? r.items.reduce((sum, item) => sum + (Number(item.qty) || 0), 0) : 0;
+    return {
+      id: r.id,
+      date: r.createdAt,
+      time: "-",
+      source: r.fromName,
+      city: "-",
+      items: qty,
+      note: r.note,
+      status: r.status,
+      createdBy: r.fromName
+    };
+  });
 
   // Data Request: Dari Toko ke Gudang
-  const tokoToGudang = [
-    { id: "REQ-TKO-0027", date: "03 Feb 2026", time: "11:45", source: "Toko A", target: "Gudang Pusat", items: 10, note: "Butuh gembok untuk stok toko", status: "Menunggu", createdBy: "Admin Toko" },
-    { id: "REQ-TKO-0026", date: "02 Feb 2026", time: "16:30", source: "Toko B", target: "Gudang Barat", items: 5, note: "Restock sealant silicone", status: "Dalam Pengiriman", createdBy: "Admin Toko" },
-  ];
+  const tokoToGudang = actualTokoReqs.map(r => {
+    const qty = r.items ? r.items.reduce((sum, item) => sum + (Number(item.qty) || 0), 0) : 0;
+    return {
+      id: r.id,
+      date: r.createdAt,
+      time: "-",
+      source: r.fromName,
+      target: r.toName,
+      city: "-",
+      items: qty,
+      note: r.note,
+      status: r.status,
+      createdBy: r.fromRole === 'toko' ? 'Admin Toko' : r.fromName
+    };
+  });
 
   const getPillClass = (status) => {
     const s = status.toLowerCase();
@@ -158,6 +188,12 @@ export default function RequestsAdmin() {
                   <td style={{ fontSize: '12px', fontWeight: 600 }}>{r.createdBy}</td>
                   <td>
                     <div className="action-btns">
+                      {activeTab === "Dari Gudang" && r.status === "Menunggu" && (
+                         <>
+                           <button className="btn-icon" style={{color: '#52c41a'}} title="Setujui" onClick={() => adminDecideRestock(r.id, 'Accepted')}>✅</button>
+                           <button className="btn-icon" style={{color: '#ff4d4f'}} title="Tolak" onClick={() => adminDecideRestock(r.id, 'Declined')}>❌</button>
+                         </>
+                      )}
                       <button className="btn-icon">👁️</button>
                       <button className="btn-icon">⋮</button>
                     </div>

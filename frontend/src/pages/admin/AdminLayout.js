@@ -38,12 +38,10 @@ export default function AdminLayout() {
       ]
     },
     {
-      title: "LAPORAN",
+      title: "LAPORAN & REGISTRASI",
       items: [
-        { label: "Laporan Stok", path: "/admin/laporan-stok", icon: "🗒" },
-        { label: "Laporan Order", path: "/admin/laporan-order", icon: "🗒" },
-        { label: "Laporan Pergerakan Stok", path: "/admin/laporan-pergerakan", icon: "🗒" },
-        { label: "Laporan Produksi", path: "/admin/laporan-produksi", icon: "🗒" },
+        { label: "Pendaftaran Entitas", path: "/admin/registrasi", icon: "📝" },
+        { label: "Arsip Laporan", path: "/admin/laporan", icon: "📄" },
       ]
     }
   ];

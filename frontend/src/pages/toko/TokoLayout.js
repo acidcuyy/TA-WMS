@@ -35,7 +35,6 @@ export default function TokoLayout() {
         { label: "Pesanan Penjualan", path: "/toko/pesanan", icon: "🛒" },
         { label: "Request", path: "/toko/request", icon: "📝" },
         { label: "Retur Penjualan", path: "/toko/retur", icon: "↩" },
-        { label: "Laporan", path: "/toko/riwayat", icon: "🗒" },
       ]
     }
   ];
