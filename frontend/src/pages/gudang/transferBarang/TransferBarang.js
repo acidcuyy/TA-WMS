@@ -1,18 +1,17 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, useMemo } from "react";
 import Card from "../../../components/common/Card";
+import DetailModal from "../../../components/common/DetailModal";
+import DateRangePicker from "../../../components/common/DateRangePicker";
 import "./TransferBarang.css";
-
-const fmtIDR = (n) =>
-  new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 }).format(n);
 
 export default function TransferBarang() {
   const [activeTab, setActiveTab] = useState("Semua");
+  const [detailModal, setDetailModal] = useState(null);
 
   const stats = [
     { label: "Total Transfer", value: "120", sub: "Transaksi", hint: "↑ 12.4% dari periode lalu", icon: "⇄", color: "#1890ff", bg: "#e6f7ff" },
     { label: "Total Item Ditransfer", value: "2.850", sub: "Item", hint: "↑ 8.6% dari periode lalu", icon: "📦", color: "#52c41a", bg: "#f6ffed" },
-    { label: "Total Nilai Transfer", value: "Rp 685.350.000", sub: "", hint: "↑ 10.1% dari periode lalu", icon: "💰", color: "#722ed1", bg: "#f9f0ff" },
+
     { label: "Transfer Hari Ini", value: "6", sub: "Transaksi", hint: "Lihat detail", icon: "🚚", color: "#1890ff", bg: "#e6f7ff" },
     { label: "Dalam Pengiriman", value: "8", sub: "Transaksi", hint: "Lihat detail", icon: "🕒", color: "#fa8c16", bg: "#fff7e6" },
   ];
@@ -80,7 +79,7 @@ export default function TransferBarang() {
         {/* FILTER BAR */}
         <div className="trBarang__filterBar">
           <select className="moAdmin__select"><option>Semua Status</option></select>
-          <div className="date-filter" style={{ border: '1px solid var(--border)', background: 'var(--bg-2)', padding: '10px 14px', borderRadius: '10px', fontSize: '12px', cursor: 'pointer' }}>01 Feb 2026 - 07 Feb 2026 📅</div>
+          <DateRangePicker />
           <select className="moAdmin__select"><option>Semua Asal</option></select>
           <select className="moAdmin__select"><option>Semua Tujuan</option></select>
           <div className="moAdmin__searchWrap" style={{ flex: 1 }}>
@@ -123,10 +122,9 @@ export default function TransferBarang() {
                       <th>Dari</th>
                       <th>Tujuan</th>
                       <th>Total Item</th>
-                      <th>Nilai (Rp)</th>
+
                       <th>Status</th>
                       <th>Tgl. Estimasi</th>
-                      <th>Aksi</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -139,19 +137,13 @@ export default function TransferBarang() {
                         <td style={{ fontWeight: 600 }}>{t.from}</td>
                         <td style={{ fontWeight: 600 }}>{t.to}</td>
                         <td>{t.items} item</td>
-                        <td style={{ fontWeight: 700 }}>Rp {fmtIDR(t.value)}</td>
+
                         <td>
                           <span className={`status-pill ${getStatusClass(t.status)}`}>
                             ● {t.status}
                           </span>
                         </td>
                         <td style={{ fontSize: '12px', color: '#888' }}>{t.est}</td>
-                        <td>
-                          <div style={{ display: 'flex', gap: '4px' }}>
-                            <button className="btn-icon">👁️</button>
-                            <button className="btn-icon">⋮</button>
-                          </div>
-                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -182,7 +174,7 @@ export default function TransferBarang() {
                 <p style={{ fontSize: '11px', color: '#888', marginBottom: '16px' }}>Periode: 01 - 07 Feb 2026</p>
                 <div className="trBarang__summaryItem"><span>Total Transfer</span><b>120</b></div>
                 <div className="trBarang__summaryItem"><span>Total Item Ditransfer</span><b>2.850 item</b></div>
-                <div className="trBarang__summaryItem"><span>Total Nilai Transfer</span><b>Rp 685.350.000</b></div>
+
                 <div className="trBarang__summaryItem"><span>Rata-rata per Transaksi</span><b>Rp 5.711.250</b></div>
               </div>
 
@@ -238,6 +230,23 @@ export default function TransferBarang() {
           </div>
         </div>
       </div>
+
+      {/* DETAIL MODAL */}
+      <DetailModal
+        isOpen={!!detailModal}
+        onClose={() => setDetailModal(null)}
+        title="Detail Transfer Barang"
+        subtitle={detailModal ? `${detailModal.id} • Tgl: ${detailModal.date}` : ''}
+        details={detailModal ? [
+          { label: "Asal", value: detailModal.from },
+          { label: "Tujuan", value: detailModal.to },
+          { label: "Status", value: detailModal.status, color: detailModal.status === 'Selesai' ? '#52c41a' : detailModal.status === 'Dibatalkan' ? '#ff4d4f' : '#1890ff' },
+          { label: "Estimasi Tiba", value: detailModal.est },
+        ] : []}
+        itemsTitle="Total Item"
+        items={detailModal ? [`${detailModal.items} item (Detail tidak tersedia di mode riwayat)`] : []}
+
+      />
     </div>
   );
 }

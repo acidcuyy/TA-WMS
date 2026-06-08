@@ -1,16 +1,19 @@
 import { useMemo, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import Card from "../../../components/common/Card";
 import { subscribeWarehouseStock, subscribeBranches } from "../../../services/wmsApi";
 import "../PageAdmin.css";
 import "./ManajemenProdukAdmin.css";
 
-const fmtIDR = (n) =>
-  new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 }).format(n);
-
 export default function ManajemenProduk() {
+  const navigate = useNavigate();
   const [allStock, setAllStock] = useState([]);
   const [branches, setBranches] = useState([]);
+  
+  // Modal State
+  const [editModal, setEditModal] = useState(null);
+  const [editQty, setEditQty] = useState(0);
   
   // Filters
   const [search, setSearch] = useState("");
@@ -37,12 +40,20 @@ export default function ManajemenProduk() {
       // Mock harga jika belum ada (krn di db saat ini belum ada kolom price)
       const mockPrice = stock.type === "Elektronik" ? 450000 : stock.type === "Minuman" ? 8000 : 25000;
 
+      // Mock image agar terlihat bagus sementara
+      let mockImage = "";
+      if (stock.type === "Elektronik") mockImage = "https://images.unsplash.com/photo-1558494949-ef0109583a85?w=200&h=200&fit=crop";
+      else if (stock.type === "Minuman") mockImage = "https://images.unsplash.com/photo-1542013936693-884638332954?w=200&h=200&fit=crop";
+      else if (stock.type === "Pakaian") mockImage = "https://images.unsplash.com/photo-1586864387917-f538a5a94781?w=200&h=200&fit=crop";
+      else mockImage = "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=200&h=200&fit=crop";
+
       return {
         ...stock,
         branchName: branch.name,
         branchType: branch.type.toLowerCase(),
         stockStatus,
-        price: stock.price || mockPrice
+        price: stock.price || mockPrice,
+        image: stock.image || mockImage
       };
     });
   }, [allStock, branches]);
@@ -158,84 +169,110 @@ export default function ManajemenProduk() {
         </div>
       </div>
 
-      {/* TABLE */}
-      <div className="mpAdmin__tableCard">
-        <div className="mpAdmin__tableWrap">
-          <table className="mpAdmin__table">
-            <thead>
-              <tr>
-                <th>Produk & SKU</th>
-                <th>Kategori</th>
-                <th>Lokasi Cabang</th>
-                <th>Sisa Stok (Fisik)</th>
-                <th>Status Stok</th>
-                <th>Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredStocks.length === 0 ? (
-                <tr>
-                  <td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: '#888' }}>
-                    Data inventaris kosong atau tidak ada stok yang cocok dengan filter.
-                  </td>
-                </tr>
-              ) : (
-                filteredStocks.map((p, i) => (
-                  <tr key={`${p.sku}-${p.branchId}-${i}`}>
-                    <td>
-                      <div className="product-cell">
-                        <div className="recent-img" style={{ borderRadius: '8px', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
-                          📦
-                        </div>
-                        <div>
-                          <p className="product-name" style={{ fontSize: '14px' }}>{p.name}</p>
-                          <p className="product-sub" style={{ fontSize: '12px', color: '#64748b' }}>SKU: {p.sku}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <span className="tag-kategori" style={{ background: '#f8fafc', color: '#475569', border: '1px solid #e2e8f0' }}>
-                        {p.type || "General"}
-                      </span>
-                    </td>
-                    <td>
-                      <div>
-                        <span style={{ fontWeight: 600, color: '#1e293b' }}>{p.branchName}</span>
-                        <br/>
-                        <span style={{ 
-                          fontSize: '11px', 
-                          padding: '2px 6px', 
-                          borderRadius: '4px', 
-                          background: p.branchType === 'gudang' ? '#e6f7ff' : '#fff7e6',
-                          color: p.branchType === 'gudang' ? '#1890ff' : '#fa8c16'
-                        }}>
-                          {p.branchType.toUpperCase()}
-                        </span>
-                      </div>
-                    </td>
-                    <td>
-                      <div style={{ fontSize: '15px', fontWeight: 800, color: '#0f172a' }}>
-                        {p.qty} <span style={{ fontSize: '11px', fontWeight: 500, color: '#64748b' }}>Unit</span>
-                      </div>
-                    </td>
-                    <td>
-                      <span className={`sub ${p.stockStatus === 'Aman' ? 'safe' : p.stockStatus === 'Habis' ? 'out' : 'low'}`} style={{ display: 'inline-block', padding: '4px 8px', borderRadius: '20px' }}>
-                        {p.stockStatus}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="action-btns">
-                        <button className="btn-icon" title="Edit Stok Manual">✏️</button>
-                        <button className="btn-icon" title="Detail Pergerakan Stok">📊</button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+      {/* MAIN GRID */}
+      <div className="mpAdmin__grid">
+        {filteredStocks.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '40px', color: '#888', gridColumn: '1 / -1' }}>
+            Data inventaris kosong atau tidak ada stok yang cocok dengan filter.
+          </div>
+        ) : (
+          filteredStocks.map((p, i) => {
+            const isAman = p.stockStatus === 'Aman';
+            const isHabis = p.stockStatus === 'Habis';
+            const badgeClass = isAman ? 'aman' : isHabis ? 'habis' : 'rendah';
+            
+            return (
+              <div key={`${p.sku}-${p.branchId}-${i}`} className="mpAdmin__productCard">
+                <span className={`mpAdmin__badge ${badgeClass}`}>
+                  ● {p.stockStatus}
+                </span>
+                <div className="mpAdmin__imgWrap">
+                  {p.image ? <img src={p.image} alt={p.name} /> : "📦"}
+                </div>
+                <h4 className="mpAdmin__prodName">{p.name}</h4>
+                <p className="mpAdmin__prodSKU">{p.sku}</p>
+                <div className="mpAdmin__prodMeta">
+                  <div><span>Kategori:</span> <b>{p.type || "General"}</b></div>
+                  <div><span>Lokasi:</span> <b>{p.branchName}</b></div>
+                  <div>
+                    <span>Tipe Cabang:</span> 
+                    <b style={{
+                      padding: '2px 6px', 
+                      borderRadius: '4px', 
+                      fontSize: '9px',
+                      background: p.branchType === 'gudang' ? '#e6f7ff' : '#fff7e6',
+                      color: p.branchType === 'gudang' ? '#1890ff' : '#fa8c16'
+                    }}>
+                      {p.branchType.toUpperCase()}
+                    </b>
+                  </div>
+                </div>
+                <div className="mpAdmin__stockRow">
+                  <span>Sisa Stok (Fisik)</span>
+                  <b className={`mpAdmin__stockValue ${badgeClass}`}>{p.qty} Unit</b>
+                </div>
+                <div className="mpAdmin__prodActions">
+                  <button 
+                    className="btn-icon" 
+                    title="Edit Stok Manual" 
+                    onClick={() => { setEditModal(p); setEditQty(p.qty); }}
+                  >✏️</button>
+                  <button 
+                    className="btn-icon" 
+                    title="Detail Pergerakan Stok"
+                    onClick={() => navigate('/admin/laporan')}
+                  >📊</button>
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
+
+      <AnimatePresence>
+        {editModal && (
+          <motion.div 
+            className="modal-overlay"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            onClick={() => setEditModal(null)}
+          >
+            <motion.div 
+              className="modal-content"
+              initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+              style={{ background: '#fff', padding: '24px', borderRadius: '16px', width: '400px', maxWidth: '90%', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 style={{ marginTop: 0, color: '#1e293b' }}>Edit Stok Manual</h3>
+              <p style={{ color: '#64748b', fontSize: '13px' }}>Ubah jumlah fisik untuk produk <b>{editModal.name}</b></p>
+              
+              <div style={{ marginTop: '20px', marginBottom: '24px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', color: '#1e293b' }}>Sisa Stok (Fisik) Terbaru</label>
+                <input 
+                  type="number" 
+                  value={editQty} 
+                  onChange={(e) => setEditQty(Number(e.target.value))} 
+                  style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none', boxSizing: 'border-box' }} 
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+                <button 
+                  onClick={() => setEditModal(null)}
+                  style={{ padding: '10px 16px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#fff', cursor: 'pointer', color: '#64748b', fontWeight: '600' }}
+                >Batal</button>
+                <button 
+                  onClick={() => {
+                    alert(`Stok ${editModal.name} berhasil diperbarui menjadi ${editQty} unit!`);
+                    setEditModal(null);
+                  }}
+                  style={{ padding: '10px 16px', borderRadius: '8px', border: 'none', background: 'var(--primary)', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}
+                >Simpan Perubahan</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

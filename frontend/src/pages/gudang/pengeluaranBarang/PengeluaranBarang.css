@@ -210,6 +210,11 @@
   border-collapse: collapse;
 }
 
+.pgBarang__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
 .pgBarang__table th {
   background: var(--bg-2);
   padding: 14px 20px;
@@ -402,4 +407,63 @@
 @media (max-width: 1400px) {
   .pgBarang__stats { grid-template-columns: repeat(3, 1fr); }
   .pgBarang__mainGrid { grid-template-columns: 1fr; }
+}
+
+/* MODAL DETAIL */
+.pgBarang__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pgBarang__modal {
+  background: var(--bg);
+  width: 500px;
+  max-width: 90vw;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
+.pgBarang__modalHead {
+  background: var(--bg-2);
+  padding: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid var(--border);
+}
+
+.pgBarang__modalHead h3 {
+  font-size: 18px;
+  margin: 0 0 4px;
+  color: var(--text);
+}
+
+.pgBarang__modalHead p {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0;
+}
+
+.pgBarang__closeBtn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--muted);
+  cursor: pointer;
+  line-height: 1;
+}
+
+.pgBarang__closeBtn:hover {
+  color: var(--text);
+}
+
+.pgBarang__modalBody {
+  padding: 24px;
 }

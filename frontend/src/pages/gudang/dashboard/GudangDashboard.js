@@ -1,16 +1,31 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import Card from "../../../components/common/Card";
+import { subscribeWarehouseStock, subscribeRequests, subscribeRestockToAdmin } from "../../../services/wmsApi";
 import "./GudangDashboard.css";
 
-const fmtIDR = (n) =>
-   new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 }).format(n);
-
 export default function GudangDashboard() {
+   const navigate = useNavigate();
    const [isLoaded, setIsLoaded] = useState(false);
+   const [chartFilter, setChartFilter] = useState("Mingguan");
+   const [allStock, setAllStock] = useState([]);
+   const [allRequests, setAllRequests] = useState([]);
+   const [allRestocks, setAllRestocks] = useState([]);
+   const [currentTime, setCurrentTime] = useState(new Date());
 
    useEffect(() => {
+      const unsub1 = subscribeWarehouseStock((data) => setAllStock(data || []));
+      const unsub2 = subscribeRequests((data) => setAllRequests(data || []));
+      const unsub3 = subscribeRestockToAdmin((data) => setAllRestocks(data || []));
+      
+      const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+
       setIsLoaded(true);
+      return () => {
+         unsub1(); unsub2(); unsub3();
+         clearInterval(timer);
+      };
    }, []);
 
    const containerVariants = {
@@ -33,38 +48,101 @@ export default function GudangDashboard() {
       }
    };
 
+   const totalStok = allStock.reduce((acc, item) => acc + item.qty, 0);
+   const barangMasuk = allRestocks.length; 
+   const barangKeluar = allRequests.filter(r => r.status === "Selesai" || r.status === "Diterima Toko").length;
+   const orderMenunggu = allRequests.filter(r => r.status === "Menunggu" || r.status === "Pending").length;
+
    const stats = [
-      { label: "Total Stok", value: "12.560", sub: "Nilai: Rp 2.450.000.000", icon: "📦", color: "#1890ff", bg: "#e6f7ff" },
-      { label: "Barang Masuk (Hari Ini)", value: "350", sub: "5 Transaksi", icon: "⬇️", color: "#52c41a", bg: "#f6ffed" },
-      { label: "Barang Keluar (Hari Ini)", value: "270", sub: "6 Transaksi", icon: "⬆️", color: "#e4915a", bg: "#fff8f3" },
-      { label: "Transfer (Hari Ini)", value: "120", sub: "3 Transaksi", icon: "⇄", color: "#722ed1", bg: "#f9f0ff" },
-      { label: "Order Menunggu Proses", value: "8", sub: "Order", icon: "🕒", color: "#fa8c16", bg: "#fff7e6", link: "Lihat detail >" },
+      { label: "Total Stok", value: totalStok.toLocaleString('id-ID'), sub: "Item", icon: "📦", color: "#1890ff", bg: "#e6f7ff" },
+      { label: "Barang Masuk (Total)", value: barangMasuk, sub: "Transaksi", icon: "⬇️", color: "#52c41a", bg: "#f6ffed" },
+      { label: "Barang Keluar (Total)", value: barangKeluar, sub: "Transaksi", icon: "⬆️", color: "#e4915a", bg: "#fff8f3" },
+      { label: "Order Menunggu Proses", value: orderMenunggu, sub: "Order", icon: "🕒", color: "#fa8c16", bg: "#fff7e6", link: "Lihat detail >" },
    ];
 
-   const recentOrders = [
-      { id: "PO-2026-00078", from: "Toko A", date: "07 Feb 2026 09:15", items: 45, status: "Menunggu" },
-      { id: "PO-2026-00077", from: "Toko B", date: "07 Feb 2026 08:30", items: 30, status: "Proses" },
-      { id: "TR-2026-00056", from: "Gudang Timur", date: "07 Feb 2026 07:45", items: 20, status: "Menunggu" },
-      { id: "PO-2026-00076", from: "Toko C", date: "06 Feb 2026 16:20", items: 25, status: "Selesai" },
-      { id: "PO-2026-00075", from: "Toko D", date: "06 Feb 2026 14:10", items: 18, status: "Selesai" },
-   ];
+   const recentOrders = useMemo(() => {
+      return allRequests.slice(0, 5).map(r => ({
+         id: r.id,
+         from: r.fromName || "Toko",
+         date: new Date(r.createdAt || new Date()).toLocaleString('id-ID', {day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit'}),
+         items: r.items ? r.items.reduce((acc, it) => acc + (it.qty || 0), 0) : 0,
+         status: r.status
+      }));
+   }, [allRequests]);
 
-   const activities = [
-      { time: "10:15", title: "Penerimaan barang dari Toko A", sub: "PO-2026-00078", tag: "45 item", color: "#52c41a" },
-      { time: "09:40", title: "Pengeluaran barang untuk Toko B", sub: "SO-2026-00064", tag: "20 item", color: "#e4915a" },
-      { time: "09:10", title: "Transfer ke Gudang Timur", sub: "TR-2026-00056", tag: "20 item", color: "#1890ff" },
-      { time: "08:35", title: "Penerimaan barang dari Toko C", sub: "PO-2026-00076", tag: "25 item", color: "#52c41a" },
-      { time: "08:00", title: "Pengeluaran barang untuk Toko D", sub: "SO-2026-00063", tag: "15 item", color: "#e4915a" },
-   ];
+   const activities = useMemo(() => {
+      let combined = [
+         ...allRequests.map(r => ({ 
+            time: new Date(r.createdAt || new Date()).toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}), 
+            dateObj: new Date(r.createdAt || new Date()), 
+            title: `Order dari ${r.fromName || "Toko"}`, 
+            sub: r.id, 
+            tag: `${r.items?.length || 0} jenis barang`, 
+            color: "#e4915a" 
+         })),
+         ...allRestocks.map(r => ({ 
+            time: new Date(r.createdAt || new Date()).toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}), 
+            dateObj: new Date(r.createdAt || new Date()), 
+            title: `Request Restock`, 
+            sub: r.id, 
+            tag: `${r.items?.length || 0} jenis barang`, 
+            color: "#52c41a" 
+         }))
+      ];
+      return combined.sort((a,b) => b.dateObj - a.dateObj).slice(0, 5);
+   }, [allRequests, allRestocks]);
 
-   const quickActions = [
-      { label: "Penerimaan Barang", icon: "⬇️", color: "#52c41a" },
-      { label: "Pengeluaran Barang", icon: "⬆️", color: "#e4915a" },
-      { label: "Transfer Barang", icon: "⇄", color: "#1890ff" },
-      { label: "Request Masuk", icon: "📥", color: "#722ed1" },
-      { label: "Cek Stok", icon: "📦", color: "#fa8c16" },
-      { label: "Scan Barcode", icon: "📷", color: "#595959" },
-   ];
+   const chartData = useMemo(() => {
+       const pts = chartFilter === "Mingguan" ? 7 : chartFilter === "Bulanan" ? 30 : 12;
+       let masuk = new Array(pts).fill(0);
+       let keluar = new Array(pts).fill(0);
+       const now = new Date();
+       
+       allRestocks.forEach(r => {
+           const d = new Date(r.createdAt || new Date());
+           let idx = 0;
+           if(chartFilter === "Tahunan") {
+               idx = 11 - (now.getMonth() - d.getMonth() + 12 * (now.getFullYear() - d.getFullYear()));
+           } else {
+               const diffDays = Math.floor((now - d) / (1000 * 60 * 60 * 24));
+               idx = (pts - 1) - diffDays;
+           }
+           if (idx >= 0 && idx < pts) masuk[idx] += r.items ? r.items.length : 1;
+       });
+       
+       allRequests.forEach(r => {
+           const d = new Date(r.createdAt || new Date());
+           let idx = 0;
+           if(chartFilter === "Tahunan") {
+               idx = 11 - (now.getMonth() - d.getMonth() + 12 * (now.getFullYear() - d.getFullYear()));
+           } else {
+               const diffDays = Math.floor((now - d) / (1000 * 60 * 60 * 24));
+               idx = (pts - 1) - diffDays;
+           }
+           if (idx >= 0 && idx < pts) keluar[idx] += r.items ? r.items.length : 1;
+       });
+       return { masuk, keluar, transfer: new Array(pts).fill(0) };
+   }, [allRequests, allRestocks, chartFilter]);
+
+   const generatePath = (data, filled = false) => {
+       if(!data || data.length === 0) return filled ? "M0,195 L800,195 Z" : "M0,195 L800,195";
+       const maxVal = Math.max(...data, 5);
+       const step = 800 / (data.length <= 1 ? 1 : data.length - 1);
+       let d = "";
+       for(let i=0; i<data.length; i++) {
+           const x = i * step;
+           const y = 195 - (data[i] / maxVal * 140);
+           if(i===0) d += `M${x},${y}`;
+           else d += ` L${x},${y}`;
+       }
+       if(filled) d += ` L800,200 L0,200 Z`;
+       return d;
+   };
+
+   const stokAman = allStock.filter(s => s.qty > (s.minQty || 10)).length;
+   const stokMenipis = allStock.filter(s => s.qty <= (s.minQty || 10) && s.qty > 0).length;
+   const stokHabis = allStock.filter(s => s.qty === 0).length;
+   const totalProduk = allStock.length;
 
    return (
       <motion.div 
@@ -82,8 +160,8 @@ export default function GudangDashboard() {
             <div className="gdash__dateCard">
                <span className="gdash__dateIcon">📅</span>
                <div className="gdash__dateText">
-                  <strong>Rabu, 07 Feb 2026</strong>
-                  <span>10:30 WIB</span>
+                  <strong>{currentTime.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' })}</strong>
+                  <span>{currentTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB</span>
                </div>
             </div>
          </motion.header>
@@ -101,7 +179,7 @@ export default function GudangDashboard() {
                         <h3>{s.value} <span>{s.label === "Order Menunggu Proses" ? "Order" : "item"}</span></h3>
                         <p className="gdash__statFooter" style={{ color: s.color }}>{s.sub}</p>
                      </div>
-                     {s.link && <a href="#" className="gdash__link">{s.link}</a>}
+                     {s.link && <a href="#" onClick={(e) => { e.preventDefault(); navigate('/gudang/requests'); }} className="gdash__link">{s.link}</a>}
                   </Card>
                </motion.div>
             ))}
@@ -112,7 +190,11 @@ export default function GudangDashboard() {
             <motion.div className="gdash__card" variants={itemVariants}>
                <div className="gdash__cardHead">
                   <h3>Grafik Pergerakan Stok</h3>
-                  <select className="moAdmin__select"><option>7 Hari Terakhir</option></select>
+                  <select className="moAdmin__select" value={chartFilter} onChange={(e) => setChartFilter(e.target.value)}>
+                     <option value="Mingguan">Mingguan</option>
+                     <option value="Bulanan">Bulanan</option>
+                     <option value="Tahunan">Tahunan</option>
+                  </select>
                </div>
                <div className="chart-wrapper-main" style={{ height: '220px', position: 'relative', marginTop: '10px' }}>
                   <svg width="100%" height="100%" viewBox="0 0 800 200" preserveAspectRatio="none" style={{ overflow: "visible" }}>
@@ -138,37 +220,37 @@ export default function GudangDashboard() {
 
                      {/* Masuk (Green) */}
                      <motion.path 
-                        d="M0,150 C100,120 150,140 200,130 C250,120 350,80 400,100 C450,110 550,70 600,90 C650,100 750,85 800,95 L800,200 L0,200 Z" 
+                        d={generatePath(chartData.masuk, true)} 
                         fill="url(#gradMasuk)"
                         initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5, duration: 1 }}
                      />
                      <motion.path 
-                        d="M0,150 C100,120 150,140 200,130 C250,120 350,80 400,100 C450,110 550,70 600,90 C650,100 750,85 800,95" 
-                        fill="none" stroke="#52c41a" strokeWidth="3" strokeLinecap="round" 
+                        d={generatePath(chartData.masuk, false)} 
+                        fill="none" stroke="#52c41a" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
                         initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 1.5, ease: "easeInOut" }}
                      />
 
                      {/* Keluar (Orange) */}
                      <motion.path 
-                        d="M0,180 C100,160 150,165 200,155 C250,145 350,130 400,140 C450,150 550,125 600,145 C650,155 750,140 800,135 L800,200 L0,200 Z" 
+                        d={generatePath(chartData.keluar, true)} 
                         fill="url(#gradKeluar)"
                         initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7, duration: 1 }}
                      />
                      <motion.path 
-                        d="M0,180 C100,160 150,165 200,155 C250,145 350,130 400,140 C450,150 550,125 600,145 C650,155 750,140 800,135" 
-                        fill="none" stroke="#fa8c16" strokeWidth="3" strokeLinecap="round" 
+                        d={generatePath(chartData.keluar, false)} 
+                        fill="none" stroke="#fa8c16" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
                         initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ delay: 0.2, duration: 1.5, ease: "easeInOut" }}
                      />
 
                      {/* Transfer (Blue) */}
                      <motion.path 
-                        d="M0,195 C100,185 150,190 200,180 C250,175 350,165 400,175 C450,180 550,165 600,180 C650,185 750,175 800,170 L800,200 L0,200 Z" 
+                        d={generatePath(chartData.transfer, true)} 
                         fill="url(#gradTransfer)"
                         initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.9, duration: 1 }}
                      />
                      <motion.path 
-                        d="M0,195 C100,185 150,190 200,180 C250,175 350,165 400,175 C450,180 550,165 600,180 C650,185 750,175 800,170" 
-                        fill="none" stroke="#1890ff" strokeWidth="3" strokeLinecap="round" 
+                        d={generatePath(chartData.transfer, false)} 
+                        fill="none" stroke="#1890ff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
                         initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ delay: 0.4, duration: 1.5, ease: "easeInOut" }}
                      />
                   </svg>
@@ -183,7 +265,7 @@ export default function GudangDashboard() {
             <motion.div className="gdash__card" variants={itemVariants}>
                <div className="gdash__cardHead">
                   <h3>Status Stok</h3>
-                  <button className="btn-text">Lihat Semua</button>
+                  <button className="btn-text" onClick={() => navigate('/gudang/stok')}>Lihat Semua</button>
                </div>
                <div style={{ display: 'flex', alignItems: 'center', gap: '32px', padding: '10px 0' }}>
                   <div style={{ position: 'relative', width: '150px', height: '150px' }}>
@@ -218,7 +300,7 @@ export default function GudangDashboard() {
                         <motion.strong 
                            initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 1.2, type: 'spring' }}
                            style={{ fontSize: '22px', fontWeight: 800 }}
-                        >3.245</motion.strong>
+                        >{totalProduk}</motion.strong>
                         <motion.span 
                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5 }}
                            style={{ fontSize: '10px', color: '#888' }}
@@ -227,10 +309,9 @@ export default function GudangDashboard() {
                   </div>
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '14px' }}>
                      {[
-                        { label: "Aman", val: "2.450", pct: "75.5%", color: "#52c41a" },
-                        { label: "Stok Menipis", val: "520", pct: "16.0%", color: "#fa8c16" },
-                        { label: "Stok Habis", val: "180", pct: "5.5%", color: "#ff4d4f" },
-                        { label: "Lewat Minimum", val: "95", pct: "3.0%", color: "#722ed1" },
+                        { label: "Aman", val: stokAman, pct: totalProduk ? `${((stokAman/totalProduk)*100).toFixed(1)}%` : "0%", color: "#52c41a" },
+                        { label: "Stok Menipis", val: stokMenipis, pct: totalProduk ? `${((stokMenipis/totalProduk)*100).toFixed(1)}%` : "0%", color: "#fa8c16" },
+                        { label: "Stok Habis", val: stokHabis, pct: totalProduk ? `${((stokHabis/totalProduk)*100).toFixed(1)}%` : "0%", color: "#ff4d4f" },
                      ].map((h, i) => (
                         <motion.div 
                            key={i} 
@@ -252,7 +333,7 @@ export default function GudangDashboard() {
          {/* DATA GRID */}
          <div className="gdash__dataGrid">
             <motion.div className="gdash__card" variants={itemVariants}>
-               <div className="gdash__cardHead"><h3>Order Masuk Terbaru</h3><button className="btn-text">Lihat Semua</button></div>
+               <div className="gdash__cardHead"><h3>Order Masuk Terbaru</h3><button className="btn-text" onClick={() => navigate('/gudang/requests')}>Lihat Semua</button></div>
                <div style={{ overflowX: 'auto' }}>
                   <table className="gdash__table">
                      <thead>
@@ -265,57 +346,67 @@ export default function GudangDashboard() {
                         </tr>
                      </thead>
                      <tbody>
-                        {recentOrders.map((o, i) => (
-                           <motion.tr 
-                              key={i}
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              transition={{ delay: 0.5 + i * 0.05 }}
-                           >
-                              <td style={{ fontWeight: 700, color: 'var(--primary)' }}>{o.id}</td>
-                              <td>{o.from}</td>
-                              <td style={{ fontSize: '12px', color: '#888' }}>{o.date}</td>
-                              <td style={{ fontWeight: 600 }}>{o.items} item</td>
-                              <td>
-                                 <span className={`rqAdmin__pill ${o.status === 'Selesai' ? 'rqAdmin__pill--approved' : o.status === 'Proses' ? 'rqAdmin__pill--ship' : 'rqAdmin__pill--pending'}`}>
-                                    ● {o.status}
-                                 </span>
-                              </td>
-                           </motion.tr>
-                        ))}
+                        {recentOrders.length === 0 ? (
+                           <tr>
+                              <td colSpan="5" style={{ textAlign: 'center', padding: '20px', color: '#888' }}>Belum ada order masuk</td>
+                           </tr>
+                         ) : (
+                           recentOrders.map((o, i) => (
+                              <motion.tr 
+                                 key={i}
+                                 initial={{ opacity: 0 }}
+                                 animate={{ opacity: 1 }}
+                                 transition={{ delay: 0.5 + i * 0.05 }}
+                              >
+                                 <td style={{ fontWeight: 700, color: 'var(--primary)' }}>{o.id}</td>
+                                 <td>{o.from}</td>
+                                 <td style={{ fontSize: '12px', color: '#888' }}>{o.date}</td>
+                                 <td style={{ fontWeight: 600 }}>{o.items} item</td>
+                                 <td>
+                                    <span className={`rqAdmin__pill ${o.status === 'Selesai' ? 'rqAdmin__pill--approved' : o.status === 'Proses' ? 'rqAdmin__pill--ship' : 'rqAdmin__pill--pending'}`}>
+                                       ● {o.status}
+                                    </span>
+                                 </td>
+                              </motion.tr>
+                           ))
+                         )}
                      </tbody>
                   </table>
                </div>
             </motion.div>
 
             <motion.div className="gdash__card" variants={itemVariants}>
-               <div className="gdash__cardHead"><h3>Aktivitas Hari Ini</h3><button className="btn-text">Lihat Semua</button></div>
+               <div className="gdash__cardHead"><h3>Aktivitas Hari Ini</h3><button className="btn-text" onClick={() => navigate('/gudang/requests')}>Lihat Semua</button></div>
                <div className="gdash__timeline">
-                  {activities.map((a, i) => (
-                     <motion.div 
-                        key={i} 
-                        className="gdash__timeItem"
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.6 + i * 0.1 }}
-                     >
-                        <span className="gdash__time">{a.time}</span>
-                        <div className="gdash__timePoint" style={{ '--color': a.color }}></div>
-                        <div className="gdash__timeContent">
-                           <p className="gdash__timeTitle">{a.title}</p>
-                           <p className="gdash__timeSub">{a.sub}</p>
-                        </div>
-                        <span style={{ fontSize: '10px', color: a.color, fontWeight: 700, padding: '4px 10px', background: `${a.color}15`, borderRadius: '20px', height: 'fit-content' }}>{a.tag}</span>
-                     </motion.div>
-                  ))}
+                  {activities.length === 0 ? (
+                     <div style={{ textAlign: 'center', padding: '20px', color: '#888' }}>Tidak ada aktivitas terbaru</div>
+                  ) : (
+                     activities.map((a, i) => (
+                        <motion.div 
+                           key={i} 
+                           className="gdash__timeItem"
+                           initial={{ opacity: 0, x: -10 }}
+                           animate={{ opacity: 1, x: 0 }}
+                           transition={{ delay: 0.6 + i * 0.1 }}
+                        >
+                           <span className="gdash__time">{a.time}</span>
+                           <div className="gdash__timePoint" style={{ '--color': a.color }}></div>
+                           <div className="gdash__timeContent">
+                              <p className="gdash__timeTitle">{a.title}</p>
+                              <p className="gdash__timeSub">{a.sub}</p>
+                           </div>
+                           <span style={{ fontSize: '10px', color: a.color, fontWeight: 700, padding: '4px 10px', background: `${a.color}15`, borderRadius: '20px', height: 'fit-content', whiteSpace: 'nowrap' }}>{a.tag}</span>
+                        </motion.div>
+                     ))
+                  )}
                </div>
             </motion.div>
 
             <div className="gdash__alerts">
                {[
-                  { label: "Stok Menipis", val: "15", sub: "Produk", icon: "⚠️", color: "#fa8c16", bg: "#fff7e6" },
-                  { label: "Stok Habis", val: "8", sub: "Produk", icon: "🚫", color: "#ff4d4f", bg: "#fff1f0" },
-                  { label: "Order Terlambat", val: "2", sub: "Order", icon: "🕒", color: "#722ed1", bg: "#f9f0ff" },
+                  { label: "Stok Menipis", val: stokMenipis, sub: "Produk", icon: "⚠️", color: "#fa8c16", bg: "#fff7e6" },
+                  { label: "Stok Habis", val: stokHabis, sub: "Produk", icon: "🚫", color: "#ff4d4f", bg: "#fff1f0" },
+                  { label: "Order Pending", val: orderMenunggu, sub: "Order", icon: "🕒", color: "#722ed1", bg: "#f9f0ff" },
                ].map((a, i) => (
                   <motion.div 
                      key={i} 
@@ -327,28 +418,11 @@ export default function GudangDashboard() {
                      <div className="gdash__alertMain">
                         <p className="gdash__alertTitle">{a.label}</p>
                         <h4 className="gdash__alertValue">{a.val} <span style={{ fontSize: '12px', fontWeight: 500 }}>{a.sub}</span></h4>
-                        <a href="#" style={{ fontSize: '10px', color: 'var(--primary)', fontWeight: 700, textDecoration: 'none' }}>Lihat daftar ➔</a>
+                        <a href="#" onClick={(e) => { e.preventDefault(); navigate('/gudang/stok'); }} style={{ fontSize: '10px', color: 'var(--primary)', fontWeight: 700, textDecoration: 'none' }}>Lihat daftar ➔</a>
                      </div>
                   </motion.div>
                ))}
             </div>
-         </div>
-
-         {/* QUICK ACTIONS */}
-         <motion.h3 className="gdash__actionsTitle" variants={itemVariants}>Aksi Cepat</motion.h3>
-         <div className="gdash__actionsGrid">
-            {quickActions.map((a, i) => (
-               <motion.button 
-                  key={i} 
-                  className="gdash__actionBtn"
-                  variants={itemVariants}
-                  whileHover={{ y: -5, boxShadow: 'var(--shadow-lg)' }}
-                  whileTap={{ scale: 0.95 }}
-               >
-                  <span style={{ fontSize: '20px', color: a.color }}>{a.icon}</span>
-                  {a.label}
-               </motion.button>
-            ))}
          </div>
       </motion.div>
    );

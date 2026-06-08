@@ -86,17 +86,48 @@ export default function RequestsGudang() {
     setUploadPhotos({ checkBarang: [], resiDriver: [], pemasukanBarang: [] });
   };
 
+  const compressImage = (file, callback) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 400; // Small size to prevent localstorage quota issues
+        const MAX_HEIGHT = 400;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        callback(canvas.toDataURL('image/jpeg', 0.5));
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handlePhotoUpload = (category, e) => {
     const files = Array.from(e.target.files);
     files.forEach(file => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
+      compressImage(file, (dataUrl) => {
         setUploadPhotos(prev => ({
           ...prev,
-          [category]: [...prev[category], reader.result]
+          [category]: [...prev[category], dataUrl]
         }));
-      };
-      reader.readAsDataURL(file);
+      });
     });
   };
 

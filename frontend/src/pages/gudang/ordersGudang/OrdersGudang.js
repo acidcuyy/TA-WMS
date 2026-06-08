@@ -1,12 +1,11 @@
 import React, { useState } from "react";
 import Card from "../../../components/common/Card";
+import DetailModal from "../../../components/common/DetailModal";
 import "./OrdersGudang.css";
-
-const fmtIDR = (n) =>
-  new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 }).format(n);
 
 export default function OrdersGudang() {
   const [activeTab, setActiveTab] = useState("Semua");
+  const [detailModal, setDetailModal] = useState(null);
 
   const stats = [
     { label: "Total Order", value: "85", sub: "Hari ini", icon: "🗒", color: "#1890ff", bg: "#e6f7ff" },
@@ -62,9 +61,7 @@ export default function OrdersGudang() {
                 <th>Waktu</th>
                 <th>Pelanggan</th>
                 <th>Detail Item</th>
-                <th>Total (Rp)</th>
                 <th>Status</th>
-                <th>Aksi</th>
               </tr>
             </thead>
             <tbody>
@@ -74,17 +71,11 @@ export default function OrdersGudang() {
                   <td>{o.time}</td>
                   <td><b>{o.customer}</b></td>
                   <td style={{ fontSize: '12px', color: '#666' }}>{o.items}</td>
-                  <td style={{ fontWeight: 700 }}>Rp {fmtIDR(o.total)}</td>
+
                   <td>
                     <span className={`status-tag ${o.status.toLowerCase()}`}>
                       {o.status}
                     </span>
-                  </td>
-                  <td>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <button className="pageAdmin__btnSmall">Proses</button>
-                      <button className="btn-icon">👁️</button>
-                    </div>
                   </td>
                 </tr>
               ))}
@@ -92,6 +83,21 @@ export default function OrdersGudang() {
           </table>
         </div>
       </div>
+
+      {/* DETAIL MODAL */}
+      <DetailModal
+        isOpen={!!detailModal}
+        onClose={() => setDetailModal(null)}
+        title="Detail Order Masuk"
+        subtitle={detailModal ? `${detailModal.id} • Waktu: ${detailModal.time}` : ''}
+        details={detailModal ? [
+          { label: "Pelanggan", value: detailModal.customer },
+          { label: "Status", value: detailModal.status, color: detailModal.status === 'Packed' || detailModal.status === 'Shipped' ? '#52c41a' : '#1890ff' },
+        ] : []}
+        itemsTitle="Detail Item"
+        items={detailModal ? detailModal.items.split(', ') : []}
+
+      />
     </div>
   );
 }

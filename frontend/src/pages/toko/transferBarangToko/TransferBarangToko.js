@@ -1,28 +1,31 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import DateRangePicker from "../../../components/common/DateRangePicker";
+import DetailModal from "../../../components/common/DetailModal";
 import "./TransferBarangToko.css";
 
 export default function TransferBarangToko() {
   const [activeTab, setActiveTab] = useState("Semua (76)");
+  const [detailModal, setDetailModal] = useState(null);
   const easing = [0.22, 1, 0.36, 1];
 
   const summaryCards = [
     { label: "Total Transfer", value: "76", unit: "transaksi", icon: "⇄", iconClass: "summary-card__icon--purple", subtext: "Semua transaksi transfer" },
     { label: "Total Item Ditransfer", value: "860", unit: "item", icon: "📦", iconClass: "summary-card__icon--blue", subtext: "Total item keluar/masuk" },
-    { label: "Nilai Transfer", value: "Rp 31.250.000", unit: "", icon: "💰", iconClass: "summary-card__icon--green", subtext: "Nilai akumulasi transfer" },
+    { label: "Toko Terhubung", value: "4", unit: "toko", icon: "🏢", iconClass: "summary-card__icon--green", subtext: "Toko aktif bulan ini" },
     { label: "Transfer Hari Ini", value: "7", unit: "transaksi", icon: "📅", iconClass: "summary-card__icon--orange", subtext: "Hari ini" },
     { label: "Dalam Pengiriman", value: "5", unit: "transaksi", icon: "🚚", iconClass: "summary-card__icon--red", subtext: "Sedang dikirim" },
   ];
 
   const tableData = [
-    { id: "TRF-2025-0042", ref: "TF/GD/0524/042", from: "Gudang Pusat", to: "Toko Sejahtera", date: "24 Mei 2025, 10:15", items: "20 item", value: "Rp 2.450.000", status: "Dikirim" },
-    { id: "TRF-2025-0041", ref: "TF/CB/0524/041", from: "Toko Cabang A", to: "Toko Sejahtera", date: "24 Mei 2025, 08:40", items: "12 item", value: "Rp 980.000", status: "Selesai" },
-    { id: "TRF-2025-0040", ref: "TF/GD/0523/040", from: "Toko Sejahtera", to: "Gudang Pusat", date: "23 Mei 2025, 16:20", items: "8 item", value: "Rp 540.000", status: "Diproses" },
-    { id: "TRF-2025-0039", ref: "TF/GD/0523/039", from: "Gudang Pusat", to: "Toko Sejahtera", date: "23 Mei 2025, 13:05", items: "16 item", value: "Rp 1.760.000", status: "Menunggu" },
-    { id: "TRF-2025-0038", ref: "TF/CB/0522/038", from: "Toko Sejahtera", to: "Toko Cabang B", date: "22 Mei 2025, 15:10", items: "10 item", value: "Rp 1.150.000", status: "Selesai" },
-    { id: "TRF-2025-0037", ref: "TF/GD/0522/037", from: "Gudang Cabang", to: "Toko Sejahtera", date: "22 Mei 2025, 11:25", items: "18 item", value: "Rp 2.050.000", status: "Dikirim" },
-    { id: "TRF-2025-0036", ref: "TF/RT/0521/036", from: "Toko Sejahtera", to: "Gudang Pusat", date: "21 Mei 2025, 09:30", items: "5 item", value: "Rp 320.000", status: "Diproses" },
-    { id: "TRF-2025-0035", ref: "TF/GD/0521/035", from: "Gudang Pusat", to: "Toko Sejahtera", date: "21 Mei 2025, 08:05", items: "14 item", value: "Rp 1.280.000", status: "Dibatalkan" },
+    { id: "TRF-2025-0042", ref: "TF/GD/0524/042", from: "Gudang Pusat", to: "Toko Sejahtera", date: "24 Mei 2025, 10:15", items: "20 item", status: "Dikirim" },
+    { id: "TRF-2025-0041", ref: "TF/CB/0524/041", from: "Toko Cabang A", to: "Toko Sejahtera", date: "24 Mei 2025, 08:40", items: "12 item", status: "Selesai" },
+    { id: "TRF-2025-0040", ref: "TF/GD/0523/040", from: "Toko Sejahtera", to: "Gudang Pusat", date: "23 Mei 2025, 16:20", items: "8 item", status: "Diproses" },
+    { id: "TRF-2025-0039", ref: "TF/GD/0523/039", from: "Gudang Pusat", to: "Toko Sejahtera", date: "23 Mei 2025, 13:05", items: "16 item", status: "Menunggu" },
+    { id: "TRF-2025-0038", ref: "TF/CB/0522/038", from: "Toko Sejahtera", to: "Toko Cabang B", date: "22 Mei 2025, 15:10", items: "10 item", status: "Selesai" },
+    { id: "TRF-2025-0037", ref: "TF/GD/0522/037", from: "Gudang Cabang", to: "Toko Sejahtera", date: "22 Mei 2025, 11:25", items: "18 item", status: "Dikirim" },
+    { id: "TRF-2025-0036", ref: "TF/RT/0521/036", from: "Toko Sejahtera", to: "Gudang Pusat", date: "21 Mei 2025, 09:30", items: "5 item", status: "Diproses" },
+    { id: "TRF-2025-0035", ref: "TF/GD/0521/035", from: "Gudang Pusat", to: "Toko Sejahtera", date: "21 Mei 2025, 08:05", items: "14 item", status: "Dibatalkan" },
   ];
 
   const recentActivities = [
@@ -76,7 +79,7 @@ export default function TransferBarangToko() {
           <section className="transfer-content-box">
             <div className="transfer-filters">
               <select className="filter-select"><option>Semua Status</option></select>
-              <input type="text" className="filter-date" placeholder="01 Mei 2025 - 24 Mei 2025" />
+              <DateRangePicker />
               <select className="filter-select"><option>Semua Asal</option></select>
               <select className="filter-select"><option>Semua Tujuan</option></select>
               <div className="filter-search">
@@ -107,7 +110,7 @@ export default function TransferBarangToko() {
                   <th>Tujuan</th>
                   <th>Tanggal ↓</th>
                   <th>Total Item</th>
-                  <th>Nilai (Rp)</th>
+
                   <th>Status</th>
                   <th>Aksi</th>
                 </tr>
@@ -126,7 +129,7 @@ export default function TransferBarangToko() {
                     <td>{row.to}</td>
                     <td>{row.date}</td>
                     <td>{row.items}</td>
-                    <td style={{ fontWeight: 600 }}>{row.value}</td>
+
                     <td>
                       <span className={`status-badge status--${row.status.toLowerCase()}`}>
                         {row.status}
@@ -134,7 +137,7 @@ export default function TransferBarangToko() {
                     </td>
                     <td>
                       <div className="action-btns">
-                        <button className="btn-action">👁️</button>
+                        <button className="btn-action" onClick={() => setDetailModal(row)}>👁️</button>
                         <button className="btn-action">⋯</button>
                       </div>
                     </td>
@@ -178,7 +181,7 @@ export default function TransferBarangToko() {
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px" }}>
                   <span style={{ color: "#64748b" }}>Rata-rata per Transaksi</span>
-                  <span style={{ fontWeight: 700 }}>Rp 411.184</span>
+                  <span style={{ fontWeight: 700 }}>11 <span style={{ fontWeight: 400, fontSize: "10px", color: "#94a3b8" }}>item</span></span>
                 </div>
               </div>
             </div>
@@ -237,6 +240,22 @@ export default function TransferBarangToko() {
           </aside>
         </div>
       </motion.div>
+
+      {/* DETAIL MODAL */}
+      <DetailModal
+        isOpen={!!detailModal}
+        onClose={() => setDetailModal(null)}
+        title="Detail Transfer Barang"
+        subtitle={detailModal ? `${detailModal.id} • ${detailModal.ref}` : ''}
+        details={detailModal ? [
+          { label: "Tanggal", value: detailModal.date },
+          { label: "Dari", value: detailModal.from },
+          { label: "Ke", value: detailModal.to },
+          { label: "Status", value: detailModal.status, color: detailModal.status === 'Selesai' ? '#52c41a' : detailModal.status === 'Dikirim' ? '#1890ff' : '#fa8c16' },
+        ] : []}
+        itemsTitle="Total Item"
+        items={detailModal ? [`${detailModal.items}`] : []}
+      />
     </div>
   );
 }

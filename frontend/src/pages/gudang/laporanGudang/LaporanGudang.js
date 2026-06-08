@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import DetailModal from "../../../components/common/DetailModal";
 import "./LaporanGudang.css";
 import { uploadGudangReport } from "../../../services/wmsApi";
 
 export default function LaporanGudang() {
   const [activeTab, setActiveTab] = useState("Semua (32)");
+  const [detailModal, setDetailModal] = useState(null);
   const easing = [0.22, 1, 0.36, 1];
 
   const summaryCards = [
@@ -266,7 +268,7 @@ export default function LaporanGudang() {
                     </td>
                     <td>
                       <div style={{ display: "flex", gap: "8px" }}>
-                        <button style={{ background: "transparent", border: "none", cursor: "pointer", color: "#94a3b8" }}>👁️</button>
+                        <button style={{ background: "transparent", border: "none", cursor: "pointer", color: "#94a3b8" }} onClick={() => setDetailModal(r)}>👁️</button>
                         <button style={{ background: "transparent", border: "none", cursor: "pointer", color: "#94a3b8" }}>⋮</button>
                       </div>
                     </td>
@@ -461,6 +463,21 @@ export default function LaporanGudang() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* DETAIL MODAL */}
+      <DetailModal
+        isOpen={!!detailModal}
+        onClose={() => setDetailModal(null)}
+        title="Detail Laporan Gudang"
+        subtitle={detailModal ? `${detailModal.id} • ${detailModal.type}` : ''}
+        details={detailModal ? [
+          { label: "Dibuat Oleh", value: detailModal.author },
+          { label: "Format", value: detailModal.format },
+          { label: "Status", value: detailModal.status, color: detailModal.status === 'Selesai' ? '#52c41a' : detailModal.status === 'Draft' ? '#fa8c16' : '#1890ff' },
+        ] : []}
+        itemsTitle="Pratinjau Ringkas"
+        items={detailModal ? ["Tidak ada pratinjau yang tersedia. Silakan unduh laporan."] : []}
+      />
     </div>
   );
 }

@@ -1,27 +1,78 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useOutletContext, useNavigate } from "react-router-dom";
 import "./AdminDashboard.css";
+import { 
+  subscribeWarehouseStock, 
+  subscribeRequests, 
+  subscribeBranches, 
+  subscribeAdminRestockToGudang,
+  subscribeNotifications
+} from "../../../services/wmsApi";
 
 export default function AdminDashboard() {
+  const { period, setPeriod } = useOutletContext();
+  const navigate = useNavigate();
+  const [stock, setStock] = useState([]);
+  const [requests, setRequests] = useState([]);
+  const [branches, setBranches] = useState([]);
+  const [adminRequests, setAdminRequests] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+
+  useEffect(() => {
+    const unsub1 = subscribeWarehouseStock(data => setStock(data || []));
+    const unsub2 = subscribeRequests(data => setRequests(data || []));
+    const unsub3 = subscribeBranches(data => setBranches(data || []));
+    const unsub4 = subscribeAdminRestockToGudang(data => setAdminRequests(data || []));
+    const unsub5 = subscribeNotifications(data => setNotifications(data || []));
+    return () => { unsub1(); unsub2(); unsub3(); unsub4(); unsub5(); };
+  }, []);
+
+  const totalOrders = requests.length;
+  const completedOrders = requests.filter(r => r.status === "Selesai").length;
+  const fulfillmentRate = totalOrders > 0 ? ((completedOrders / totalOrders) * 100).toFixed(1) : "0.0";
+  
+  const outOfStock = stock.filter(s => s.qty === 0).length;
+  const lowStock = stock.filter(s => s.qty > 0 && s.qty <= (s.minQty || 20)).length;
+
   const stats = [
-    { label: "Total Inventory Value", value: "Rp 2.450.000.000", trend: "+12.5%", sub: "vs minggu lalu", icon: "💰", color: "#e4915a" },
-    { label: "Total Orders", value: "1.248", trend: "+8.2%", sub: "vs minggu lalu", icon: "🛍️", color: "#3b82f6" },
-    { label: "Fulfillment Rate", value: "98.5%", trend: "+2.1%", sub: "vs minggu lalu", icon: "🎯", color: "#22c55e" },
-    { label: "Out of Stock Items", value: "23", trend: "↑ 4", sub: "vs minggu lalu", icon: "📦", color: "#ef4444", danger: true },
-    { label: "Low Stock Alerts", value: "47", trend: "↑ 6", sub: "vs minggu lalu", icon: "⚠️", color: "#f97316", danger: true },
-    { label: "Stock Turnover", value: "6.2x", trend: "↑ 1.1x", sub: "vs minggu lalu", icon: "🔄", color: "#8b5cf6" },
+    { label: "Total Orders", value: totalOrders.toString(), trend: "-", sub: "Real-time", icon: "🛍️", color: "#3b82f6" },
+    { label: "Fulfillment Rate", value: `${fulfillmentRate}%`, trend: "-", sub: "Real-time", icon: "🎯", color: "#22c55e" },
+    { label: "Out of Stock Items", value: outOfStock.toString(), trend: "-", sub: "Real-time", icon: "📦", color: "#ef4444", danger: outOfStock > 0 },
+    { label: "Low Stock Alerts", value: lowStock.toString(), trend: "-", sub: "Real-time", icon: "⚠️", color: "#f97316", danger: lowStock > 0 },
+    { label: "Stock Turnover", value: "N/A", trend: "-", sub: "Belum tersedia", icon: "🔄", color: "#8b5cf6" },
   ];
+
+  const gudangList = branches.filter(b => b.type === 'gudang').map(gudang => {
+    const gStock = stock.filter(s => s.branchId === gudang.id);
+    const totalQty = gStock.reduce((sum, s) => sum + s.qty, 0);
+    const hasCritical = gStock.some(s => s.qty === 0);
+    const hasLow = gStock.some(s => s.qty > 0 && s.qty <= (s.minQty || 20));
+    
+    let status = "Normal";
+    let badgeClass = "success";
+    if (hasCritical) { status = "Critical"; badgeClass = "danger"; }
+    else if (hasLow) { status = "Low Stock"; badgeClass = "warn"; }
+    
+    return { name: gudang.name, qty: totalQty, status, badgeClass };
+  });
+
+  const recentOrders = [...requests].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5);
+  const topProducts = [...stock].sort((a,b) => b.qty - a.qty).slice(0, 3);
+  
+  const fastMoving = stock.filter(s => s.qty > 100).length;
+  const medMoving = stock.filter(s => s.qty > 30 && s.qty <= 100).length;
+  const slowMoving = stock.filter(s => s.qty > 0 && s.qty <= 30).length;
+  const totalItems = stock.length;
 
   return (
     <div className="dashboard-view">
-      {/* HEADER AREA */}
       <header className="dashboard-header">
         <div className="header-left">
           <h1>Selamat Datang Admin!</h1>
-          <p>Berikut ringkasan performa warehouse hari ini.</p>
+          <p>Berikut ringkasan performa warehouse hari ini secara live.</p>
         </div>
       </header>
 
-      {/* STATS GRID */}
       <section className="stats-grid">
         {stats.map((s, i) => (
           <div key={i} className="stat-card">
@@ -40,85 +91,25 @@ export default function AdminDashboard() {
         ))}
       </section>
 
-      {/* MIDDLE SECTION: CHARTS & SUMMARY */}
       <section className="dashboard-grid middle">
         <div className="grid-card chart-card">
           <div className="card-header">
             <h3>Pergerakan Stok (Stock In vs Stock Out)</h3>
-            <select><option>Mingguan</option></select>
+            <select value={period} onChange={(e) => setPeriod(e.target.value)}>
+              <option value="Mingguan">Mingguan</option>
+              <option value="Bulanan">Bulanan</option>
+              <option value="Tahunan">Tahunan</option>
+            </select>
           </div>
-          <div className="chart-area">
-            <div className="chart-y-axis">
-              <span>500</span>
-              <span>400</span>
-              <span>300</span>
-              <span>200</span>
-              <span>100</span>
-              <span>0</span>
-            </div>
-            <div className="chart-main">
-              <svg viewBox="0 0 500 200" preserveAspectRatio="none" className="svg-chart">
-                <defs>
-                  <linearGradient id="gradBlue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#4a90e2" stopOpacity="0.25" />
-                    <stop offset="100%" stopColor="#4a90e2" stopOpacity="0.02" />
-                  </linearGradient>
-                  <linearGradient id="gradOrange" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#e4915a" stopOpacity="0.2" />
-                    <stop offset="100%" stopColor="#e4915a" stopOpacity="0.02" />
-                  </linearGradient>
-                </defs>
-                {/* Grid lines */}
-                <line x1="0" y1="0" x2="500" y2="0" stroke="var(--border-subtle)" strokeWidth="0.5" />
-                <line x1="0" y1="40" x2="500" y2="40" stroke="var(--border-subtle)" strokeWidth="0.5" />
-                <line x1="0" y1="80" x2="500" y2="80" stroke="var(--border-subtle)" strokeWidth="0.5" />
-                <line x1="0" y1="120" x2="500" y2="120" stroke="var(--border-subtle)" strokeWidth="0.5" />
-                <line x1="0" y1="160" x2="500" y2="160" stroke="var(--border-subtle)" strokeWidth="0.5" />
-                <line x1="0" y1="200" x2="500" y2="200" stroke="var(--border-subtle)" strokeWidth="0.5" />
-                {/* Stock In - Area Fill */}
-                <path d="M0,120 C40,100 60,60 100,70 C140,80 160,40 200,50 C240,60 280,30 320,45 C360,60 400,35 450,40 L500,55 L500,200 L0,200 Z" fill="url(#gradBlue)" />
-                {/* Stock In - Line */}
-                <path d="M0,120 C40,100 60,60 100,70 C140,80 160,40 200,50 C240,60 280,30 320,45 C360,60 400,35 450,40 L500,55" fill="none" stroke="#4a90e2" strokeWidth="2.5" strokeLinecap="round" />
-                {/* Stock Out - Area Fill */}
-                <path d="M0,150 C40,140 60,110 100,120 C140,130 160,95 200,100 C240,105 280,80 320,90 C360,100 400,85 450,80 L500,95 L500,200 L0,200 Z" fill="url(#gradOrange)" />
-                {/* Stock Out - Line */}
-                <path d="M0,150 C40,140 60,110 100,120 C140,130 160,95 200,100 C240,105 280,80 320,90 C360,100 400,85 450,80 L500,95" fill="none" stroke="#e4915a" strokeWidth="2.5" strokeLinecap="round" />
-                {/* Data points - Stock In */}
-                <circle cx="0" cy="120" r="3" fill="#4a90e2" />
-                <circle cx="100" cy="70" r="3" fill="#4a90e2" />
-                <circle cx="200" cy="50" r="3" fill="#4a90e2" />
-                <circle cx="320" cy="45" r="3" fill="#4a90e2" />
-                <circle cx="450" cy="40" r="3" fill="#4a90e2" />
-                <circle cx="500" cy="55" r="3" fill="#4a90e2" />
-                {/* Data points - Stock Out */}
-                <circle cx="0" cy="150" r="3" fill="#e4915a" />
-                <circle cx="100" cy="120" r="3" fill="#e4915a" />
-                <circle cx="200" cy="100" r="3" fill="#e4915a" />
-                <circle cx="320" cy="90" r="3" fill="#e4915a" />
-                <circle cx="450" cy="80" r="3" fill="#e4915a" />
-                <circle cx="500" cy="95" r="3" fill="#e4915a" />
-              </svg>
-              <div className="chart-x-axis">
-                <span>Sen</span>
-                <span>Sel</span>
-                <span>Rab</span>
-                <span>Kam</span>
-                <span>Jum</span>
-                <span>Sab</span>
-                <span>Min</span>
-              </div>
-            </div>
-          </div>
-          <div className="chart-legend">
-            <span><i className="dot blue"></i> Stock In</span>
-            <span><i className="dot orange"></i> Stock Out</span>
+          <div className="chart-area" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <p style={{ color: '#888' }}>Data pergerakan stok belum cukup untuk menampilkan chart realtime.</p>
           </div>
         </div>
 
         <div className="grid-card chart-card">
           <div className="card-header">
             <h3>Kesehatan Stok</h3>
-            <button className="text-btn">Lihat Detail</button>
+            <button className="text-btn" onClick={() => navigate('/admin/produk')}>Lihat Detail</button>
           </div>
           <div className="donut-container">
             <div className="donut-chart">
@@ -128,15 +119,15 @@ export default function AdminDashboard() {
                 <circle cx="50" cy="50" r="40" fill="transparent" stroke="#e4915a" strokeWidth="10" strokeDasharray="80 251" strokeDashoffset="-150" />
               </svg>
               <div className="donut-center">
-                <strong>2.104</strong>
+                <strong>{totalItems}</strong>
                 <span>Total Item</span>
               </div>
             </div>
             <div className="donut-legend">
-              <div className="legend-item"><i className="dot blue"></i> Fast Moving <span>35% (737)</span></div>
-              <div className="legend-item"><i className="dot orange"></i> Medium Moving <span>40% (842)</span></div>
-              <div className="legend-item"><i className="dot yellow"></i> Slow Moving <span>15% (316)</span></div>
-              <div className="legend-item"><i className="dot red"></i> Dead Stock <span>10% (209)</span></div>
+              <div className="legend-item"><i className="dot blue"></i> Fast Moving <span>{fastMoving} item</span></div>
+              <div className="legend-item"><i className="dot orange"></i> Medium Moving <span>{medMoving} item</span></div>
+              <div className="legend-item"><i className="dot yellow"></i> Slow Moving <span>{slowMoving} item</span></div>
+              <div className="legend-item"><i className="dot red"></i> Dead Stock <span>{outOfStock} item</span></div>
             </div>
           </div>
         </div>
@@ -144,28 +135,27 @@ export default function AdminDashboard() {
         <div className="grid-card table-card">
           <div className="card-header">
             <h3>Ringkasan Gudang</h3>
-            <button className="text-btn">Lihat Semua</button>
+            <button className="text-btn" onClick={() => navigate('/admin/gudang')}>Lihat Semua</button>
           </div>
           <table className="compact-table">
             <thead>
               <tr><th>Gudang</th><th>Stok</th><th>Status</th></tr>
             </thead>
             <tbody>
-              <tr><td>Gudang Pusat</td><td>1.240</td><td><span className="badge success">Normal</span></td></tr>
-              <tr><td>Gudang Barat</td><td>620</td><td><span className="badge success">Normal</span></td></tr>
-              <tr><td>Gudang Timur</td><td>180</td><td><span className="badge warn">Low Stock</span></td></tr>
-              <tr><td>Gudang Selatan</td><td>64</td><td><span className="badge danger">Critical</span></td></tr>
+              {gudangList.map((g, i) => (
+                <tr key={i}><td>{g.name}</td><td>{g.qty}</td><td><span className={`badge ${g.badgeClass}`}>{g.status}</span></td></tr>
+              ))}
+              {gudangList.length === 0 && <tr><td colSpan="3" style={{ textAlign: 'center' }}>Belum ada data gudang</td></tr>}
             </tbody>
           </table>
         </div>
       </section>
 
-      {/* LOWER SECTION: ALERTS & PRODUCTS */}
       <section className="dashboard-grid lower">
         <div className="grid-card list-card">
           <div className="card-header">
             <h3>Peringatan & Alert</h3>
-            <button className="text-btn">Lihat Semua</button>
+            <button className="text-btn" onClick={() => navigate('/admin/stok-gudang')}>Lihat Semua</button>
           </div>
           <div className="alert-list">
             <div className="alert-item">
@@ -174,7 +164,7 @@ export default function AdminDashboard() {
                 <strong>Low Stock Items</strong>
                 <span>Stok di bawah minimum</span>
               </div>
-              <span className="alert-value warn">47</span>
+              <span className="alert-value warn">{lowStock}</span>
             </div>
             <div className="alert-item">
               <span className="alert-icon danger">📦</span>
@@ -182,24 +172,25 @@ export default function AdminDashboard() {
                 <strong>Out of Stock Items</strong>
                 <span>Stok habis</span>
               </div>
-              <span className="alert-value danger">23</span>
+              <span className="alert-value danger">{outOfStock}</span>
             </div>
           </div>
         </div>
 
         <div className="grid-card table-card">
           <div className="card-header">
-            <h3>Top 5 Produk (Berdasarkan Penjualan)</h3>
-            <button className="text-btn">Lihat Semua</button>
+            <h3>Top Produk (Berdasarkan Stok Tersedia)</h3>
+            <button className="text-btn" onClick={() => navigate('/admin/produk')}>Lihat Semua</button>
           </div>
           <table className="compact-table">
             <thead>
-              <tr><th>Produk</th><th>Terjual</th><th>Stok Tersedia</th></tr>
+              <tr><th>Produk</th><th>SKU</th><th>Stok Tersedia</th></tr>
             </thead>
             <tbody>
-              <tr><td>Red Carpet</td><td>1.250 m</td><td>320 m</td></tr>
-              <tr><td>Silky Wool</td><td>980 m</td><td>210 m</td></tr>
-              <tr><td>Cotton Fabric</td><td>760 m</td><td>180 m</td></tr>
+              {topProducts.map((p, i) => (
+                <tr key={i}><td>{p.name}</td><td>{p.sku}</td><td>{p.qty}</td></tr>
+              ))}
+              {topProducts.length === 0 && <tr><td colSpan="3" style={{ textAlign: 'center' }}>Belum ada data stok</td></tr>}
             </tbody>
           </table>
         </div>
@@ -207,30 +198,24 @@ export default function AdminDashboard() {
         <div className="grid-card list-card">
           <div className="card-header">
             <h3>Aktivitas Terakhir</h3>
-            <button className="text-btn">Lihat Semua</button>
+            <button className="text-btn" onClick={() => navigate('/admin/requests')}>Lihat Semua</button>
           </div>
           <div className="activity-list">
-            <div className="activity-item">
-              <span className="act-icon">📝</span>
-              <div className="act-body">
-                <strong>PO-20250513-001 diselesaikan</strong>
-                <span>Order dari Toko Surabaya</span>
+            {notifications.slice(0, 3).map((n, i) => (
+              <div key={i} className="activity-item">
+                <span className="act-icon">{n.type === 'restock_done' ? '✅' : '📥'}</span>
+                <div className="act-body">
+                  <strong>{n.title}</strong>
+                  <span>{n.message}</span>
+                </div>
+                <span className="act-time">{n.time}</span>
               </div>
-              <span className="act-time">2 menit lalu</span>
-            </div>
-            <div className="activity-item">
-              <span className="act-icon">📥</span>
-              <div className="act-body">
-                <strong>Stock In - 320 item</strong>
-                <span>Red Carpet di Gudang Pusat</span>
-              </div>
-              <span className="act-time">25 menit lalu</span>
-            </div>
+            ))}
+            {notifications.length === 0 && <p style={{ padding: '20px', color: '#888', textAlign: 'center' }}>Tidak ada aktivitas</p>}
           </div>
         </div>
       </section>
 
-      {/* FINAL SECTION: RECENT ORDERS */}
       <section className="dashboard-grid full">
         <div className="grid-card table-card">
           <div className="card-header">
@@ -239,43 +224,36 @@ export default function AdminDashboard() {
           <table className="main-table">
             <thead>
               <tr>
-                <th>#</th>
                 <th>ORDER NO.</th>
-                <th>ITEM</th>
-                <th>CUSTOMER</th>
+                <th>ITEM TOTAL</th>
+                <th>FROM</th>
+                <th>TO</th>
                 <th>STATUS</th>
                 <th>ORDERED ON</th>
-                <th>CREATED BY</th>
                 <th>AKSI</th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>1</td>
-                <td>PO-20250513-002</td>
-                <td>Silky Wool</td>
-                <td>Toko Bandung</td>
-                <td><span className="status-badge weaving">Weaving</span></td>
-                <td>13 Mei 2025</td>
-                <td>Admin</td>
-                <td>⋮</td>
-              </tr>
-              <tr>
-                <td>2</td>
-                <td>PO-20250513-001</td>
-                <td>Red Carpet</td>
-                <td>Toko Surabaya</td>
-                <td><span className="status-badge pending">Pending</span></td>
-                <td>13 Mei 2025</td>
-                <td>Admin</td>
-                <td>⋮</td>
-              </tr>
+              {recentOrders.map((r, i) => {
+                const totalItems = (r.items || []).reduce((sum, item) => sum + (Number(item.qty) || 0), 0);
+                return (
+                  <tr key={i}>
+                    <td>{r.id}</td>
+                    <td>{totalItems}</td>
+                    <td>{r.fromName}</td>
+                    <td>{r.toName}</td>
+                    <td><span className={`status-badge ${r.status === 'Selesai' ? 'done' : 'pending'}`}>{r.status}</span></td>
+                    <td>{r.createdAt}</td>
+                    <td>⋮</td>
+                  </tr>
+                );
+              })}
+              {recentOrders.length === 0 && <tr><td colSpan="7" style={{ textAlign: 'center' }}>Belum ada order.</td></tr>}
             </tbody>
           </table>
         </div>
       </section>
 
-      <div className="floating-action-btn">+</div>
     </div>
   );
 }

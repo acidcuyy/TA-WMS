@@ -1,28 +1,31 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import DateRangePicker from "../../../components/common/DateRangePicker";
+import DetailModal from "../../../components/common/DetailModal";
 import "./PesananPenjualanToko.css";
 
 export default function PesananPenjualanToko() {
   const [activeTab, setActiveTab] = useState("Semua (156)");
+  const [detailModal, setDetailModal] = useState(null);
   const easing = [0.22, 1, 0.36, 1];
 
   const summaryCards = [
     { label: "Total Pesanan", value: "156", unit: "transaksi", icon: "📄", iconClass: "summary-card__icon--purple", subtext: "Total pesanan masuk" },
     { label: "Pesanan Hari Ini", value: "18", unit: "transaksi", icon: "🛒", iconClass: "summary-card__icon--green", subtext: "Pesanan baru hari ini" },
     { label: "Menunggu Pembayaran", value: "12", unit: "transaksi", icon: "💳", iconClass: "summary-card__icon--orange", subtext: "Belum bayar / DP" },
-    { label: "Nilai Penjualan", value: "Rp 58.250.000", unit: "", icon: "📈", iconClass: "summary-card__icon--blue", subtext: "Total pendapatan kotor" },
+    { label: "Pesanan Selesai", value: "92", unit: "transaksi", icon: "✅", iconClass: "summary-card__icon--blue", subtext: "Pesanan telah selesai" },
     { label: "Perlu Diproses", value: "9", unit: "pesanan", icon: "📦", iconClass: "summary-card__icon--red", subtext: "Menunggu pengemasan" },
   ];
 
   const tableData = [
-    { id: "SO-2025-0056", client: "Pelanggan Umum", channel: "Kasir Toko", date: "24 Mei 2025, 10:15", items: "8 item", total: "Rp 1.450.000", payment: "Lunas", status: "Selesai" },
-    { id: "SO-2025-0055", client: "Toko Maju", channel: "WhatsApp", date: "24 Mei 2025, 09:40", items: "12 item", total: "Rp 980.000", payment: "DP", status: "Diproses" },
-    { id: "SO-2025-0054", client: "CV Sejahtera", channel: "Marketplace", date: "23 Mei 2025, 16:20", items: "15 item", total: "Rp 5.620.000", payment: "Belum Bayar", status: "Dikemas" },
-    { id: "SO-2025-0053", client: "Kasir Toko", channel: "Kasir Toko", date: "23 Mei 2025, 13:05", items: "6 item", total: "Rp 720.000", payment: "Lunas", status: "Diproses" },
-    { id: "SO-2025-0052", client: "Pelanggan Umum", channel: "Walk In", date: "22 Mei 2025, 15:10", items: "5 item", total: "Rp 350.000", payment: "Lunas", status: "Selesai" },
-    { id: "SO-2025-0051", client: "Reseller Abadi", channel: "Reseller", date: "22 Mei 2025, 11:25", items: "20 item", total: "Rp 2.850.000", payment: "Belum Bayar", status: "Menunggu" },
-    { id: "SO-2025-0050", client: "Toko Berkah", channel: "WhatsApp", date: "21 Mei 2025, 09:30", items: "10 item", total: "Rp 1.150.000", payment: "DP", status: "Dikemas" },
-    { id: "SO-2025-0049", client: "Pelanggan Umum", channel: "Marketplace", date: "21 Mei 2025, 08:05", items: "7 item", total: "Rp 560.000", payment: "Belum Bayar", status: "Dibatalkan" },
+    { id: "SO-2025-0056", client: "Pelanggan Umum", channel: "Kasir Toko", date: "24 Mei 2025, 10:15", items: "8 item", payment: "Lunas", status: "Selesai" },
+    { id: "SO-2025-0055", client: "Toko Maju", channel: "WhatsApp", date: "24 Mei 2025, 09:40", items: "12 item", payment: "DP", status: "Diproses" },
+    { id: "SO-2025-0054", client: "CV Sejahtera", channel: "Marketplace", date: "23 Mei 2025, 16:20", items: "15 item", payment: "Belum Bayar", status: "Dikemas" },
+    { id: "SO-2025-0053", client: "Kasir Toko", channel: "Kasir Toko", date: "23 Mei 2025, 13:05", items: "6 item", payment: "Lunas", status: "Diproses" },
+    { id: "SO-2025-0052", client: "Pelanggan Umum", channel: "Walk In", date: "22 Mei 2025, 15:10", items: "5 item", payment: "Lunas", status: "Selesai" },
+    { id: "SO-2025-0051", client: "Reseller Abadi", channel: "Reseller", date: "22 Mei 2025, 11:25", items: "20 item", payment: "Belum Bayar", status: "Menunggu" },
+    { id: "SO-2025-0050", client: "Toko Berkah", channel: "WhatsApp", date: "21 Mei 2025, 09:30", items: "10 item", payment: "DP", status: "Dikemas" },
+    { id: "SO-2025-0049", client: "Pelanggan Umum", channel: "Marketplace", date: "21 Mei 2025, 08:05", items: "7 item", payment: "Belum Bayar", status: "Dibatalkan" },
   ];
 
   const recentActivities = [
@@ -82,7 +85,7 @@ export default function PesananPenjualanToko() {
           <section className="pesanan-content-box">
             <div className="pesanan-filters">
               <select className="filter-select"><option>Semua Status</option></select>
-              <input type="text" className="filter-date" placeholder="01 Mei 2025 - 24 Mei 2025" />
+              <DateRangePicker />
               <select className="filter-select"><option>Semua Channel</option></select>
               <select className="filter-select"><option>Semua Jenis</option></select>
               <div className="filter-search">
@@ -111,7 +114,7 @@ export default function PesananPenjualanToko() {
                   <th>Channel</th>
                   <th>Tanggal ↓</th>
                   <th>Total Item</th>
-                  <th>Total (Rp)</th>
+
                   <th>Pembayaran</th>
                   <th>Status</th>
                   <th>Aksi</th>
@@ -130,7 +133,7 @@ export default function PesananPenjualanToko() {
                     <td>{row.channel}</td>
                     <td>{row.date}</td>
                     <td>{row.items}</td>
-                    <td style={{ fontWeight: 600 }}>{row.total}</td>
+
                     <td>
                       <span className={`pay-badge ${payClass(row.payment)}`}>
                         {row.payment}
@@ -143,7 +146,7 @@ export default function PesananPenjualanToko() {
                     </td>
                     <td>
                       <div className="action-btns">
-                        <button className="btn-action">👁️</button>
+                        <button className="btn-action" onClick={() => setDetailModal(row)}>👁️</button>
                         <button className="btn-action">⋯</button>
                       </div>
                     </td>
@@ -186,8 +189,8 @@ export default function PesananPenjualanToko() {
                   <span style={{ fontWeight: 700 }}>1.250 <span style={{ fontWeight: 400, fontSize: "10px", color: "#94a3b8" }}>item</span></span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px" }}>
-                  <span style={{ color: "#64748b" }}>Rata-rata per Transaksi</span>
-                  <span style={{ fontWeight: 700 }}>Rp 373.397</span>
+                  <span style={{ color: "#64748b" }}>Rata-rata Item per Transaksi</span>
+                  <span style={{ fontWeight: 700 }}>8 <span style={{ fontWeight: 400, fontSize: "10px", color: "#94a3b8" }}>item</span></span>
                 </div>
               </div>
             </div>
@@ -245,6 +248,22 @@ export default function PesananPenjualanToko() {
           </aside>
         </div>
       </motion.div>
+
+      {/* DETAIL MODAL */}
+      <DetailModal
+        isOpen={!!detailModal}
+        onClose={() => setDetailModal(null)}
+        title="Detail Pesanan Penjualan"
+        subtitle={detailModal ? `${detailModal.id} • ${detailModal.client}` : ''}
+        details={detailModal ? [
+          { label: "Tanggal", value: detailModal.date },
+          { label: "Channel", value: detailModal.channel },
+          { label: "Pembayaran", value: detailModal.payment, color: detailModal.payment === 'Lunas' ? '#52c41a' : detailModal.payment === 'DP' ? '#fa8c16' : '#ef4444' },
+          { label: "Status", value: detailModal.status, color: detailModal.status === 'Selesai' ? '#52c41a' : detailModal.status === 'Dibatalkan' ? '#ef4444' : '#1890ff' },
+        ] : []}
+        itemsTitle="Total Item"
+        items={detailModal ? [`${detailModal.items}`] : []}
+      />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import DateRangePicker from "../../../components/common/DateRangePicker";
 import "./RiwayatToko.css";
 import { uploadTokoReport } from "../../../services/wmsApi";
 
@@ -9,8 +10,8 @@ export default function RiwayatToko() {
 
   const summaryCards = [
     { label: "Total Laporan", value: "32", unit: "laporan", icon: "📄", iconClass: "summary-card__icon--purple" },
-    { label: "Penjualan Bulan Ini", value: "Rp 58.250.000", unit: "156 transaksi", icon: "📈", iconClass: "summary-card__icon--green" },
-    { label: "Pengeluaran", value: "Rp 42.350.000", unit: "96 transaksi", icon: "📤", iconClass: "summary-card__icon--orange" },
+    { label: "Penjualan Bulan Ini", value: "156", unit: "transaksi", icon: "📈", iconClass: "summary-card__icon--green" },
+    { label: "Pengeluaran", value: "96", unit: "transaksi", icon: "📤", iconClass: "summary-card__icon--orange" },
     { label: "Retur Penjualan", value: "18", unit: "transaksi", icon: "↩", iconClass: "summary-card__icon--red" },
     { label: "Penyesuaian Stok", value: "64", unit: "transaksi", icon: "⚖", iconClass: "summary-card__icon--blue" },
   ];
@@ -117,7 +118,7 @@ export default function RiwayatToko() {
         {/* FILTERS */}
         <section className="riwayat-filters">
           <select className="filter-select"><option>Semua Jenis Laporan</option></select>
-          <input type="text" className="filter-date" placeholder="01 Mei 2025 - 24 Mei 2025" />
+          <DateRangePicker />
           <select className="filter-select"><option>Semua Status</option></select>
           <div className="filter-search">
             <span>🔍</span>
@@ -147,10 +148,10 @@ export default function RiwayatToko() {
           <div className="chart-wrapper-main">
             {/* Y Labels */}
             <div className="chart-y-axis">
-              <span>Rp 10M</span>
-              <span>Rp 7.5M</span>
-              <span>Rp 5M</span>
-              <span>Rp 2.5M</span>
+              <span>10K</span>
+              <span>7.5K</span>
+              <span>5K</span>
+              <span>2.5K</span>
               <span>0</span>
             </div>
 

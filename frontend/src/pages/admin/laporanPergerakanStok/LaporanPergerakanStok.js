@@ -1,11 +1,10 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import Card from "../../../components/common/Card";
+import DetailModal from "../../../components/common/DetailModal";
+import DateRangePicker from "../../../components/common/DateRangePicker";
 import "../PageAdmin.css";
 import "./LaporanPergerakanAdmin.css";
-
-const fmtIDR = (n) =>
-  new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 }).format(n);
 
 export default function LaporanPergerakanStok() {
   const [timeRange, setTimeRange] = useState("Harian");
@@ -50,8 +49,8 @@ export default function LaporanPergerakanStok() {
             <span className="mtAdmin__dot" />
             Live Monitoring
           </span>
-          <div className="date-filter" style={{ display: 'inline-flex', alignItems: 'center', background: 'var(--bg)', border: '1px solid var(--border)', padding: '8px 16px', borderRadius: '12px', fontSize: '13px', marginLeft: '12px' }}>
-            01 Feb 2026 - 07 Feb 2026 📅
+          <div style={{ marginLeft: '12px' }}>
+            <DateRangePicker />
           </div>
           <button className="btn-export" style={{ marginLeft: '12px', height: '40px' }}><span>📥</span> Export <span className="chevron">⌄</span></button>
         </div>
@@ -79,7 +78,7 @@ export default function LaporanPergerakanStok() {
           <select className="lpsAdmin__select"><option>Semua Gudang / Toko</option></select>
           <select className="lpsAdmin__select"><option>Semua Produk</option></select>
           <select className="lpsAdmin__select"><option>Semua Kategori</option></select>
-          <div className="date-filter" style={{ border: '1px solid var(--border)', background: 'var(--bg-2)', padding: '10px 14px', borderRadius: '10px', fontSize: '12px', cursor: 'pointer' }}>01 Feb 2026 - 07 Feb 2026 📅</div>
+          <DateRangePicker />
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
           <button className="btn-reset-filter">Reset</button>

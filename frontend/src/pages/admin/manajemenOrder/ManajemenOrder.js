@@ -1,15 +1,15 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import Card from "../../../components/common/Card";
+import DetailModal from "../../../components/common/DetailModal";
+import DateRangePicker from "../../../components/common/DateRangePicker";
 import "../PageAdmin.css";
 import "./ManajemenOrderAdmin.css";
-
-const fmtIDR = (n) =>
-  new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 }).format(n);
 
 export default function ManajemenOrder() {
   const easing = useMemo(() => [0.22, 1, 0.36, 1], []);
   const [activeTab, setActiveTab] = useState("Semua Order");
+  const [detailModal, setDetailModal] = useState(null);
 
   const stats = [
     { label: "Total Order", value: 128, hint: "Semua order", icon: "🏠", color: "#e4915a", bg: "#fff8f3" },
@@ -20,17 +20,17 @@ export default function ManajemenOrder() {
   ];
 
   const orders = [
-    { id: "SO-2026-00248", type: "Sales Order", date: "03 Feb 2026, 09:15", party: "Toko A", city: "Jakarta", items: 15, value: 3250000, status: "Pending", ship: "Belum dikirim", icon: "🛒", iconColor: "#52c41a" },
-    { id: "SO-2026-00247", type: "Sales Order", date: "03 Feb 2026, 08:40", party: "Toko B", city: "Surabaya", items: 8, value: 1750000, status: "Processing", ship: "Sedang diproses", icon: "🛒", iconColor: "#52c41a" },
-    { id: "PO-2026-00078", type: "Purchase Order", date: "02 Feb 2026, 14:30", party: "Supplier Jaya Abadi", city: "Bandung", items: 23, value: 12500000, status: "Processing", ship: "Partial", icon: "📦", iconColor: "#1890ff" },
-    { id: "TR-2026-00056", type: "Transfer Order", date: "02 Feb 2026, 11:10", party: "Gudang Pusat → Toko C", city: "", items: 12, value: 980000, status: "Shipped", ship: "Dalam pengiriman Resi: JT123456789", icon: "⇄", iconColor: "#fa8c16" },
-    { id: "SO-2026-00246", type: "Sales Order", date: "01 Feb 2026, 17:05", party: "Toko C", city: "Semarang", items: 5, value: 650000, status: "Completed", ship: "Selesai 03 Feb 2026", icon: "🛒", iconColor: "#52c41a" },
-    { id: "PO-2026-00077", type: "Purchase Order", date: "01 Feb 2026, 10:25", party: "Mitra Elektronik", city: "Jakarta", items: 18, value: 8250000, status: "Completed", ship: "Selesai 02 Feb 2026", icon: "📦", iconColor: "#1890ff" },
-    { id: "SO-2026-00245", type: "Sales Order", date: "31 Jan 2026, 15:20", party: "Toko D", city: "Medan", items: 9, value: 2150000, status: "Cancelled", ship: "Dibatalkan 31 Jan 2026", icon: "🛒", iconColor: "#ff4d4f" },
+    { id: "SO-2026-00248", type: "Sales Order", date: "03 Feb 2026, 09:15", party: "Toko A", city: "Jakarta", items: 15, value: 3250000, status: "Pending", ship: "Belum dikirim", icon: "🛒", iconColor: "#52c41a", customer: "Toko A", channel: "WhatsApp", itemsText: "Produk A x5, Produk B x10", total: "3.250.000" },
+    { id: "SO-2026-00247", type: "Sales Order", date: "03 Feb 2026, 08:40", party: "Toko B", city: "Surabaya", items: 8, value: 1750000, status: "Processing", ship: "Sedang diproses", icon: "🛒", iconColor: "#52c41a", customer: "Toko B", channel: "Marketplace", itemsText: "Produk C x8", total: "1.750.000" },
+    { id: "PO-2026-00078", type: "Purchase Order", date: "02 Feb 2026, 14:30", party: "Supplier Jaya Abadi", city: "Bandung", items: 23, value: 12500000, status: "Processing", ship: "Partial", icon: "📦", iconColor: "#1890ff", customer: "Supplier Jaya Abadi", channel: "Email", itemsText: "Bahan Baku X x23", total: "12.500.000" },
+    { id: "TR-2026-00056", type: "Transfer Order", date: "02 Feb 2026, 11:10", party: "Gudang Pusat → Toko C", city: "", items: 12, value: 980000, status: "Shipped", ship: "Dalam pengiriman Resi: JT123456789", icon: "⇄", iconColor: "#fa8c16", customer: "Gudang Pusat", channel: "Internal", itemsText: "Item Inventaris x12", total: "980.000" },
+    { id: "SO-2026-00246", type: "Sales Order", date: "01 Feb 2026, 17:05", party: "Toko C", city: "Semarang", items: 5, value: 650000, status: "Completed", ship: "Selesai 03 Feb 2026", icon: "🛒", iconColor: "#52c41a", customer: "Toko C", channel: "WhatsApp", itemsText: "Produk D x5", total: "650.000" },
+    { id: "PO-2026-00077", type: "Purchase Order", date: "01 Feb 2026, 10:25", party: "Mitra Elektronik", city: "Jakarta", items: 18, value: 8250000, status: "Completed", ship: "Selesai 02 Feb 2026", icon: "📦", iconColor: "#1890ff", customer: "Mitra Elektronik", channel: "Portal", itemsText: "Sparepart x18", total: "8.250.000" },
+    { id: "SO-2026-00245", type: "Sales Order", date: "31 Jan 2026, 15:20", party: "Toko D", city: "Medan", items: 9, value: 2150000, status: "Cancelled", ship: "Dibatalkan 31 Jan 2026", icon: "🛒", iconColor: "#ff4d4f", customer: "Toko D", channel: "WhatsApp", itemsText: "Produk E x9", total: "2.150.000" },
   ];
 
   const analytics = [
-    { label: "Rata-rata Nilai Order", value: "Rp 2.850.000", sub: "Dari 128 order", icon: "🏪" },
+    { label: "Rata-rata Nilai Order", value: "2.850.000", sub: "Dari 128 order", icon: "🏪" },
     { label: "Order Bulan Ini", value: "72", sub: "↑ 12% dari bulan lalu", icon: "📊" },
     { label: "Item Terjual", value: "1.856 item", sub: "Dari sales order", icon: "🛒" },
     { label: "Tingkat Penyelesaian", value: "68.8%", sub: "Completed + Shipped", icon: "📈" },
@@ -81,7 +81,7 @@ export default function ManajemenOrder() {
           <select className="moAdmin__select"><option>Semua Tipe Order</option></select>
           <select className="moAdmin__select"><option>Semua Status</option></select>
           <select className="moAdmin__select"><option>Semua Toko</option></select>
-          <div className="date-filter">📅 Pilih Rentang Tanggal</div>
+          <DateRangePicker />
           <button className="btn-reset-filter">Reset</button>
         </div>
         <button className="btn-create-order"><span>+</span> Buat Order Baru</button>
@@ -117,7 +117,7 @@ export default function ManajemenOrder() {
                 <th>Tanggal Order</th>
                 <th>Toko / Pihak</th>
                 <th>Total Item</th>
-                <th>Total Nilai</th>
+
                 <th>Status</th>
                 <th>Pengiriman</th>
                 <th>Aksi</th>
@@ -144,7 +144,7 @@ export default function ManajemenOrder() {
                     <p style={{ fontSize: '11px', color: '#888' }}>{o.city}</p>
                   </td>
                   <td style={{ fontWeight: 600 }}>{o.items} item</td>
-                  <td style={{ fontWeight: 700 }}>Rp {fmtIDR(o.value)}</td>
+
                   <td>
                     <span className={`status-pill status-pill--${o.status.toLowerCase()}`}>
                       ● {o.status}
@@ -153,7 +153,7 @@ export default function ManajemenOrder() {
                   <td style={{ fontSize: '12px', color: '#666' }}>{o.ship}</td>
                   <td>
                     <div className="action-btns">
-                      <button className="btn-icon">👁️</button>
+                      <button className="btn-icon" onClick={() => setDetailModal(o)}>👁️</button>
                       <button className="btn-icon">⋮</button>
                     </div>
                   </td>

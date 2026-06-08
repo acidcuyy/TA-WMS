@@ -1,34 +1,59 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect, useMemo } from "react";
 import Card from "../../../components/common/Card";
+import DetailModal from "../../../components/common/DetailModal";
+import DateRangePicker from "../../../components/common/DateRangePicker";
+import { subscribeRequests } from "../../../services/wmsApi";
 import "./PengeluaranBarang.css";
-
-const fmtIDR = (n) =>
-  new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 }).format(n);
 
 export default function PengeluaranBarang() {
   const [activeTab, setActiveTab] = useState("Semua");
+  const [allRequests, setAllRequests] = useState([]);
+  const [detailModal, setDetailModal] = useState(null);
 
-  const stats = [
-    { label: "Total Pengeluaran", value: "270", sub: "Transaksi", hint: "↑ 12.5% dari periode lalu", icon: "📤", color: "#1890ff", bg: "#e6f7ff" },
-    { label: "Total Item Dikeluarkan", value: "4.250", sub: "Item", hint: "↑ 8.7% dari periode lalu", icon: "📦", color: "#52c41a", bg: "#f6ffed" },
-    { label: "Total Nilai Pengeluaran", value: "Rp 985.750.000", sub: "", hint: "↑ 10.3% dari periode lalu", icon: "💰", color: "#722ed1", bg: "#f9f0ff" },
-    { label: "Pengeluaran Hari Ini", value: "18", sub: "Transaksi", hint: "Lihat detail", icon: "⇄", color: "#1890ff", bg: "#e6f7ff" },
-    { label: "Barang Pending", value: "7", sub: "Transaksi", hint: "Lihat detail", icon: "🕒", color: "#fa8c16", bg: "#fff7e6" },
-  ];
+  useEffect(() => {
+    const unsub = subscribeRequests((data) => setAllRequests(data || []));
+    return () => unsub();
+  }, []);
 
-  const transactions = [
-    { id: "DO-2026-00125", ref: "SO-2026-00078", destination: "Toko A", date: "07 Feb 2026 10:15", items: 45, value: 125450000, status: "Menunggu" },
-    { id: "DO-2026-00124", ref: "SO-2026-00077", destination: "Toko B", date: "07 Feb 2026 09:30", items: 30, value: 68250000, status: "Proses" },
-    { id: "DO-2026-00123", ref: "TR-2026-00056", destination: "Gudang Timur", date: "06 Feb 2026 16:20", items: 25, value: 45600000, status: "Dikeluarkan" },
-    { id: "DO-2026-00122", ref: "SO-2026-00076", destination: "Toko C", date: "06 Feb 2026 14:10", items: 18, value: 32800000, status: "Dikeluarkan" },
-    { id: "DO-2026-00121", ref: "SO-2026-00075", destination: "Toko D", date: "06 Feb 2026 11:05", items: 22, value: 38750000, status: "Dikeluarkan" },
-    { id: "DO-2026-00120", ref: "TR-2026-00055", destination: "Gudang Barat", date: "05 Feb 2026 15:45", items: 32, value: 75300000, status: "Proses" },
-    { id: "DO-2026-00119", ref: "SO-2026-00074", destination: "Toko E", date: "05 Feb 2026 11:20", items: 15, value: 28150000, status: "Dikeluarkan" },
-    { id: "DO-2026-00118", ref: "SO-2026-00073", destination: "Toko F", date: "04 Feb 2026 17:05", items: 28, value: 55900000, status: "Dikeluarkan" },
-    { id: "DO-2026-00117", ref: "SO-2026-00072", destination: "Toko G", date: "04 Feb 2026 09:30", items: 20, value: 37600000, status: "Menunggu" },
-    { id: "DO-2026-00116", ref: "TR-2026-00054", destination: "Gudang Selatan", date: "03 Feb 2026 14:45", items: 40, value: 89500000, status: "Dibatalkan" },
-  ];
+  const transactions = useMemo(() => {
+    return allRequests.map(r => {
+      let totalItems = 0;
+      let value = 0;
+      let itemsList = [];
+
+      (r.items || []).forEach(it => {
+        totalItems += it.qty;
+        const p = it.category === "Elektronik" ? 450000 : it.category === "Minuman" ? 8000 : 25000;
+        value += it.qty * p;
+        itemsList.push(`${it.name} (${it.sku || "SAK-" + Math.floor(Math.random()*1000)}) x${it.qty}`);
+      });
+      
+      let statusLabel = r.status;
+      if (statusLabel === "Memproses") statusLabel = "Proses";
+      if (statusLabel === "Selesai") statusLabel = "Dikeluarkan";
+      if (statusLabel === "Diterima Toko") statusLabel = "Dikeluarkan";
+      if (statusLabel === "Declined") statusLabel = "Dibatalkan";
+
+      return {
+        id: `DO-${r.id.split('-')[1] || r.id}`,
+        ref: r.id,
+        destination: r.fromName || "Toko",
+        date: new Date(r.createdAt || new Date()).toLocaleString("id-ID", {
+          day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+        }),
+        itemsCount: totalItems,
+        itemsText: itemsList.join(', '),
+        value,
+        status: statusLabel,
+        rawStatus: r.status
+      };
+    });
+  }, [allRequests]);
+
+  const filteredTransactions = useMemo(() => {
+    if (activeTab === "Semua") return transactions;
+    return transactions.filter(t => t.status === activeTab);
+  }, [transactions, activeTab]);
 
   const activities = [
     { title: "Pengeluaran barang untuk Toko A", sub: "DO-2026-00125", time: "10 menit lalu", color: "#fa8c16", icon: "🕒" },
@@ -64,7 +89,13 @@ export default function PengeluaranBarang() {
 
         {/* STATS */}
         <div className="pgBarang__stats">
-          {stats.map((s, i) => (
+          {[
+            { label: "Total Pengeluaran", value: transactions.length, sub: "Transaksi", hint: "Dari keseluruhan data", icon: "📤", color: "#1890ff", bg: "#e6f7ff" },
+            { label: "Total Item Dikeluarkan", value: transactions.filter(t => t.status === "Dikeluarkan").reduce((sum, t) => sum + t.itemsCount, 0), sub: "Item", hint: "Telah dikeluarkan", icon: "📦", color: "#52c41a", bg: "#f6ffed" },
+
+            { label: "Sedang Diproses", value: transactions.filter(t => t.status === "Proses" || t.status === "Mengirim").length, sub: "Transaksi", hint: "Proses & kirim", icon: "⇄", color: "#1890ff", bg: "#e6f7ff" },
+            { label: "Menunggu Acc", value: transactions.filter(t => t.status === "Menunggu").length, sub: "Transaksi", hint: "Menunggu Acc Gudang", icon: "🕒", color: "#fa8c16", bg: "#fff7e6" },
+          ].map((s, i) => (
             <Card key={i} className="pgBarang__statCard">
               <div className="pgBarang__statIcon" style={{ background: s.bg, color: s.color }}>{s.icon}</div>
               <div className="pgBarang__statMain">
@@ -79,7 +110,7 @@ export default function PengeluaranBarang() {
         {/* FILTER BAR */}
         <div className="pgBarang__filterBar">
           <select className="moAdmin__select"><option>Semua Status</option></select>
-          <div className="date-filter" style={{ border: '1px solid var(--border)', background: 'var(--bg-2)', padding: '10px 14px', borderRadius: '10px', fontSize: '12px', cursor: 'pointer' }}>01 Feb 2026 - 07 Feb 2026 📅</div>
+          <DateRangePicker />
           <select className="moAdmin__select"><option>Semua Tujuan</option></select>
           <select className="moAdmin__select"><option>Semua Jenis Pengeluaran</option></select>
           <div className="moAdmin__searchWrap" style={{ flex: 1 }}>
@@ -92,11 +123,12 @@ export default function PengeluaranBarang() {
         {/* TABS */}
         <div className="pgBarang__tabs">
           {[
-            { name: "Semua", count: 270 },
-            { name: "Menunggu", count: 7 },
-            { name: "Proses", count: 12 },
-            { name: "Dikeluarkan", count: 238 },
-            { name: "Dibatalkan", count: 13 }
+            { name: "Semua", count: transactions.length },
+            { name: "Menunggu", count: transactions.filter(t => t.status === "Menunggu").length },
+            { name: "Proses", count: transactions.filter(t => t.status === "Proses").length },
+            { name: "Mengirim", count: transactions.filter(t => t.status === "Mengirim").length },
+            { name: "Dikeluarkan", count: transactions.filter(t => t.status === "Dikeluarkan").length },
+            { name: "Dibatalkan", count: transactions.filter(t => t.status === "Dibatalkan").length }
           ].map(tab => (
             <div
               key={tab.name}
@@ -119,43 +151,56 @@ export default function PengeluaranBarang() {
                     <th>No. DO / Referensi</th>
                     <th>Tujuan</th>
                     <th>Tanggal</th>
-                    <th>Total Item</th>
-                    <th>Nilai (Rp)</th>
+                    <th>Daftar Barang (SKU)</th>
+
                     <th>Status</th>
                     <th>Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {transactions.map((t, i) => (
-                    <tr key={i}>
-                      <td style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontSize: '14px', color: t.id.startsWith('DO') ? '#1890ff' : '#52c41a' }}>
-                          {t.id.startsWith('DO') ? '⇄' : '📦'}
-                        </span> {t.id}
-                      </td>
-                      <td className="rqAdmin__mono" style={{ fontSize: '11px' }}>{t.ref}</td>
-                      <td style={{ fontWeight: 700 }}>{t.destination}</td>
-                      <td style={{ fontSize: '12px', color: '#888' }}>{t.date}</td>
-                      <td>{t.items} item</td>
-                      <td style={{ fontWeight: 700 }}>Rp {fmtIDR(t.value)}</td>
-                      <td>
-                        <span className={`status-pill ${getStatusClass(t.status)}`}>
-                          ● {t.status}
-                        </span>
-                      </td>
-                      <td>
-                        <div style={{ display: 'flex', gap: '4px' }}>
-                          <button className="btn-icon">👁️</button>
-                          <button className="btn-icon">⋮</button>
-                        </div>
+                  {filteredTransactions.length === 0 ? (
+                    <tr>
+                      <td colSpan="8" style={{ textAlign: "center", padding: "20px", color: "#888" }}>
+                        Belum ada data pengeluaran.
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    filteredTransactions.map((t, i) => (
+                      <tr key={i}>
+                        <td style={{ fontWeight: 700 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '14px', color: t.id.startsWith('DO') ? '#1890ff' : '#52c41a' }}>
+                              {t.id.startsWith('DO') ? '⇄' : '📦'}
+                            </span> {t.id}
+                          </div>
+                        </td>
+                        <td className="rqAdmin__mono" style={{ fontSize: '11px' }}>{t.ref}</td>
+                        <td style={{ fontWeight: 700 }}>{t.destination}</td>
+                        <td style={{ fontSize: '12px', color: '#888' }}>{t.date}</td>
+                        <td style={{ fontSize: '11px', maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={t.itemsText}>
+                          <div style={{ fontWeight: 700, color: '#1e293b', marginBottom: '2px' }}>{t.itemsCount} item total</div>
+                          <div style={{ color: '#64748b' }}>{t.itemsText}</div>
+                        </td>
+
+                        <td>
+                          <span className={`status-pill ${getStatusClass(t.status)}`}>
+                            ● {t.status}
+                          </span>
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', gap: '4px' }}>
+                            <button className="btn-icon" onClick={() => setDetailModal(t)}>👁️</button>
+                            <button className="btn-icon">⋮</button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
             <footer style={{ padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '12px', color: '#888' }}>Menampilkan 1 - 10 dari 270 data</span>
+              <span style={{ fontSize: '12px', color: '#888' }}>Menampilkan 1 - {filteredTransactions.length} dari {filteredTransactions.length} data</span>
               <div className="pagination">
                 <select className="mpAdmin__select" style={{ padding: '4px 8px' }}><option>10 / halaman</option></select>
                 <div className="page-controls">
@@ -176,10 +221,10 @@ export default function PengeluaranBarang() {
               <div className="pgBarang__sideHead">
                 <h3>Ringkasan Pengeluaran</h3>
               </div>
-              <p style={{ fontSize: '11px', color: '#888', marginBottom: '16px' }}>Periode: 01 - 07 Feb 2026</p>
-              <div className="pgBarang__summaryItem"><span>Total Pengeluaran</span><b>Rp 985.750.000</b></div>
-              <div className="pgBarang__summaryItem"><span>Total Item</span><b>4.250 item</b></div>
-              <div className="pgBarang__summaryItem"><span>Rata-rata per Transaksi</span><b>Rp 3.650.000</b></div>
+              <p style={{ fontSize: '11px', color: '#888', marginBottom: '16px' }}>Semua Waktu</p>
+
+              <div className="pgBarang__summaryItem"><span>Total Item</span><b>{transactions.reduce((sum, t) => sum + t.itemsCount, 0)} item</b></div>
+
             </div>
 
             <div className="pgBarang__sideCard">
@@ -232,6 +277,24 @@ export default function PengeluaranBarang() {
           </div>
         </div>
       </div>
+
+      {/* MODAL DETAIL */}
+      {detailModal && (
+        <DetailModal
+          isOpen={!!detailModal}
+          onClose={() => setDetailModal(null)}
+          title="Detail Pengeluaran"
+          subtitle={`${detailModal.id} • Tujuan: ${detailModal.destination}`}
+          details={[
+            { label: "Tanggal Dibuat", value: detailModal.date },
+            { label: "Status", value: detailModal.status, color: detailModal.status === 'Selesai' ? '#52c41a' : '#1890ff' },
+            { label: "No. DO / Referensi", value: detailModal.ref },
+            { label: "Tujuan (Cabang/Toko)", value: detailModal.destination },
+          ]}
+          items={detailModal.itemsText.split(', ')}
+
+        />
+      )}
     </div>
   );
 }

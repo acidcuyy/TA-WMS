@@ -16,6 +16,7 @@ export default function AdminLayout() {
   const navigate = useNavigate();
   const { theme } = useTheme();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [period, setPeriod] = useState("Mingguan");
 
   const currentLogo = theme === "dark" ? logoSideDark : logoSideDefault;
 
@@ -29,11 +30,10 @@ export default function AdminLayout() {
       title: "MAIN",
       items: [
         { label: "Dashboard", path: "/admin", icon: "⊞" },
-        { label: "Manajemen Stok Gudang", path: "/admin/stok-gudang", icon: "⛃" },
+        { label: "Restock Gudang", path: "/admin/stok-gudang", icon: "⛃" },
         { label: "Manajemen Gudang", path: "/admin/gudang", icon: "⌂" },
         { label: "Manajemen Toko", path: "/admin/toko", icon: "🛒" },
         { label: "Manajemen Produk", path: "/admin/produk", icon: "📦" },
-        { label: "Manajemen Order", path: "/admin/order", icon: "🗒" },
         { label: "Request", path: "/admin/requests", icon: "🚚" },
       ]
     },
@@ -50,6 +50,22 @@ export default function AdminLayout() {
     { label: "Profile", path: "/admin/profile", icon: "👤" },
     { label: "Pengaturan", path: "/admin/settings", icon: "⚙", hasArrow: true },
   ];
+
+  const today = new Date();
+  const pastDate = new Date(today);
+  
+  if (period === "Mingguan") {
+    pastDate.setDate(today.getDate() - 6);
+  } else if (period === "Bulanan") {
+    pastDate.setMonth(today.getMonth() - 1);
+  } else if (period === "Tahunan") {
+    pastDate.setFullYear(today.getFullYear() - 1);
+  }
+  
+  const formatDate = (date) => {
+    return date.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+  };
+  const dateStr = `${formatDate(pastDate)} - ${formatDate(today)}`;
 
   return (
     <div className="admin-container">
@@ -76,7 +92,7 @@ export default function AdminLayout() {
 
           <div className="admin-topbar__right">
             <div className="admin-topbar__controls">
-              <div className="date-picker">7 Mei 2025 - 13 Mei 2025 📅</div>
+              <div className="date-picker">{dateStr} 📅</div>
               <div className="search-box">
                 <span>⌕</span>
                 <input type="text" placeholder="Search..." />
@@ -111,7 +127,7 @@ export default function AdminLayout() {
               }}
               style={{ height: "100%", width: "100%" }}
             >
-              <Outlet />
+              <Outlet context={{ period, setPeriod }} />
             </motion.div>
           </AnimatePresence>
         </div>

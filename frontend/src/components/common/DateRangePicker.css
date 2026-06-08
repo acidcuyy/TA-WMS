@@ -1,0 +1,46 @@
+.date-range-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-2, #fff);
+  border: 1px solid var(--border, #e2e8f0);
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.date-range-wrap:hover {
+  border-color: #1890ff;
+}
+
+.date-range-wrap:focus-within {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24,144,255,0.1);
+}
+
+.date-range-input {
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 12px;
+  color: #333;
+  outline: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.date-range-input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.6;
+  transition: 0.2s;
+}
+
+.date-range-input::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+.date-range-sep {
+  font-size: 12px;
+  color: #888;
+  font-weight: 500;
+}

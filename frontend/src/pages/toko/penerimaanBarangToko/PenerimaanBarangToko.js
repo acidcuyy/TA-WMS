@@ -1,28 +1,31 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import DateRangePicker from "../../../components/common/DateRangePicker";
+import DetailModal from "../../../components/common/DetailModal";
 import "./PenerimaanBarangToko.css";
 
 export default function PenerimaanBarangToko() {
   const [activeTab, setActiveTab] = useState("Semua (124)");
+  const [detailModal, setDetailModal] = useState(null);
   const easing = [0.22, 1, 0.36, 1];
 
   const summaryCards = [
     { label: "Total Penerimaan", value: "124", unit: "transaksi", icon: "📥", iconClass: "summary-card__icon--purple", subtext: "Semua transaksi masuk" },
     { label: "Total Item Diterima", value: "2.450", unit: "item", icon: "📦", iconClass: "summary-card__icon--blue", subtext: "Semua item diterima" },
-    { label: "Nilai Penerimaan", value: "Rp 58.750.000", unit: "", icon: "💰", iconClass: "summary-card__icon--green", subtext: "Total nilai barang masuk" },
+    { label: "Total Kategori", value: "12", unit: "kategori", icon: "📑", iconClass: "summary-card__icon--green", subtext: "Kategori produk masuk" },
     { label: "Penerimaan Hari Ini", value: "12", unit: "transaksi", icon: "📅", iconClass: "summary-card__icon--orange", subtext: "Hari ini" },
     { label: "Barang Pending", value: "6", unit: "transaksi", icon: "⏳", iconClass: "summary-card__icon--red", subtext: "Menunggu verifikasi" },
   ];
 
   const tableData = [
-    { id: "IN-2025-0042", ref: "TR-2025-0031", source: "Gudang Pusat", date: "24 Mei 2025 09:15", items: "45 item", value: "Rp 12.450.000", status: "Diterima" },
-    { id: "IN-2025-0041", ref: "SO-2025-0054", source: "Gudang Cabang", date: "23 Mei 2025 16:20", items: "30 item", value: "Rp 8.250.000", status: "Proses" },
-    { id: "IN-2025-0040", ref: "TR-2025-0029", source: "Gudang Pusat", date: "23 Mei 2025 10:05", items: "18 item", value: "Rp 5.400.000", status: "Diterima" },
-    { id: "IN-2025-0039", ref: "ADJ-2025-0012", source: "Gudang Pusat", date: "22 Mei 2025 13:40", items: "12 item", value: "Rp 2.100.000", status: "Menunggu" },
-    { id: "IN-2025-0038", ref: "TR-2025-0028", source: "Gudang Cabang", date: "22 Mei 2025 09:30", items: "25 item", value: "Rp 6.750.000", status: "Diterima" },
-    { id: "IN-2025-0037", ref: "TR-2025-0027", source: "Gudang Pusat", date: "21 Mei 2025 15:10", items: "20 item", value: "Rp 4.980.000", status: "Ditolak" },
-    { id: "IN-2025-0036", ref: "SO-2025-0050", source: "Gudang Pusat", date: "21 Mei 2025 11:25", items: "16 item", value: "Rp 3.850.000", status: "Diterima" },
-    { id: "IN-2025-0035", ref: "TR-2025-0025", source: "Gudang Cabang", date: "20 Mei 2025 08:45", items: "10 item", value: "Rp 1.950.000", status: "Diterima" },
+    { id: "IN-2025-0042", ref: "TR-2025-0031", source: "Gudang Pusat", date: "24 Mei 2025 09:15", items: "45 item", status: "Diterima" },
+    { id: "IN-2025-0041", ref: "SO-2025-0054", source: "Gudang Cabang", date: "23 Mei 2025 16:20", items: "30 item", status: "Proses" },
+    { id: "IN-2025-0040", ref: "TR-2025-0029", source: "Gudang Pusat", date: "23 Mei 2025 10:05", items: "18 item", status: "Diterima" },
+    { id: "IN-2025-0039", ref: "ADJ-2025-0012", source: "Gudang Pusat", date: "22 Mei 2025 13:40", items: "12 item", status: "Menunggu" },
+    { id: "IN-2025-0038", ref: "TR-2025-0028", source: "Gudang Cabang", date: "22 Mei 2025 09:30", items: "25 item", status: "Diterima" },
+    { id: "IN-2025-0037", ref: "TR-2025-0027", source: "Gudang Pusat", date: "21 Mei 2025 15:10", items: "20 item", status: "Ditolak" },
+    { id: "IN-2025-0036", ref: "SO-2025-0050", source: "Gudang Pusat", date: "21 Mei 2025 11:25", items: "16 item", status: "Diterima" },
+    { id: "IN-2025-0035", ref: "TR-2025-0025", source: "Gudang Cabang", date: "20 Mei 2025 08:45", items: "10 item", status: "Diterima" },
   ];
 
   const recentActivities = [
@@ -76,7 +79,7 @@ export default function PenerimaanBarangToko() {
           <section className="penerimaan-content-box">
             <div className="penerimaan-filters">
               <select className="filter-select"><option>Semua Status</option></select>
-              <input type="text" className="filter-date" placeholder="01 Mei 2025 - 24 Mei 2025" />
+              <DateRangePicker />
               <select className="filter-select"><option>Semua Sumber</option></select>
               <select className="filter-select"><option>Semua Jenis</option></select>
               <div className="filter-search">
@@ -106,7 +109,7 @@ export default function PenerimaanBarangToko() {
                   <th>Sumber</th>
                   <th>Tanggal</th>
                   <th>Total Item</th>
-                  <th>Nilai (Rp)</th>
+
                   <th>Status</th>
                   <th>Aksi</th>
                 </tr>
@@ -124,7 +127,7 @@ export default function PenerimaanBarangToko() {
                     <td>{row.source}</td>
                     <td>{row.date}</td>
                     <td>{row.items}</td>
-                    <td style={{ fontWeight: 600 }}>{row.value}</td>
+
                     <td>
                       <span className={`status-badge status--${row.status.toLowerCase()}`}>
                         {row.status}
@@ -132,7 +135,7 @@ export default function PenerimaanBarangToko() {
                     </td>
                     <td>
                       <div className="action-btns">
-                        <button className="btn-action">👁️</button>
+                        <button className="btn-action" onClick={() => setDetailModal(row)}>👁️</button>
                         <button className="btn-action">⋯</button>
                       </div>
                     </td>
@@ -176,7 +179,7 @@ export default function PenerimaanBarangToko() {
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px" }}>
                   <span style={{ color: "#64748b" }}>Rata-rata per Transaksi</span>
-                  <span style={{ fontWeight: 700 }}>Rp 473.790</span>
+                  <span style={{ fontWeight: 700 }}>20 <span style={{ fontWeight: 400, fontSize: "10px", color: "#94a3b8" }}>item</span></span>
                 </div>
               </div>
             </div>
@@ -234,6 +237,21 @@ export default function PenerimaanBarangToko() {
           </aside>
         </div>
       </motion.div>
+
+      {/* DETAIL MODAL */}
+      <DetailModal
+        isOpen={!!detailModal}
+        onClose={() => setDetailModal(null)}
+        title="Detail Penerimaan Toko"
+        subtitle={detailModal ? `${detailModal.id} • ${detailModal.source}` : ''}
+        details={detailModal ? [
+          { label: "Tanggal", value: detailModal.date },
+          { label: "Referensi", value: detailModal.ref },
+          { label: "Status", value: detailModal.status, color: detailModal.status === 'Diterima' ? '#52c41a' : detailModal.status === 'Menunggu' ? '#fa8c16' : '#1890ff' },
+        ] : []}
+        itemsTitle="Total Item"
+        items={detailModal ? [`${detailModal.items} diterima`] : []}
+      />
     </div>
   );
 }

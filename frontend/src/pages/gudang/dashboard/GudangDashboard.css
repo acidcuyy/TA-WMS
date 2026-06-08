@@ -192,6 +192,11 @@
   border-collapse: collapse;
 }
 
+.gdash__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
 .gdash__table th {
   text-align: left;
   padding: 14px 16px;

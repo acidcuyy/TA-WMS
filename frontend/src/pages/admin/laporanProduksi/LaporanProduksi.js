@@ -1,14 +1,14 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import Card from "../../../components/common/Card";
+import DetailModal from "../../../components/common/DetailModal";
+import DateRangePicker from "../../../components/common/DateRangePicker";
 import "../PageAdmin.css";
 import "./LaporanProduksiAdmin.css";
 
-const fmtIDR = (n) =>
-  new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 }).format(n);
-
 export default function LaporanProduksi() {
   const [timeRange, setTimeRange] = useState("Harian");
+  const [detailModal, setDetailModal] = useState(null);
 
   const stats = [
     { label: "Total Produksi", value: "1.280", sub: "Rp 256.450.000", hint: "↑ 12.5% dari periode lalu", icon: "📈", color: "#52c41a", bg: "#f6ffed" },
@@ -50,8 +50,8 @@ export default function LaporanProduksi() {
             <span className="mtAdmin__dot" />
             Live Monitoring
           </span>
-          <div className="date-filter" style={{ display: 'inline-flex', alignItems: 'center', background: 'var(--bg)', border: '1px solid var(--border)', padding: '8px 16px', borderRadius: '12px', fontSize: '13px', marginLeft: '12px' }}>
-            01 Feb 2026 - 07 Feb 2026 📅
+          <div style={{ marginLeft: '12px' }}>
+            <DateRangePicker />
           </div>
           <button className="btn-export" style={{ marginLeft: '12px', height: '40px' }}><span>📥</span> Export <span className="chevron">⌄</span></button>
         </div>
@@ -78,7 +78,7 @@ export default function LaporanProduksi() {
           <select className="lpsAdmin__select"><option>Semua Produk</option></select>
           <select className="lpsAdmin__select"><option>Semua Work Center</option></select>
           <select className="lpsAdmin__select"><option>Semua Shift</option></select>
-          <div className="date-filter" style={{ border: '1px solid var(--border)', background: 'var(--bg-2)', padding: '10px 14px', borderRadius: '10px', fontSize: '12px', cursor: 'pointer' }}>01 Feb 2026 - 07 Feb 2026 📅</div>
+          <DateRangePicker />
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
           <button className="btn-reset-filter">Reset</button>
@@ -303,7 +303,7 @@ export default function LaporanProduksi() {
                         ● {p.status}
                       </span>
                     </td>
-                    <td><button className="btn-icon">👁️</button></td>
+                    <td><button className="btn-icon" onClick={() => setDetailModal(p)}>👁️</button></td>
                   </tr>
                 ))}
               </tbody>
@@ -407,6 +407,26 @@ export default function LaporanProduksi() {
           </div>
         </div>
       </div>
+
+      {/* DETAIL MODAL */}
+      <DetailModal
+        isOpen={!!detailModal}
+        onClose={() => setDetailModal(null)}
+        title="Detail Produksi"
+        subtitle={detailModal ? `${detailModal.id} • ${detailModal.wc}` : ''}
+        details={detailModal ? [
+          { label: "Tanggal & Shift", value: `${detailModal.date} - ${detailModal.shift}` },
+          { label: "Status", value: detailModal.status, color: detailModal.status === 'Selesai' ? '#52c41a' : detailModal.status === 'Proses' ? '#1890ff' : '#fa8c16' },
+          { label: "Efisiensi", value: detailModal.efficiency, color: '#1890ff' },
+          { label: "Reject (%)", value: `${detailModal.reject} (${detailModal.rejPct})`, color: '#ff4d4f' },
+        ] : []}
+        itemsTitle="Informasi Produk"
+        items={detailModal ? [
+          `${detailModal.product} ${detailModal.sub ? `(${detailModal.sub})` : ''}`,
+          `Target: ${detailModal.target} Unit`,
+          `Hasil Akhir: ${detailModal.output} Unit`
+        ] : []}
+      />
     </div>
   );
 }

@@ -1,30 +1,32 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import DetailModal from "../../../components/common/DetailModal";
 import "./StokToko.css";
 
 export default function StokToko() {
   const [activeTab, setActiveTab] = useState("Semua Produk");
+  const [detailModal, setDetailModal] = useState(null);
   const easing = [0.22, 1, 0.36, 1];
 
   const summaryCards = [
     { label: "Total Produk", value: "10", unit: "Produk", icon: "📦", iconClass: "summary-card__icon--purple", link: "Lihat semua produk →" },
-    { label: "Total Stok", value: "1.250", unit: "Item", icon: "🌐", iconClass: "summary-card__icon--blue", subtext: "Nilai: Rp 125.500.000" },
+    { label: "Total Stok", value: "1.250", unit: "Item", icon: "🌐", iconClass: "summary-card__icon--blue", subtext: "Berdasarkan hitungan fisik" },
     { label: "Stok Tersedia", value: "1.050", unit: "Item", icon: "✅", iconClass: "summary-card__icon--green", subtext: <><span style={{color: "#22c55e"}}>↑ 84%</span> dari total stok</> },
     { label: "Stok Menipis", value: "18", unit: "Item", icon: "⚠️", iconClass: "summary-card__icon--orange", subtext: <><span style={{color: "#ef4444"}}>↓ 14.4%</span> dari total produk</> },
     { label: "Stok Habis", value: "2", unit: "Item", icon: "🚫", iconClass: "summary-card__icon--red", subtext: <><span style={{color: "#ef4444"}}>↑ 1.6%</span> dari total produk</> },
   ];
 
   const products = [
-    { id: 1, name: "Pipa PVC 1/2 Inch", sku: "PPI-001", cat: "Plumbing", unit: "Pcs", stock: 450, value: "Rp 22.500.000", status: "Aman", icon: "🚿" },
-    { id: 2, name: "Elbow PVC 1/2 Inch", sku: "ELB-001", cat: "Plumbing", unit: "Pcs", stock: 320, value: "Rp 12.800.000", status: "Menipis", icon: "🔧" },
-    { id: 3, name: "Fitting T 1/2 Inch", sku: "FIT-001", cat: "Plumbing", unit: "Pcs", stock: 120, value: "Rp 4.800.000", status: "Menipis", icon: "⚙️" },
-    { id: 4, name: "Lem PVC 100ml", sku: "LEM-001", cat: "Plumbing", unit: "Pcs", stock: 85, value: "Rp 1.700.000", status: "Aman", icon: "🧴" },
-    { id: 5, name: "Kabel NYM 3x1.5mm", sku: "KAB-001", cat: "Elektrikal", unit: "Mtr", stock: 380, value: "Rp 19.000.000", status: "Aman", icon: "🔌" },
-    { id: 6, name: "Lampu LED 12W Putih", sku: "LAM-001", cat: "Elektrikal", unit: "Pcs", stock: 250, value: "Rp 6.250.000", status: "Aman", icon: "💡" },
-    { id: 7, name: "Stop Kontak Arde", sku: "SKA-001", cat: "Elektrikal", unit: "Pcs", stock: 80, value: "Rp 1.600.000", status: "Menipis", icon: "🔌" },
-    { id: 8, name: "Semen Portland 40kg", sku: "SEM-001", cat: "Bahan Bangunan", unit: "Zak", stock: 45, value: "Rp 9.000.000", status: "Menipis", icon: "🧱" },
-    { id: 9, name: "Cat Tembok Putih 5kg", sku: "CAT-001", cat: "Bahan Bangunan", unit: "Zak", stock: 30, value: "Rp 2.400.000", status: "Aman", icon: "🎨" },
-    { id: 10, name: "Baut M8 x 40mm", sku: "BAU-001", cat: "Hardware", unit: "Pcs", stock: 0, value: "Rp 0", status: "Habis", icon: "🔩" },
+    { id: 1, name: "Pipa PVC 1/2 Inch", sku: "PPI-001", cat: "Plumbing", unit: "Pcs", stock: 450, status: "Aman", icon: "🚿" },
+    { id: 2, name: "Elbow PVC 1/2 Inch", sku: "ELB-001", cat: "Plumbing", unit: "Pcs", stock: 320, status: "Menipis", icon: "🔧" },
+    { id: 3, name: "Fitting T 1/2 Inch", sku: "FIT-001", cat: "Plumbing", unit: "Pcs", stock: 120, status: "Menipis", icon: "⚙️" },
+    { id: 4, name: "Lem PVC 100ml", sku: "LEM-001", cat: "Plumbing", unit: "Pcs", stock: 85, status: "Aman", icon: "🧴" },
+    { id: 5, name: "Kabel NYM 3x1.5mm", sku: "KAB-001", cat: "Elektrikal", unit: "Mtr", stock: 380, status: "Aman", icon: "🔌" },
+    { id: 6, name: "Lampu LED 12W Putih", sku: "LAM-001", cat: "Elektrikal", unit: "Pcs", stock: 250, status: "Aman", icon: "💡" },
+    { id: 7, name: "Stop Kontak Arde", sku: "SKA-001", cat: "Elektrikal", unit: "Pcs", stock: 80, status: "Menipis", icon: "🔌" },
+    { id: 8, name: "Semen Portland 40kg", sku: "SEM-001", cat: "Bahan Bangunan", unit: "Zak", stock: 45, status: "Menipis", icon: "🧱" },
+    { id: 9, name: "Cat Tembok Putih 5kg", sku: "CAT-001", cat: "Bahan Bangunan", unit: "Zak", stock: 30, status: "Aman", icon: "🎨" },
+    { id: 10, name: "Baut M8 x 40mm", sku: "BAU-001", cat: "Hardware", unit: "Pcs", stock: 0, status: "Habis", icon: "🔩" },
   ];
 
   return (
@@ -118,13 +120,9 @@ export default function StokToko() {
                     <span className="info-label">Stok Tersedia</span>
                     <span className="info-value info-value--bold" style={{ color: p.stock < 100 ? "#ea580c" : "#22c55e" }}>{p.stock}</span>
                   </div>
-                  <div className="product-card__info-row">
-                    <span className="info-label">Nilai Stok</span>
-                    <span className="info-value">{p.value}</span>
-                  </div>
 
                   <div className="product-card__actions">
-                    <button className="btn-icon">👁️</button>
+                    <button className="btn-icon" onClick={() => setDetailModal(p)}>👁️</button>
                     <button className="btn-icon">✏️</button>
                     <button className="btn-icon">⋯</button>
                   </div>
@@ -185,14 +183,14 @@ export default function StokToko() {
             {/* TOP KATEGORI */}
             <div className="sidebar-widget">
               <div className="widget-header">
-                <h3 className="widget-title">Top Kategori (Nilai Stok)</h3>
+                <h3 className="widget-title">Top Kategori (Jumlah Item)</h3>
               </div>
               <div className="category-list">
                 {[
-                  { icon: "🚿", label: "Plumbing", value: "Rp 41.800.000", color: "#f0fdf4" },
-                  { icon: "🔌", label: "Elektrikal", value: "Rp 27.650.000", color: "#eff6ff" },
-                  { icon: "🧱", label: "Bahan Bangunan", value: "Rp 11.400.000", color: "#fff7ed" },
-                  { icon: "🔩", label: "Hardware", value: "Rp 800.000", color: "#fef2f2" },
+                  { icon: "🚿", label: "Plumbing", value: "450 item", color: "#f0fdf4" },
+                  { icon: "🔌", label: "Elektrikal", value: "380 item", color: "#eff6ff" },
+                  { icon: "🧱", label: "Bahan Bangunan", value: "120 item", color: "#fff7ed" },
+                  { icon: "🔩", label: "Hardware", value: "50 item", color: "#fef2f2" },
                 ].map((item, i) => (
                   <div key={i} className="category-item">
                     <div className="cat-info">
@@ -227,6 +225,20 @@ export default function StokToko() {
           </aside>
         </div>
       </motion.div>
+
+      {/* DETAIL MODAL */}
+      <DetailModal
+        isOpen={!!detailModal}
+        onClose={() => setDetailModal(null)}
+        title="Detail Produk"
+        subtitle={detailModal ? `${detailModal.sku} • ${detailModal.cat}` : ''}
+        details={detailModal ? [
+          { label: "Status Stok", value: detailModal.status, color: detailModal.status === 'Aman' ? '#52c41a' : detailModal.status === 'Menipis' ? '#fa8c16' : '#ef4444' },
+          { label: "Satuan", value: detailModal.unit },
+        ] : []}
+        itemsTitle="Jumlah Stok"
+        items={detailModal ? [`${detailModal.stock} ${detailModal.unit}`] : []}
+      />
     </div>
   );
 }

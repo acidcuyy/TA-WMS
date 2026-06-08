@@ -42,6 +42,11 @@
   border-collapse: collapse;
 }
 
+.odGudang__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
 .odGudang__table th {
   background: var(--bg-2);
   padding: 14px 20px;

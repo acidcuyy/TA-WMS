@@ -1,42 +1,62 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Card from "../../../components/common/Card";
+import DetailModal from "../../../components/common/DetailModal";
+import DateRangePicker from "../../../components/common/DateRangePicker";
 import "../PageAdmin.css";
 import "./RequestsAdmin.css";
-import { subscribeRestockToAdmin, subscribeRequests, adminDecideRestock } from "../../../services/wmsApi";
-
-const fmtIDR = (n) =>
-  new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 }).format(n);
+import { subscribeRestockToAdmin, subscribeRequests, adminDecideRestock, subscribeAdminRestockToGudang } from "../../../services/wmsApi";
 
 export default function RequestsAdmin() {
-  const [activeTab, setActiveTab] = useState("Dari Admin ke Gudang (Saya)");
+  const [activeTab, setActiveTab] = useState("Dari Toko ke Gudang");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [detailModal, setDetailModal] = useState(null);
   const [actualGudangReqs, setActualGudangReqs] = useState([]);
   const [actualTokoReqs, setActualTokoReqs] = useState([]);
+  const [actualAdminReqs, setActualAdminReqs] = useState([]);
 
   useEffect(() => {
     const unsubGudang = subscribeRestockToAdmin((data) => setActualGudangReqs(data || []));
     const unsubToko = subscribeRequests((data) => setActualTokoReqs(data || []));
-    return () => { unsubGudang(); unsubToko(); };
+    const unsubAdmin = subscribeAdminRestockToGudang((data) => setActualAdminReqs(data || []));
+    return () => { unsubGudang(); unsubToko(); unsubAdmin(); };
   }, []);
 
-  // Stats
-  const stats = [
-    { label: "Total Request", value: 72, hint: "Semua permintaan", icon: "🏪", color: "#e4915a", bg: "#fff8f3" },
-    { label: "Menunggu", value: 24, hint: "Perlu diproses", icon: "🕒", color: "#fa8c16", bg: "#fff7e6" },
-    { label: "Disetujui", value: 36, hint: "Disetujui", icon: "⚙️", color: "#1890ff", bg: "#e6f7ff" },
-    { label: "Dalam Pengiriman", value: 8, hint: "Sedang dikirim", icon: "🚚", color: "#52c41a", bg: "#f6ffed" },
-    { label: "Selesai", value: 4, hint: "Selesai", icon: "✅", color: "#52c41a", bg: "#f6ffed" },
-  ];
+  // Stats dynamically calculated
+  const allRequests = useMemo(() => {
+    return [...actualGudangReqs, ...actualTokoReqs, ...actualAdminReqs];
+  }, [actualGudangReqs, actualTokoReqs, actualAdminReqs]);
+
+  const stats = useMemo(() => {
+    const total = allRequests.length;
+    const pending = allRequests.filter(r => r.status === "Menunggu").length;
+    const approved = allRequests.filter(r => r.status === "Disetujui").length;
+    const shipping = allRequests.filter(r => r.status === "Mengirim" || r.status === "Dalam Pengiriman").length;
+    const done = allRequests.filter(r => r.status === "Selesai").length;
+    return [
+      { label: "Total Request", value: total, hint: "Semua permintaan", icon: "🏪", color: "#e4915a", bg: "#fff8f3" },
+      { label: "Menunggu", value: pending, hint: "Perlu diproses", icon: "🕒", color: "#fa8c16", bg: "#fff7e6" },
+      { label: "Disetujui", value: approved, hint: "Disetujui", icon: "⚙️", color: "#1890ff", bg: "#e6f7ff" },
+      { label: "Dalam Pengiriman", value: shipping, hint: "Sedang dikirim", icon: "🚚", color: "#52c41a", bg: "#f6ffed" },
+      { label: "Selesai", value: done, hint: "Selesai", icon: "✅", color: "#52c41a", bg: "#f6ffed" },
+    ];
+  }, [allRequests]);
 
   // Data Request: Dari Admin ke Gudang
-  const adminToGudang = [
-    { id: "REQ-ADM-0008", date: "03 Feb 2026", time: "10:30", target: "Gudang Pusat", city: "Jakarta", items: 12, note: "Restock lampu LED untuk promosi toko", status: "Menunggu", createdBy: "Admin / Owner" },
-    { id: "REQ-ADM-0007", date: "02 Feb 2026", time: "15:20", target: "Gudang Barat", city: "Bandung", items: 8, note: "Permintaan kabel & stop kontak", status: "Disetujui", createdBy: "Admin / Owner" },
-    { id: "REQ-ADM-0006", date: "01 Feb 2026", time: "09:15", target: "Gudang Timur", city: "Lampung", items: 15, note: "Restock cat tembok berbagai warna", status: "Dalam Pengiriman", createdBy: "Admin / Owner" },
-    { id: "REQ-ADM-0005", date: "31 Jan 2026", time: "16:45", target: "Gudang Pusat", city: "Jakarta", items: 20, note: "Permintaan barang untuk event weekend", status: "Selesai", createdBy: "Admin / Owner" },
-    { id: "REQ-ADM-0004", date: "30 Jan 2026", time: "11:10", target: "Gudang Barat", city: "Bandung", items: 6, note: "Tambahan fitting lampu dan saklar", status: "Ditolak", createdBy: "Admin / Owner" },
-  ];
+  const adminToGudang = actualAdminReqs.map(r => {
+    const qty = r.items ? r.items.reduce((sum, item) => sum + (Number(item.qty) || 0), 0) : 0;
+    return {
+      id: r.id,
+      date: r.createdAt,
+      time: "-",
+      target: r.toName || r.gudangId,
+      city: "-",
+      items: qty,
+      note: r.note,
+      status: r.status,
+      createdBy: r.fromName || "Admin / Owner"
+    };
+  });
 
   // Data Request: Dari Gudang ke Admin
   const gudangToAdmin = actualGudangReqs.map(r => {
@@ -141,11 +161,9 @@ export default function RequestsAdmin() {
         )}
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginBottom: '16px' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginBottom: '16px', alignItems: 'center' }}>
         <select className="mpAdmin__select" style={{ minWidth: '140px' }}><option>Semua Status</option></select>
-        <div className="date-filter" style={{ border: '1px solid var(--border)', background: 'var(--bg)', padding: '10px 16px', borderRadius: '12px', fontSize: '13px', cursor: 'pointer' }}>
-          Pilih Tanggal 📅
-        </div>
+        <DateRangePicker />
       </div>
 
       {/* TABLE */}
@@ -194,7 +212,7 @@ export default function RequestsAdmin() {
                            <button className="btn-icon" style={{color: '#ff4d4f'}} title="Tolak" onClick={() => adminDecideRestock(r.id, 'Declined')}>❌</button>
                          </>
                       )}
-                      <button className="btn-icon">👁️</button>
+                      <button className="btn-icon" onClick={() => setDetailModal(r)}>👁️</button>
                       <button className="btn-icon">⋮</button>
                     </div>
                   </td>
@@ -271,6 +289,21 @@ export default function RequestsAdmin() {
           </div>
         )}
       </AnimatePresence>
+      {/* DETAIL MODAL */}
+      <DetailModal
+        isOpen={!!detailModal}
+        onClose={() => setDetailModal(null)}
+        title="Detail Request"
+        subtitle={detailModal ? `${detailModal.id} • ${detailModal.source} ➔ ${detailModal.target}` : ''}
+        details={detailModal ? [
+          { label: "Tanggal & Waktu", value: `${detailModal.date} ${detailModal.time}` },
+          { label: "Status", value: detailModal.status, color: detailModal.status === 'Selesai' || detailModal.status === 'Accepted' ? '#52c41a' : detailModal.status === 'Ditolak' || detailModal.status === 'Declined' ? '#ff4d4f' : '#1890ff' },
+          { label: "Dibuat Oleh", value: detailModal.createdBy },
+          { label: "Catatan", value: detailModal.note || "-" },
+        ] : []}
+        itemsTitle="Daftar Kebutuhan"
+        items={detailModal ? [`${detailModal.items} Item (Kalkulasi otomatis dari sistem)`] : []}
+      />
     </div>
   );
 }

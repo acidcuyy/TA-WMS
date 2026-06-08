@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import DateRangePicker from "../../../components/common/DateRangePicker";
 import "./ReturPenjualanToko.css";
 
 export default function ReturPenjualanToko() {
@@ -7,27 +8,27 @@ export default function ReturPenjualanToko() {
   const easing = [0.22, 1, 0.36, 1];
 
   const summaryCards = [
-    { label: "Total Retur", value: "18", unit: "Retur", icon: "↩", iconClass: "summary-card__icon--purple", subtext: "Nilai: Rp 3.450.000" },
-    { label: "Retur Menunggu", value: "6", unit: "Retur", icon: "⏳", iconClass: "summary-card__icon--orange", subtext: "Nilai: Rp 1.150.000" },
-    { label: "Retur Disetujui", value: "9", unit: "Retur", icon: "✅", iconClass: "summary-card__icon--green", subtext: "Nilai: Rp 1.800.000" },
-    { label: "Retur Ditolak", value: "3", unit: "Retur", icon: "❌", iconClass: "summary-card__icon--red", subtext: "Nilai: Rp 500.000" },
+    { label: "Total Retur", value: "18", unit: "Retur", icon: "↩", iconClass: "summary-card__icon--purple", subtext: "Total retur diajukan" },
+    { label: "Retur Menunggu", value: "6", unit: "Retur", icon: "⏳", iconClass: "summary-card__icon--orange", subtext: "Belum diproses" },
+    { label: "Retur Disetujui", value: "9", unit: "Retur", icon: "✅", iconClass: "summary-card__icon--green", subtext: "Retur telah disetujui" },
+    { label: "Retur Ditolak", value: "3", unit: "Retur", icon: "❌", iconClass: "summary-card__icon--red", subtext: "Retur yang ditolak" },
   ];
 
   const tableData = [
-    { id: "RT-2025-00018", date: "24 Mei 2025, 10:30 WIB", client: "Toko Maju Jaya", location: "Jakarta Barat", order: "SO-2025-0056", items: "3 Item", total: "Rp 450.000", status: "Menunggu" },
-    { id: "RT-2025-00017", date: "23 Mei 2025, 15:45 WIB", client: "UD Sumber Rezeki", location: "Bekasi", order: "SO-2025-0054", items: "2 Item", total: "Rp 320.000", status: "Disetujui" },
-    { id: "RT-2025-00016", date: "22 Mei 2025, 14:20 WIB", client: "Toko Berkah Abadi", location: "Depok", order: "SO-2025-0052", items: "4 Item", total: "Rp 780.000", status: "Disetujui" },
-    { id: "RT-2025-00015", date: "21 Mei 2025, 11:05 WIB", client: "CV Sentosa", location: "Tangerang", order: "SO-2025-0050", items: "1 Item", total: "Rp 120.000", status: "Ditolak" },
-    { id: "RT-2025-00014", date: "20 Mei 2025, 09:15 WIB", client: "Toko Mandiri", location: "Bogor", order: "SO-2025-0048", items: "2 Item", total: "Rp 210.000", status: "Disetujui" },
-    { id: "RT-2025-00013", date: "19 Mei 2025, 16:30 WIB", client: "Koperasi Sejahtera", location: "Jakarta Selatan", order: "SO-2025-0046", items: "3 Item", total: "Rp 540.000", status: "Menunggu" },
-    { id: "RT-2025-00012", date: "18 Mei 2025, 13:10 WIB", client: "Toko Makmur", location: "Bekasi", order: "SO-2025-0043", items: "2 Item", total: "Rp 260.000", status: "Ditolak" },
-    { id: "RT-2025-00011", date: "17 Mei 2025, 10:50 WIB", client: "UD Rejeki Lancar", location: "Tangerang", order: "SO-2025-0041", items: "1 Item", total: "Rp 150.000", status: "Disetujui" },
+    { id: "RT-2025-00018", date: "24 Mei 2025, 10:30 WIB", client: "Toko Maju Jaya", location: "Jakarta Barat", order: "SO-2025-0056", items: "3 Item", status: "Menunggu" },
+    { id: "RT-2025-00017", date: "23 Mei 2025, 15:45 WIB", client: "UD Sumber Rezeki", location: "Bekasi", order: "SO-2025-0054", items: "2 Item", status: "Disetujui" },
+    { id: "RT-2025-00016", date: "22 Mei 2025, 14:20 WIB", client: "Toko Berkah Abadi", location: "Depok", order: "SO-2025-0052", items: "4 Item", status: "Disetujui" },
+    { id: "RT-2025-00015", date: "21 Mei 2025, 11:05 WIB", client: "CV Sentosa", location: "Tangerang", order: "SO-2025-0050", items: "1 Item", status: "Ditolak" },
+    { id: "RT-2025-00014", date: "20 Mei 2025, 09:15 WIB", client: "Toko Mandiri", location: "Bogor", order: "SO-2025-0048", items: "2 Item", status: "Disetujui" },
+    { id: "RT-2025-00013", date: "19 Mei 2025, 16:30 WIB", client: "Koperasi Sejahtera", location: "Jakarta Selatan", order: "SO-2025-0046", items: "3 Item", status: "Menunggu" },
+    { id: "RT-2025-00012", date: "18 Mei 2025, 13:10 WIB", client: "Toko Makmur", location: "Bekasi", order: "SO-2025-0043", items: "2 Item", status: "Ditolak" },
+    { id: "RT-2025-00011", date: "17 Mei 2025, 10:50 WIB", client: "UD Rejeki Lancar", location: "Tangerang", order: "SO-2025-0041", items: "1 Item", status: "Disetujui" },
   ];
 
   const detailItems = [
-    { name: "Pipa PVC 1/2 Inch", sku: "PIP-001", qty: "2 Pcs", price: "Rp 22.500", icon: "🚿" },
-    { name: "Elbow PVC 1/2 Inch", sku: "ELB-001", qty: "1 Pcs", price: "Rp 128.000", icon: "🔧" },
-    { name: "Fitting T 1/2 Inch", sku: "FIT-001", qty: "1 Pcs", price: "Rp 48.000", icon: "🔩" },
+    { name: "Pipa PVC 1/2 Inch", sku: "PIP-001", qty: "2 Pcs", icon: "🚿" },
+    { name: "Elbow PVC 1/2 Inch", sku: "ELB-001", qty: "1 Pcs", icon: "🔧" },
+    { name: "Fitting T 1/2 Inch", sku: "FIT-001", qty: "1 Pcs", icon: "🔩" },
   ];
 
   return (
@@ -77,7 +78,7 @@ export default function ReturPenjualanToko() {
             <div className="retur-filters">
               <select className="filter-select"><option>Semua Status</option></select>
               <select className="filter-select"><option>Semua Pelanggan</option></select>
-              <input type="text" className="filter-date" placeholder="01 Mei 2025 - 24 Mei 2025" />
+              <DateRangePicker />
               <div className="filter-search">
                 <span>🔍</span>
                 <input placeholder="Cari nomor retur / nama pelanggan..." />
@@ -93,7 +94,7 @@ export default function ReturPenjualanToko() {
                   <th>Pelanggan</th>
                   <th>No. Pesanan</th>
                   <th>Total Item</th>
-                  <th>Total Nilai</th>
+
                   <th>Status</th>
                   <th>Aksi</th>
                 </tr>
@@ -117,7 +118,7 @@ export default function ReturPenjualanToko() {
                     </td>
                     <td style={{ fontWeight: 500, color: "var(--primary)" }}>{row.order}</td>
                     <td>{row.items}</td>
-                    <td style={{ fontWeight: 600 }}>{row.total}</td>
+
                     <td>
                       <span className={`status-badge status--${row.status.toLowerCase()}`}>
                         {row.status}
@@ -171,10 +172,7 @@ export default function ReturPenjualanToko() {
                 <span className="info-label">Total Item</span>
                 <span className="info-value">3 Item</span>
               </div>
-              <div className="info-item">
-                <span className="info-label">Total Nilai</span>
-                <span className="info-value">Rp 450.000</span>
-              </div>
+
               <div className="info-item">
                 <span className="info-label">Alasan Retur</span>
                 <span className="info-value">Produk rusak</span>
@@ -197,7 +195,6 @@ export default function ReturPenjualanToko() {
                     </div>
                     <div className="item-qty-price">
                       <span className="item-qty">{item.qty}</span>
-                      <span className="item-price">{item.price}</span>
                     </div>
                   </div>
                 ))}

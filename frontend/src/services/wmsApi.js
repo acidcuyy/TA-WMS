@@ -131,6 +131,26 @@ export function subscribeBranches(callback) {
   return makeSub(getBranches, callback);
 }
 
+export function addWarehouseStock(item) {
+  return dbUpdate((db) => {
+    db.warehouseStock = db.warehouseStock || [];
+    db.warehouseStock.push({
+      ...item,
+      branchId: item.branchId || "BRC-001" // Default to Gudang Pusat if none provided
+    });
+    return db;
+  });
+}
+
+export function editWarehouseStock(sku, branchId, qty) {
+  return dbUpdate((db) => {
+    if (!db.warehouseStock) return db;
+    const item = db.warehouseStock.find(x => x.sku === sku && x.branchId === branchId);
+    if (item) item.qty = qty;
+    return db;
+  });
+}
+
 export function getDriverProfile() {
   return dbLoad().driverProfile || {};
 }

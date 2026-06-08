@@ -1,22 +1,22 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import Card from "../../../components/common/Card";
+import DetailModal from "../../../components/common/DetailModal";
+import DateRangePicker from "../../../components/common/DateRangePicker";
 import "../PageAdmin.css";
 import "./LaporanOrderAdmin.css";
-
-const fmtIDR = (n) =>
-  new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 }).format(n);
 
 export default function LaporanOrder() {
   const [activeTab, setActiveTab] = useState("Semua Order");
   const [timeRange, setTimeRange] = useState("Harian");
+  const [detailModal, setDetailModal] = useState(null);
 
   const stats = [
     { label: "Total Order", value: "128", hint: "↑ 12.5% dari periode lalu", icon: "📊", color: "#e4915a", bg: "#fff8f3" },
     { label: "Sales Order", value: "72", hint: "↑ 10.2% dari periode lalu", icon: "🛒", color: "#52c41a", bg: "#f6ffed" },
     { label: "Purchase Order", value: "36", hint: "↓ 5.1% dari periode lalu", icon: "📦", color: "#1890ff", bg: "#e6f7ff" },
     { label: "Transfer Order", value: "20", hint: "↑ 8.7% dari periode lalu", icon: "⇄", color: "#fa8c16", bg: "#fff7e6" },
-    { label: "Total Nilai Order", value: "Rp 875.450.000", hint: "↑ 13.4% dari periode lalu", icon: "💰", color: "#52c41a", bg: "#f6ffed" },
+    { label: "Total Nilai Order", value: "875.450.000", hint: "↑ 13.4% dari periode lalu", icon: "💰", color: "#52c41a", bg: "#f6ffed" },
   ];
 
   const orders = [
@@ -52,8 +52,8 @@ export default function LaporanOrder() {
             <span className="mtAdmin__dot" />
             Live Monitoring
           </span>
-          <div className="date-filter" style={{ display: 'inline-flex', alignItems: 'center', background: 'var(--bg)', border: '1px solid var(--border)', padding: '8px 16px', borderRadius: '12px', fontSize: '13px', marginLeft: '12px' }}>
-            01 Feb 2026 - 07 Feb 2026 📅
+          <div style={{ marginLeft: '12px' }}>
+            <DateRangePicker />
           </div>
           <button className="btn-export" style={{ marginLeft: '12px', height: '40px' }}><span>📥</span> Export <span className="chevron">⌄</span></button>
         </div>
@@ -311,7 +311,7 @@ export default function LaporanOrder() {
             <select className="moAdmin__select"><option>Semua Tipe Order</option></select>
             <select className="moAdmin__select"><option>Semua Status</option></select>
             <select className="moAdmin__select"><option>Semua Gudang / Toko</option></select>
-            <div className="date-filter" style={{ border: '1px solid var(--border)', background: 'var(--bg)', padding: '8px 12px', borderRadius: '10px', fontSize: '12px', cursor: 'pointer' }}>Pilih Rentang Tanggal 📅</div>
+            <DateRangePicker />
             <div className="moAdmin__searchWrap" style={{ maxWidth: '200px' }}>
               <span className="moAdmin__searchIcon">🔍</span>
               <input placeholder="Cari no. order, toko, supplier..." style={{ padding: '8px 12px 8px 32px' }} />
@@ -354,14 +354,14 @@ export default function LaporanOrder() {
                       <p style={{ fontSize: '11px', color: '#888' }}>{o.toLoc}</p>
                     </td>
                     <td style={{ fontWeight: 600 }}>{o.items} item</td>
-                    <td style={{ fontWeight: 700 }}>Rp {fmtIDR(o.value)}</td>
+
                     <td>
                       <span className={`status-pill status-pill--${o.status.toLowerCase()}`}>
                         ● {o.status}
                       </span>
                     </td>
                     <td style={{ fontSize: '12px', color: '#666' }}>{o.ship}</td>
-                    <td><button className="btn-icon">👁️</button></td>
+                    <td><button className="btn-icon" onClick={() => setDetailModal(o)}>👁️</button></td>
                   </tr>
                 ))}
               </tbody>
@@ -424,17 +424,35 @@ export default function LaporanOrder() {
               ].map((v, i) => (
                 <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', paddingBottom: '12px', borderBottom: '1px solid var(--border-subtle)' }}>
                   <span style={{ color: '#666' }}>{v.label}</span>
-                  <span style={{ fontWeight: 700 }}>Rp {fmtIDR(v.val)}</span>
+                  <span style={{ fontWeight: 700 }}>{v.val}</span>
                 </div>
               ))}
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', fontWeight: 800, marginTop: '8px' }}>
                 <span>Total</span>
-                <span>Rp {fmtIDR(875450000)}</span>
+
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* DETAIL MODAL */}
+      <DetailModal
+        isOpen={!!detailModal}
+        onClose={() => setDetailModal(null)}
+        title="Detail Laporan Order"
+        subtitle={detailModal ? `${detailModal.id} • ${detailModal.type}` : ''}
+        details={detailModal ? [
+          { label: "Tanggal Order", value: detailModal.date },
+          { label: "Status", value: detailModal.status, color: detailModal.status === 'Completed' || detailModal.status === 'Shipped' ? '#52c41a' : detailModal.status === 'Cancelled' ? '#ff4d4f' : '#1890ff' },
+          { label: "Dari", value: `${detailModal.from} (${detailModal.fromLoc})` },
+          { label: "Ke", value: `${detailModal.to} (${detailModal.toLoc})` },
+          { label: "Pengiriman", value: detailModal.ship },
+        ] : []}
+        itemsTitle="Total Item"
+        items={detailModal ? [`${detailModal.items} item (Detail tidak tersedia di mode laporan)`] : []}
+
+      />
     </div>
   );
 }

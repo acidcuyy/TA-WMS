@@ -1,5 +1,5 @@
 // src/services/storageDb.js
-const KEY = "reastock_db_v2";
+const KEY = "reastock_db_v3";
 
 /**
  * Skema DB (disimpan di localStorage):
@@ -10,53 +10,9 @@ const KEY = "reastock_db_v2";
  * - restockToAdmin: request gudang -> admin (restok masuk gudang)
  */
 const seed = () => ({
-  requests: [
-    {
-      id: "REQ-020",
-      fromRole: "toko",
-      fromName: "Toko A",
-      createdAt: "2026-02-03",
-      items: [{ sku: "BRG-002", qty: 12 }],
-      note: "Butuh restock etalase",
-      decision: null, // null | Accepted | Declined
-      status: "Menunggu", // Menunggu | Pending | Mengirim | Selesai | Ditolak
-      toRole: "gudang",
-      toName: "Gudang",
-    },
-    {
-      id: "REQ-019",
-      fromRole: "toko",
-      fromName: "Toko B",
-      createdAt: "2026-02-02",
-      items: [{ sku: "BRG-010", qty: 5 }],
-      note: "Promo akhir pekan",
-      decision: "Accepted",
-      status: "Mengirim",
-      toRole: "gudang",
-      toName: "Gudang",
-    },
-  ],
-
-  shipments: {
-    "REQ-019": {
-      start: { lat: -6.2, lng: 106.8166 },
-      end: { lat: -6.1754, lng: 106.8272 },
-      startedAt: Date.now() - 1000 * 60 * 7,
-      durationMs: 1000 * 60 * 18,
-      driver: { lat: -6.197, lng: 106.8177 },
-    },
-  },
-
-  notifications: [
-    {
-      id: "NTF-001",
-      type: "info",
-      title: "Sistem",
-      message: "Skema request: toko → gudang acc → kirim → selesai",
-      time: "09:40",
-      isRead: false,
-    },
-  ],
+  requests: [],
+  shipments: {},
+  notifications: [],
 
   // Daftar Cabang (Gudang & Toko)
   branches: [
@@ -66,50 +22,11 @@ const seed = () => ({
     { id: "BRC-004", name: "Toko Selatan", type: "toko", location: "Depok" },
   ],
 
-  // Stok gudang (dummy awal)
-  warehouseStock: [
-    {
-      sku: "BRG-002",
-      name: "Barang Contoh A",
-      type: "Sembako",
-      qty: 120,
-      minQty: 30,
-      image: null,
-      branchId: "BRC-001"
-    },
-    {
-      sku: "BRG-010",
-      name: "Barang Contoh B",
-      type: "Minuman",
-      qty: 18,
-      minQty: 25,
-      image: null,
-      branchId: "BRC-001"
-    },
-    {
-      sku: "BRG-002",
-      name: "Barang Contoh A",
-      type: "Sembako",
-      qty: 15,
-      minQty: 30,
-      image: null,
-      branchId: "BRC-003"
-    },
-    {
-      sku: "BRG-010",
-      name: "Barang Contoh B",
-      type: "Minuman",
-      qty: 0,
-      minQty: 25,
-      image: null,
-      branchId: "BRC-004"
-    },
-  ],
+  // Stok gudang
+  warehouseStock: [],
 
   // Request gudang -> admin (restok masuk gudang)
-  restockToAdmin: [
-    // { id, createdAt, items:[{sku,qty}], note, decision:null|Approved|Declined, status:"Menunggu"|"Approved"|"Selesai", proofImage:null }
-  ],
+  restockToAdmin: [],
 
   // Request admin -> gudang (admin minta gudang tambah stok)
   adminRestockToGudang: [

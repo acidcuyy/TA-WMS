@@ -31,11 +31,9 @@ export default function GudangLayout() {
         { label: "Dashboard", path: "/gudang", icon: "⊞" },
         { label: "Penerimaan Barang", path: "/gudang/penerimaan", icon: "⬇️" },
         { label: "Pengeluaran Barang", path: "/gudang/pengeluaran", icon: "⬆️" },
-        { label: "Transfer Barang", path: "/gudang/transfer", icon: "⇄" },
         { label: "Stok & Produk", path: "/gudang/stok", icon: "📦" },
         { label: "Request Masuk", path: "/gudang/requests", icon: "📥" },
         { label: "Buat Request", path: "/gudang/buat-request", icon: "📝" },
-        { label: "Order Masuk", path: "/gudang/orders", icon: "🗒" },
       ]
     }
   ];

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import DateRangePicker from "../../../components/common/DateRangePicker";
 import "../PageAdmin.css";
 import "./ManajemenStokAdmin.css";
 import { subscribeAdminRestockToGudang, createAdminRestockToGudang, subscribeBranches } from "../../../services/wmsApi";
@@ -118,11 +119,9 @@ export default function ManajemenStok() {
     <div className="pageAdmin stokAdm">
       {/* HEADER */}
       <header className="stokAdm__hero">
-        <div>
-          <h1 className="stokAdm__title">Manajemen Stok Gudang</h1>
-          <p className="stokAdm__subtitle">
-            Monitoring stok perusahaan dan permintaan penambahan stok gudang.
-          </p>
+        <div className="stokAdm__headerTitle">
+          <h1 className="stokAdm__title">Restock Gudang</h1>
+          <p className="stokAdm__subtitle">Monitoring stok perusahaan dan permintaan penambahan stok gudang.</p>
         </div>
         <div className="stokAdm__heroBadge">
           <span className="user-icon">👤</span> Admin / Owner <span className="chevron">⌄</span>
@@ -149,7 +148,7 @@ export default function ManajemenStok() {
           <div className="stokAdm__panelHead">
             <div>
               <h2>Ringkasan Stok</h2>
-              <p>● Real-time (dummy)</p>
+              <p>● Live monitoring</p>
             </div>
           </div>
 
@@ -210,9 +209,7 @@ export default function ManajemenStok() {
           </div>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
             <span style={{ fontSize: '13px', color: '#888', fontWeight: '600' }}>Total: {requests.length}</span>
-            <div className="date-filter">
-              📅 Semua Waktu <span className="chevron">⌄</span>
-            </div>
+            <DateRangePicker />
           </div>
         </div>
 

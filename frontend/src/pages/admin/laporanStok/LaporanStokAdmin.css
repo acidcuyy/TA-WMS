@@ -183,6 +183,11 @@
   border-collapse: collapse;
 }
 
+.lsAdmin__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
 .lsAdmin__table th {
   background: var(--bg-2);
   padding: 14px 24px;

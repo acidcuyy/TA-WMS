@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import Card from "../../../components/common/Card";
 import "../PageAdmin.css";
@@ -7,14 +8,12 @@ import {
   subscribeTokoReports,
   subscribeRequests,
   getShipment,
-  gudangDecideRequest
+  gudangDecideRequest,
+  subscribeBranches
 } from "../../../services/wmsApi";
 
-const fmtIDR = (n) =>
-  new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 }).format(n);
-
 export default function ManajemenToko() {
-
+  const navigate = useNavigate();
 
   // API State
   const [reports, setReports] = useState([]);
@@ -22,13 +21,6 @@ export default function ManajemenToko() {
   const [tick, setTick] = useState(0);
 
   // Dummy Initial Fallback matching original UI (will be replaced by real data if any)
-  const [dummyReports] = useState([
-    { id: "d1", date: "03", month: "Feb 2026", tokoName: "Toko A", type: "Laporan Harian", desc: "Pengiriman: 45 transaksi • Keluar: 1 • Stok kritis: 2 item", status: "Tersedia", fileData: null },
-    { id: "d2", date: "02", month: "Feb 2026", tokoName: "Toko B", type: "Laporan Harian", desc: "Pengiriman: 32 transaksi • Stok kritis: 1 item", status: "Tersedia", fileData: null },
-    { id: "d3", date: "01", month: "Feb 2026", tokoName: "Toko C", type: "Laporan Harian", desc: "—", status: "Belum upload", fileData: null },
-    { id: "d4", date: "31", month: "Jan 2026", tokoName: "Toko A", type: "Laporan Harian", desc: "Pengiriman: 28 transaksi • Penerimaan stok: 3 item", status: "Tersedia", fileData: null },
-    { id: "d5", date: "30", month: "Jan 2026", tokoName: "Toko B", type: "Laporan Harian", desc: "—", status: "Belum upload", fileData: null },
-  ]);
 
 
   useEffect(() => {
@@ -64,7 +56,7 @@ export default function ManajemenToko() {
     };
   }, []);
 
-  const displayReports = reports.length > 0 ? reports.slice(0, 5) : dummyReports;
+  const displayReports = reports.slice(0, 5);
 
   // Handler for Accept/Decline action
   const handleDecide = (id, decision) => {
@@ -75,10 +67,10 @@ export default function ManajemenToko() {
   const summary = useMemo(() => {
     if (requestsList.length === 0) {
       return {
-        tokoAktif: 3,
-        transaksiHariIni: 76,
-        pendingRestock: 4,
-        estimasiOmzet: 12500000,
+        tokoAktif: 0,
+        transaksiHariIni: 0,
+        pendingRestock: 0,
+        estimasiOmzet: 0,
       };
     }
 
@@ -96,10 +88,10 @@ export default function ManajemenToko() {
     }, 0);
 
     return {
-      tokoAktif: uniqueShops || 3,
-      transaksiHariIni: totalTransactionsToday || 4,
+      tokoAktif: uniqueShops || 0,
+      transaksiHariIni: totalTransactionsToday || 0,
       pendingRestock: pendingCount,
-      estimasiOmzet: omzetToday || 12500000
+      estimasiOmzet: omzetToday || 0
     };
   }, [requestsList]);
 
@@ -143,7 +135,6 @@ export default function ManajemenToko() {
     return requestsList.map(r => {
       const totalQty = (r.items || []).reduce((sum, item) => sum + item.qty, 0);
       const itemName = r.items?.[0]?.name ? `${r.items[0].name} ` : "";
-      const value = totalQty * 150000;
 
       let statusLabel = r.status;
       let trackingText = "—";
@@ -191,7 +182,6 @@ export default function ManajemenToko() {
         tanggal: r.createdAt ? new Date(r.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : "—",
         tipe: "Pengiriman",
         item: `${itemName}(${totalQty} pcs)`,
-        nilai: value,
         status: statusLabel,
         tracking: trackingText
       };
@@ -262,7 +252,7 @@ export default function ManajemenToko() {
           <div className="mtAdmin__statContent">
             <p className="mtAdmin__statLabel">Total Toko Aktif</p>
             <h3 className="mtAdmin__statValue">{summary.tokoAktif}</h3>
-            <p className="mtAdmin__statHint">Toko terdaftar (dummy)</p>
+            <p className="mtAdmin__statHint">Toko terdaftar</p>
           </div>
         </Card>
         <Card className="mtAdmin__statCard">
@@ -285,7 +275,7 @@ export default function ManajemenToko() {
           <div className="mtAdmin__statIcon" style={{ background: '#fff8f3', color: '#e4915a' }}>💰</div>
           <div className="mtAdmin__statContent">
             <p className="mtAdmin__statLabel">Estimasi Omzet</p>
-            <h3 className="mtAdmin__statValue">Rp {fmtIDR(summary.estimasiOmzet)}</h3>
+            <h3 className="mtAdmin__statValue">Rp{summary.estimasiOmzet.toLocaleString('id-ID')}</h3>
             <p className="mtAdmin__statHint">Omzet hari ini</p>
           </div>
         </Card>
@@ -331,7 +321,7 @@ export default function ManajemenToko() {
               ))}
             </AnimatePresence>
           </div>
-          <button className="btn-lihat-semua-link">Lihat semua laporan</button>
+          <button className="btn-lihat-semua-link" onClick={() => navigate('/admin/laporan')}>Lihat semua laporan</button>
         </section>
 
         {/* SHIPMENTS */}
@@ -358,7 +348,7 @@ export default function ManajemenToko() {
               </div>
             ))}
           </div>
-          <button className="btn-lihat-semua-link">Lihat semua pengiriman</button>
+          <button className="btn-lihat-semua-link" onClick={() => navigate('/admin/requests')}>Lihat semua pengiriman</button>
         </section>
       </div>
 
@@ -381,7 +371,6 @@ export default function ManajemenToko() {
                   <th>Tanggal</th>
                   <th>Tipe</th>
                   <th>Item</th>
-                  <th>Nilai</th>
                   <th>Status</th>
                   <th>Tracking</th>
                   <th></th>
@@ -395,7 +384,7 @@ export default function ManajemenToko() {
                     <td>{t.tanggal}</td>
                     <td>{t.tipe}</td>
                     <td>{t.item}</td>
-                    <td>Rp {fmtIDR(t.nilai)}</td>
+
                     <td>
                       <span className={`mtAdmin__pill ${t.status === 'Selesai' ? 'mtAdmin__pill--success' :
                         t.status === 'Diproses' || t.status === 'Dalam perjalanan' ? 'mtAdmin__pill--process' :
@@ -475,15 +464,10 @@ export default function ManajemenToko() {
             </table>
           </div>
           <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end' }}>
-            <button className="btn-lihat-semua-link" style={{ textAlign: 'right', width: 'auto' }}>Lihat semua request</button>
+            <button className="btn-lihat-semua-link" style={{ textAlign: 'right', width: 'auto' }} onClick={() => navigate('/admin/requests')}>Lihat semua request</button>
           </div>
         </section>
       </div>
-
-      <footer style={{ marginTop: '24px', display: 'flex', gap: '8px', alignItems: 'center', color: '#888', fontSize: '12px' }}>
-        <span className="info-icon">ℹ️</span>
-        Semua data bersifat dummy untuk keperluan UI/UX. Integrasi realtime melalui websocket akan segera hadir.
-      </footer>
 
       {/* PDF PREVIEW MODAL */}
       <AnimatePresence>
@@ -511,7 +495,7 @@ export default function ManajemenToko() {
                   <div className="mtAdmin-modal-empty">
                     <span style={{ fontSize: '48px', marginBottom: '16px' }}>📄</span>
                     <h3 style={{ margin: '0 0 8px 0', color: '#333' }}>File Tidak Ditemukan</h3>
-                    <p style={{ margin: 0 }}>Laporan ini adalah data dummy atau tidak memiliki lampiran PDF.</p>
+                    <p style={{ margin: 0 }}>Laporan ini tidak memiliki lampiran PDF.</p>
                   </div>
                 )}
               </div>

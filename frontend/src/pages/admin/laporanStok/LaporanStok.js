@@ -1,11 +1,9 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import Card from "../../../components/common/Card";
+import DateRangePicker from "../../../components/common/DateRangePicker";
 import "../PageAdmin.css";
 import "./LaporanStokAdmin.css";
-
-const fmtIDR = (n) =>
-  new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 }).format(n);
 
 export default function LaporanStok() {
   const [timeRange, setTimeRange] = useState("Harian");
@@ -55,8 +53,8 @@ export default function LaporanStok() {
             <span className="mtAdmin__dot" />
             Live Monitoring
           </span>
-          <div className="date-filter" style={{ display: 'inline-flex', alignItems: 'center', background: 'var(--bg)', border: '1px solid var(--border)', padding: '8px 16px', borderRadius: '12px', fontSize: '13px', marginLeft: '12px' }}>
-            01 Feb 2026 - 07 Feb 2026 📅
+          <div style={{ marginLeft: '12px' }}>
+            <DateRangePicker />
           </div>
           <button className="btn-export" style={{ marginLeft: '12px', height: '40px' }}><span>📥</span> Export <span className="chevron">⌄</span></button>
         </div>
@@ -247,7 +245,7 @@ export default function LaporanStok() {
               <div className="lsAdmin__locIcon" style={{ background: loc.bg }}>{loc.icon}</div>
               <p className="lsAdmin__locName">{loc.name}</p>
               <p className="lsAdmin__locMeta">Total Item: <b>{loc.items}</b></p>
-              <p className="lsAdmin__locValue">Rp {fmtIDR(loc.value)}</p>
+
               <p className="lsAdmin__locStatus">Status: <span style={{ color: loc.statusColor }}>● {loc.status}</span></p>
             </div>
           ))}

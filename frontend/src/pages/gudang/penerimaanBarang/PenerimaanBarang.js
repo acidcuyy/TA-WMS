@@ -1,34 +1,102 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect, useMemo } from "react";
 import Card from "../../../components/common/Card";
+import DetailModal from "../../../components/common/DetailModal";
+import DateRangePicker from "../../../components/common/DateRangePicker";
+import { subscribeRestockToAdmin, subscribeAdminRestockToGudang } from "../../../services/wmsApi";
 import "./PenerimaanBarangGudang.css";
-
-const fmtIDR = (n) =>
-  new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 }).format(n);
 
 export default function PenerimaanBarang() {
   const [activeTab, setActiveTab] = useState("Semua");
+  const [sourceFilter, setSourceFilter] = useState("Semua Sumber");
+  const [allRestocks, setAllRestocks] = useState([]);
+  const [adminRestocks, setAdminRestocks] = useState([]);
+  const [detailModal, setDetailModal] = useState(null);
 
-  const stats = [
-    { label: "Total Penerimaan", value: "350", sub: "Transaksi", hint: "↑ 12.5% dari periode lalu", icon: "⬇️", color: "#1890ff", bg: "#e6f7ff" },
-    { label: "Total Item Diterima", value: "6.450", sub: "Item", hint: "↑ 8.3% dari periode lalu", icon: "📦", color: "#52c41a", bg: "#f6ffed" },
-    { label: "Nilai Penerimaan", value: "Rp 1.245.300.000", sub: "", hint: "↑ 10.2% dari periode lalu", icon: "💰", color: "#52c41a", bg: "#f6ffed" },
-    { label: "Penerimaan Hari Ini", value: "28", sub: "Transaksi", hint: "Lihat detail", icon: "⇄", color: "#1890ff", bg: "#e6f7ff" },
-    { label: "Barang Pending", value: "12", sub: "Transaksi", hint: "Lihat detail", icon: "🕒", color: "#fa8c16", bg: "#fff7e6" },
-  ];
+  useEffect(() => {
+    const unsub1 = subscribeRestockToAdmin((data) => setAllRestocks(data || []));
+    const unsub2 = subscribeAdminRestockToGudang((data) => setAdminRestocks(data || []));
+    return () => { unsub1(); unsub2(); };
+  }, []);
 
-  const receipts = [
-    { id: "GR-2026-00078", po: "PO-2026-00078", supplier: "Supplier Jaya Abadi", date: "07 Feb 2026 09:15", items: 45, value: 125450000, status: "Menunggu" },
-    { id: "GR-2026-00077", po: "PO-2026-00077", supplier: "Elektronik Sentosa", date: "07 Feb 2026 08:30", items: 30, value: 68250000, status: "Proses" },
-    { id: "GR-2026-00076", po: "PO-2026-00076", supplier: "Bangun Jaya", date: "06 Feb 2026 16:20", items: 25, value: 45600000, status: "Diterima" },
-    { id: "GR-2026-00075", po: "PO-2026-00075", supplier: "Mitra Konstruksi", date: "06 Feb 2026 14:10", items: 18, value: 32800000, status: "Diterima" },
-    { id: "GR-2026-00074", po: "PO-2026-00074", supplier: "Plumbing Sejahtera", date: "06 Feb 2026 10:05", items: 22, value: 38750000, status: "Diterima" },
-    { id: "GR-2026-00073", po: "PO-2026-00073", supplier: "Supplier Makmur", date: "05 Feb 2026 15:45", items: 32, value: 75300000, status: "Proses" },
-    { id: "GR-2026-00072", po: "PO-2026-00072", supplier: "Sukses Abadi", date: "05 Feb 2026 11:20", items: 15, value: 28150000, status: "Diterima" },
-    { id: "GR-2026-00071", po: "PO-2026-00071", supplier: "Teknik Utama", date: "04 Feb 2026 17:05", items: 28, value: 55900000, status: "Menunggu" },
-    { id: "GR-2026-00070", po: "PO-2026-00070", supplier: "Multi Material", date: "04 Feb 2026 09:30", items: 20, value: 37600000, status: "Diterima" },
-    { id: "GR-2026-00069", po: "PO-2026-00069", supplier: "Baja Perkasa", date: "03 Feb 2026 14:45", items: 40, value: 89500000, status: "Ditolak" },
-  ];
+  const receipts = useMemo(() => {
+    const combined = [];
+
+    // Map Gudang -> Admin restocks
+    allRestocks.forEach(r => {
+      let totalItems = 0;
+      let value = 0;
+      let itemsList = [];
+
+      (r.items || []).forEach(it => {
+        totalItems += it.qty;
+        // Mock price based on category
+        const p = it.category === "Elektronik" ? 450000 : it.category === "Minuman" ? 8000 : 25000;
+        value += it.qty * p;
+        itemsList.push(`${it.name} (${it.sku || "SAK-" + Math.floor(Math.random()*1000)}) x${it.qty}`);
+      });
+
+      let statusLabel = r.status;
+      if (statusLabel === "Diproses") statusLabel = "Proses";
+      if (statusLabel === "Pending") statusLabel = "Menunggu";
+
+      combined.push({
+        id: r.id,
+        po: `PO-${r.id.split('-')[1] || r.id}`,
+        supplier: r.supplierName || r.supplier || "Supplier Utama",
+        date: new Date(r.createdAt || new Date()).toLocaleString("id-ID", {
+          day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+        }),
+        itemsCount: totalItems,
+        itemsText: itemsList.join(', '),
+        value,
+        status: statusLabel,
+        rawStatus: r.status,
+        source: 'Gudang'
+      });
+    });
+
+    // Map Admin -> Gudang restocks
+    adminRestocks.forEach(r => {
+      let totalItems = r.jumlah || 0;
+      const p = r.jenisBarang === "Elektronik" ? 450000 : r.jenisBarang === "Minuman" ? 8000 : 25000;
+      let value = totalItems * p;
+      let itemsList = [`${r.namaBarang} (${r.kodeBarang}) x${r.jumlah}`];
+
+      let statusLabel = r.status;
+      if (statusLabel === "Diproses") statusLabel = "Proses";
+      if (statusLabel === "Pending") statusLabel = "Menunggu";
+
+      combined.push({
+        id: r.id,
+        po: `PO-${r.id.split('-')[1] || r.id}`,
+        supplier: r.supplier || "Supplier Utama",
+        date: new Date(r.createdAt || new Date()).toLocaleString("id-ID", {
+          day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+        }),
+        itemsCount: totalItems,
+        itemsText: itemsList.join(', '),
+        value,
+        status: statusLabel,
+        rawStatus: r.status,
+        source: 'Admin'
+      });
+    });
+
+    // Sort combined by date descending (latest first)
+    return combined.sort((a, b) => new Date(b.date) - new Date(a.date));
+  }, [allRestocks, adminRestocks]);
+
+  const filteredReceipts = useMemo(() => {
+    let result = receipts;
+    if (activeTab !== "Semua") {
+      result = result.filter(r => r.status === activeTab);
+    }
+    if (sourceFilter !== "Semua Sumber") {
+      const targetSource = sourceFilter === "Dari Gudang" ? "Gudang" : "Admin";
+      result = result.filter(r => r.source === targetSource);
+    }
+    return result;
+  }, [receipts, activeTab, sourceFilter]);
 
   const activities = [
     { title: "Penerimaan barang dari Supplier Jaya Abadi", sub: "GR-2026-00078", time: "5 menit lalu", color: "#fa8c16", icon: "🕒" },
@@ -53,7 +121,13 @@ export default function PenerimaanBarang() {
 
       {/* STATS */}
       <div className="pbGudang__stats">
-        {stats.map((s, i) => (
+        {[
+          { label: "Total Penerimaan", value: receipts.length, sub: "Transaksi", hint: "Dari keseluruhan data", icon: "⬇️", color: "#1890ff", bg: "#e6f7ff" },
+          { label: "Total Item Diterima", value: receipts.filter(r => r.status === "Selesai").reduce((sum, r) => sum + r.itemsCount, 0), sub: "Item", hint: "Yang sudah selesai", icon: "📦", color: "#52c41a", bg: "#f6ffed" },
+
+          { label: "Dalam Proses", value: receipts.filter(r => r.status === "Proses").length, sub: "Transaksi", hint: "Sedang dikirim Admin", icon: "⇄", color: "#1890ff", bg: "#e6f7ff" },
+          { label: "Menunggu Acc", value: receipts.filter(r => r.status === "Menunggu").length, sub: "Transaksi", hint: "Menunggu Admin", icon: "🕒", color: "#fa8c16", bg: "#fff7e6" },
+        ].map((s, i) => (
           <Card key={i} className="pbGudang__statCard">
             <div className="pbGudang__statIcon" style={{ background: s.bg, color: s.color }}>{s.icon}</div>
             <div className="pbGudang__statMain">
@@ -67,8 +141,13 @@ export default function PenerimaanBarang() {
 
       {/* FILTER BAR */}
       <div className="pbGudang__filterBar">
+        <select className="moAdmin__select" value={sourceFilter} onChange={(e) => setSourceFilter(e.target.value)}>
+          <option>Semua Sumber</option>
+          <option>Dari Admin</option>
+          <option>Dari Gudang</option>
+        </select>
         <select className="moAdmin__select"><option>Semua Status</option></select>
-        <div className="date-filter" style={{ border: '1px solid var(--border)', background: 'var(--bg-2)', padding: '10px 14px', borderRadius: '10px', fontSize: '12px', cursor: 'pointer' }}>01 Feb 2026 - 07 Feb 2026 📅</div>
+        <DateRangePicker />
         <select className="moAdmin__select"><option>Semua Supplier</option></select>
         <select className="moAdmin__select"><option>Semua Jenis</option></select>
         <div className="moAdmin__searchWrap" style={{ flex: 1 }}>
@@ -80,15 +159,18 @@ export default function PenerimaanBarang() {
 
       {/* TABS */}
       <div className="pbGudang__tabs">
-        {["Semua", "Menunggu", "Proses", "Diterima", "Ditolak"].map(tab => (
-          <div
-            key={tab}
-            className={`pbGudang__tab ${activeTab === tab ? 'active' : ''}`}
-            onClick={() => setActiveTab(tab)}
-          >
-            {tab} <span className="pbGudang__tabCount">({tab === "Semua" ? "350" : tab === "Menunggu" ? "12" : tab === "Proses" ? "18" : tab === "Diterima" ? "290" : "5"})</span>
-          </div>
-        ))}
+        {["Semua", "Menunggu", "Proses", "Selesai", "Ditolak"].map(tab => {
+          const count = tab === "Semua" ? receipts.length : receipts.filter(r => r.status === tab).length;
+          return (
+            <div
+              key={tab}
+              className={`pbGudang__tab ${activeTab === tab ? 'active' : ''}`}
+              onClick={() => setActiveTab(tab)}
+            >
+              {tab} <span className="pbGudang__tabCount">({count})</span>
+            </div>
+          )
+        })}
       </div>
 
       {/* MAIN CONTENT */}
@@ -102,51 +184,63 @@ export default function PenerimaanBarang() {
                   <th>No. PO / Referensi</th>
                   <th>Supplier</th>
                   <th>Tanggal Terima</th>
-                  <th>Total Item</th>
-                  <th>Nilai (Rp)</th>
+                  <th>Daftar Barang (SKU)</th>
+
                   <th>Status</th>
                   <th>Aksi</th>
                 </tr>
               </thead>
               <tbody>
-                {receipts.map((r, i) => (
-                  <tr key={i}>
-                    <td style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '14px', color: '#888' }}>🚚</span> {r.id}
-                    </td>
-                    <td className="rqAdmin__mono" style={{ fontSize: '11px' }}>{r.po}</td>
-                    <td style={{ fontWeight: 700 }}>{r.supplier}</td>
-                    <td style={{ fontSize: '12px', color: '#888' }}>{r.date}</td>
-                    <td>{r.items} item</td>
-                    <td style={{ fontWeight: 700 }}>Rp {fmtIDR(r.value)}</td>
-                    <td>
-                      <span className={`rqAdmin__pill ${r.status === 'Diterima' ? 'rqAdmin__pill--approved' : r.status === 'Proses' ? 'rqAdmin__pill--ship' : r.status === 'Ditolak' ? 'rqAdmin__pill--declined' : 'rqAdmin__pill--pending'}`}>
-                        ● {r.status}
-                      </span>
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', gap: '4px' }}>
-                        <button className="btn-icon">👁️</button>
-                        <button className="btn-icon">⋮</button>
-                      </div>
+                {filteredReceipts.length === 0 ? (
+                  <tr>
+                    <td colSpan="8" style={{ textAlign: "center", padding: "20px", color: "#888" }}>
+                      Belum ada data penerimaan.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  filteredReceipts.map((r, i) => (
+                    <tr key={i}>
+                      <td style={{ fontWeight: 700 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '14px', color: '#888' }}>🚚</span> {r.id}
+                        </div>
+                        <span style={{ display: 'inline-block', marginTop: '4px', fontSize: '9px', padding: '2px 6px', borderRadius: '4px', background: r.source === 'Admin' ? '#e6f7ff' : '#f6ffed', color: r.source === 'Admin' ? '#1890ff' : '#52c41a', fontWeight: 'bold' }}>
+                          {r.source === 'Admin' ? 'ADMIN ➔ GUDANG' : 'GUDANG ➔ ADMIN'}
+                        </span>
+                      </td>
+                      <td className="rqAdmin__mono" style={{ fontSize: '11px' }}>{r.po}</td>
+                      <td style={{ fontWeight: 700 }}>{r.supplier}</td>
+                      <td style={{ fontSize: '12px', color: '#888' }}>{r.date}</td>
+                      <td style={{ fontSize: '11px', maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={r.itemsText}>
+                        <div style={{ fontWeight: 700, color: '#1e293b', marginBottom: '2px' }}>{r.itemsCount} item total</div>
+                        <div style={{ color: '#64748b' }}>{r.itemsText}</div>
+                      </td>
+
+                      <td>
+                        <span className={`rqAdmin__pill ${r.status === 'Selesai' ? 'rqAdmin__pill--approved' : r.status === 'Proses' ? 'rqAdmin__pill--ship' : r.status === 'Ditolak' ? 'rqAdmin__pill--declined' : 'rqAdmin__pill--pending'}`}>
+                          ● {r.status}
+                        </span>
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '4px' }}>
+                          <button className="btn-icon" onClick={() => setDetailModal(r)}>👁️</button>
+                          <button className="btn-icon">⋮</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
           <footer style={{ padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '12px', color: '#888' }}>Menampilkan 1 - 10 dari 350 data</span>
+            <span style={{ fontSize: '12px', color: '#888' }}>Menampilkan 1 - {filteredReceipts.length} dari {filteredReceipts.length} data</span>
             <div className="pagination">
               <select className="mpAdmin__select" style={{ padding: '4px 8px' }}><option>10 / halaman</option></select>
               <div className="page-controls">
                 <button disabled>⟨</button>
                 <button className="active">1</button>
-                <button>2</button>
-                <button>3</button>
-                <span>...</span>
-                <button>35</button>
-                <button>⟩</button>
+                <button disabled>⟩</button>
               </div>
             </div>
           </footer>
@@ -157,10 +251,10 @@ export default function PenerimaanBarang() {
             <div className="pbGudang__sideHead">
               <h3>Ringkasan Penerimaan</h3>
             </div>
-            <p style={{ fontSize: '11px', color: '#888', marginBottom: '16px' }}>Periode: 01 - 07 Feb 2026</p>
-            <div className="pbGudang__summaryItem"><span>Total Penerimaan</span><b>Rp 1.245.300.000</b></div>
-            <div className="pbGudang__summaryItem"><span>Total Item</span><b>6.450 item</b></div>
-            <div className="pbGudang__summaryItem"><span>Rata-rata per Transaksi</span><b>Rp 3.558.000</b></div>
+            <p style={{ fontSize: '11px', color: '#888', marginBottom: '16px' }}>Semua Waktu</p>
+
+            <div className="pbGudang__summaryItem"><span>Total Item</span><b>{receipts.reduce((sum, r) => sum + r.itemsCount, 0)} item</b></div>
+
           </div>
 
           <div className="pbGudang__sideCard">
@@ -208,6 +302,23 @@ export default function PenerimaanBarang() {
           </div>
         </div>
       </div>
+      {/* MODAL DETAIL */}
+      {detailModal && (
+        <DetailModal
+          isOpen={!!detailModal}
+          onClose={() => setDetailModal(null)}
+          title="Detail Penerimaan"
+          subtitle={`${detailModal.id} • ${detailModal.source === 'Admin' ? 'Instruksi Admin' : 'Request Gudang'}`}
+          details={[
+            { label: "Tanggal Terima", value: detailModal.date },
+            { label: "Status", value: detailModal.status, color: detailModal.status === 'Selesai' ? '#52c41a' : '#1890ff' },
+            { label: "No. PO/Referensi", value: detailModal.po },
+            { label: "Supplier", value: detailModal.supplier },
+          ]}
+          items={detailModal.itemsText.split(', ')}
+
+        />
+      )}
     </div>
   );
 }

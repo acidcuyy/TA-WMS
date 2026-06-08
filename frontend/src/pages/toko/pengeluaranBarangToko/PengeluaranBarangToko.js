@@ -1,28 +1,31 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import DateRangePicker from "../../../components/common/DateRangePicker";
+import DetailModal from "../../../components/common/DetailModal";
 import "./PengeluaranBarangToko.css";
 
 export default function PengeluaranBarangToko() {
   const [activeTab, setActiveTab] = useState("Semua (98)");
+  const [detailModal, setDetailModal] = useState(null);
   const easing = [0.22, 1, 0.36, 1];
 
   const summaryCards = [
     { label: "Total Pengeluaran", value: "98", unit: "transaksi", icon: "📤", iconClass: "summary-card__icon--purple", subtext: "Semua transaksi keluar" },
     { label: "Total Item Keluar", value: "1.180", unit: "item", icon: "📦", iconClass: "summary-card__icon--blue", subtext: "Semua item keluar" },
-    { label: "Nilai Pengeluaran", value: "Rp 42.350.000", unit: "", icon: "💰", iconClass: "summary-card__icon--green", subtext: "Total nilai barang keluar" },
+    { label: "Tujuan Pengeluaran", value: "5", unit: "kategori", icon: "📑", iconClass: "summary-card__icon--green", subtext: "Total jenis tujuan pengeluaran" },
     { label: "Pengeluaran Hari Ini", value: "9", unit: "transaksi", icon: "📅", iconClass: "summary-card__icon--orange", subtext: "Hari ini" },
     { label: "Barang Pending", value: "4", unit: "transaksi", icon: "⏳", iconClass: "summary-card__icon--red", subtext: "Menunggu verifikasi" },
   ];
 
   const tableData = [
-    { id: "OUT-2025-0042", ref: "INV/KS/0524/042", target: "Pelanggan - Toko Maju", date: "24 Mei 2025, 10:30", items: "25", value: "Rp 1.750.000", status: "Dikeluarkan" },
-    { id: "OUT-2025-0041", ref: "INV/KS/0524/041", target: "Penjualan Kasir", date: "24 Mei 2025, 09:15", items: "18", value: "Rp 875.000", status: "Dikeluarkan" },
-    { id: "OUT-2025-0040", ref: "RET/GD/0524/015", target: "Retur Gudang", date: "23 Mei 2025, 16:45", items: "12", value: "Rp 620.000", status: "Proses" },
-    { id: "OUT-2025-0039", ref: "INV/KS/0523/039", target: "Pelanggan - CV Sejahtera", date: "23 Mei 2025, 14:20", items: "30", value: "Rp 2.340.000", status: "Dikeluarkan" },
-    { id: "OUT-2025-0038", ref: "ADJ/0523/008", target: "Penyesuaian Stok", date: "23 Mei 2025, 11:05", items: "15", value: "Rp 350.000", status: "Dikeluarkan" },
-    { id: "OUT-2025-0037", ref: "INV/KS/0522/037", target: "Penjualan Kasir", date: "22 Mei 2025, 17:30", items: "22", value: "Rp 1.120.000", status: "Menunggu" },
-    { id: "OUT-2025-0036", ref: "INV/KS/0522/036", target: "Pelanggan - UD Sukses", date: "22 Mei 2025, 13:10", items: "40", value: "Rp 3.250.000", status: "Proses" },
-    { id: "OUT-2025-0035", ref: "RET/GD/0522/014", target: "Retur Gudang", date: "21 Mei 2025, 10:25", items: "8", value: "Rp 185.000", status: "Dibatalkan" },
+    { id: "OUT-2025-0042", ref: "INV/KS/0524/042", target: "Pelanggan - Toko Maju", date: "24 Mei 2025, 10:30", items: "25", status: "Dikeluarkan" },
+    { id: "OUT-2025-0041", ref: "INV/KS/0524/041", target: "Penjualan Kasir", date: "24 Mei 2025, 09:15", items: "18", status: "Dikeluarkan" },
+    { id: "OUT-2025-0040", ref: "RET/GD/0524/015", target: "Retur Gudang", date: "23 Mei 2025, 16:45", items: "12", status: "Proses" },
+    { id: "OUT-2025-0039", ref: "INV/KS/0523/039", target: "Pelanggan - CV Sejahtera", date: "23 Mei 2025, 14:20", items: "30", status: "Dikeluarkan" },
+    { id: "OUT-2025-0038", ref: "ADJ/0523/008", target: "Penyesuaian Stok", date: "23 Mei 2025, 11:05", items: "15", status: "Dikeluarkan" },
+    { id: "OUT-2025-0037", ref: "INV/KS/0522/037", target: "Penjualan Kasir", date: "22 Mei 2025, 17:30", items: "22", status: "Menunggu" },
+    { id: "OUT-2025-0036", ref: "INV/KS/0522/036", target: "Pelanggan - UD Sukses", date: "22 Mei 2025, 13:10", items: "40", status: "Proses" },
+    { id: "OUT-2025-0035", ref: "RET/GD/0522/014", target: "Retur Gudang", date: "21 Mei 2025, 10:25", items: "8", status: "Dibatalkan" },
   ];
 
   const recentActivities = [
@@ -76,7 +79,7 @@ export default function PengeluaranBarangToko() {
           <section className="pengeluaran-content-box">
             <div className="pengeluaran-filters">
               <select className="filter-select"><option>Semua Status</option></select>
-              <input type="text" className="filter-date" placeholder="01 Mei 2025 - 24 Mei 2025" />
+              <DateRangePicker />
               <select className="filter-select"><option>Semua Tujuan</option></select>
               <select className="filter-select"><option>Semua Jenis Pengeluaran</option></select>
               <div className="filter-search">
@@ -106,7 +109,7 @@ export default function PengeluaranBarangToko() {
                   <th>Tujuan</th>
                   <th>Tanggal ↓</th>
                   <th>Total Item</th>
-                  <th>Nilai (Rp)</th>
+
                   <th>Status</th>
                   <th>Aksi</th>
                 </tr>
@@ -124,7 +127,7 @@ export default function PengeluaranBarangToko() {
                     <td>{row.target}</td>
                     <td>{row.date}</td>
                     <td>{row.items}</td>
-                    <td style={{ fontWeight: 600 }}>{row.value}</td>
+
                     <td>
                       <span className={`status-badge status--${row.status.toLowerCase()}`}>
                         {row.status}
@@ -132,7 +135,7 @@ export default function PengeluaranBarangToko() {
                     </td>
                     <td>
                       <div className="action-btns">
-                        <button className="btn-action">👁️</button>
+                        <button className="btn-action" onClick={() => setDetailModal(row)}>👁️</button>
                         <button className="btn-action">⋯</button>
                       </div>
                     </td>
@@ -176,7 +179,7 @@ export default function PengeluaranBarangToko() {
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px" }}>
                   <span style={{ color: "#64748b" }}>Rata-rata per Transaksi</span>
-                  <span style={{ fontWeight: 700 }}>Rp 432.143</span>
+                  <span style={{ fontWeight: 700 }}>12 <span style={{ fontWeight: 400, fontSize: "10px", color: "#94a3b8" }}>item</span></span>
                 </div>
               </div>
             </div>
@@ -235,6 +238,21 @@ export default function PengeluaranBarangToko() {
           </aside>
         </div>
       </motion.div>
+
+      {/* DETAIL MODAL */}
+      <DetailModal
+        isOpen={!!detailModal}
+        onClose={() => setDetailModal(null)}
+        title="Detail Pengeluaran Toko"
+        subtitle={detailModal ? `${detailModal.id} • ${detailModal.target}` : ''}
+        details={detailModal ? [
+          { label: "Tanggal", value: detailModal.date },
+          { label: "Referensi", value: detailModal.ref },
+          { label: "Status", value: detailModal.status, color: detailModal.status === 'Dikeluarkan' ? '#52c41a' : detailModal.status === 'Menunggu' ? '#fa8c16' : '#1890ff' },
+        ] : []}
+        itemsTitle="Total Item"
+        items={detailModal ? [`${detailModal.items} dikeluarkan`] : []}
+      />
     </div>
   );
 }

@@ -220,6 +220,11 @@
   border-collapse: collapse;
 }
 
+.moAdmin__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
 .moAdmin__table th {
   background: var(--bg-2);
   padding: 14px 24px;

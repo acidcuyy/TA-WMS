@@ -1,28 +1,31 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import DateRangePicker from "../../../components/common/DateRangePicker";
+import DetailModal from "../../../components/common/DetailModal";
 import "./PenyesuaianStokToko.css";
 
 export default function PenyesuaianStokToko() {
   const [activeTab, setActiveTab] = useState("Semua (64)");
+  const [detailModal, setDetailModal] = useState(null);
   const easing = [0.22, 1, 0.36, 1];
 
   const summaryCards = [
     { label: "Total Penyesuaian", value: "64", unit: "transaksi", icon: "⚖", iconClass: "summary-card__icon--purple", subtext: "Semua transaksi koreksi" },
     { label: "Item Disesuaikan", value: "420", unit: "item", icon: "📦", iconClass: "summary-card__icon--blue", subtext: "Total item bertambah/berkurang" },
-    { label: "Nilai Koreksi", value: "Rp 18.750.000", unit: "", icon: "💰", iconClass: "summary-card__icon--green", subtext: "Nilai akumulasi koreksi" },
+    { label: "Alasan Terbanyak", value: "Audit Stok", unit: "", icon: "📑", iconClass: "summary-card__icon--green", subtext: "Total jenis alasan penyesuaian" },
     { label: "Penyesuaian Hari Ini", value: "6", unit: "transaksi", icon: "📅", iconClass: "summary-card__icon--orange", subtext: "Hari ini" },
     { label: "Menunggu Review", value: "3", unit: "transaksi", icon: "⏳", iconClass: "summary-card__icon--red", subtext: "Memerlukan persetujuan" },
   ];
 
   const tableData = [
-    { id: "ADJ-2025-0042", ref: "AUDIT-0524-01", desc: "Pipa PVC 1/2 Inch (Audit stok)", date: "24 Mei 2025, 10:15", qty: "-5 pcs", value: "-Rp 14.500", status: "Disetujui" },
-    { id: "ADJ-2025-0041", ref: "RSK-0524-03", desc: "Elbow PVC 1/2 Inch (Barang rusak)", date: "24 Mei 2025, 09:40", qty: "-3 pcs", value: "-Rp 45.000", status: "Menunggu" },
-    { id: "ADJ-2025-0040", ref: "EXP-0524-02", desc: "Fitting T 1/2 Inch (Selisih opname)", date: "23 Mei 2025, 16:20", qty: "-2 pcs", value: "-Rp 6.000", status: "Disetujui" },
-    { id: "ADJ-2025-0039", ref: "SEL-0524-01", desc: "Lem PVC 100ml (Selisih opname)", date: "23 Mei 2025, 13:05", qty: "+8 pcs", value: "Rp 88.000", status: "Disetujui" },
-    { id: "ADJ-2025-0038", ref: "RSK-0524-02", desc: "Kabel NYM 3x1.5mm (Kemasan rusak)", date: "22 Mei 2025, 15:10", qty: "-4 mtr", value: "-Rp 5.600", status: "Ditolak" },
-    { id: "ADJ-2025-0037", ref: "AUDIT-0523-02", desc: "Pipa PVC 1/2 Inch (Audit stok)", date: "22 Mei 2025, 11:25", qty: "-6 pcs", value: "-Rp 36.000", status: "Draft" },
-    { id: "ADJ-2025-0036", ref: "SEL-0523-03", desc: "Elbow PVC 1/2 Inch (Selisih opname)", date: "21 Mei 2025, 09:30", qty: "+10 pcs", value: "Rp 25.000", status: "Disetujui" },
-    { id: "ADJ-2025-0035", ref: "RSK-0523-01", desc: "Fitting T 1/2 Inch (Kemasan bocor)", date: "21 Mei 2025, 08:05", qty: "-2 pcs", value: "-Rp 7.000", status: "Menunggu" },
+    { id: "ADJ-2025-0042", ref: "AUDIT-0524-01", desc: "Pipa PVC 1/2 Inch (Audit stok)", date: "24 Mei 2025, 10:15", qty: "-5 pcs", status: "Disetujui" },
+    { id: "ADJ-2025-0041", ref: "RSK-0524-03", desc: "Elbow PVC 1/2 Inch (Barang rusak)", date: "24 Mei 2025, 09:40", qty: "-3 pcs", status: "Menunggu" },
+    { id: "ADJ-2025-0040", ref: "EXP-0524-02", desc: "Fitting T 1/2 Inch (Selisih opname)", date: "23 Mei 2025, 16:20", qty: "-2 pcs", status: "Disetujui" },
+    { id: "ADJ-2025-0039", ref: "SEL-0524-01", desc: "Lem PVC 100ml (Selisih opname)", date: "23 Mei 2025, 13:05", qty: "+8 pcs", status: "Disetujui" },
+    { id: "ADJ-2025-0038", ref: "RSK-0524-02", desc: "Kabel NYM 3x1.5mm (Kemasan rusak)", date: "22 Mei 2025, 15:10", qty: "-4 mtr", status: "Ditolak" },
+    { id: "ADJ-2025-0037", ref: "AUDIT-0523-02", desc: "Pipa PVC 1/2 Inch (Audit stok)", date: "22 Mei 2025, 11:25", qty: "-6 pcs", status: "Draft" },
+    { id: "ADJ-2025-0036", ref: "SEL-0523-03", desc: "Elbow PVC 1/2 Inch (Selisih opname)", date: "21 Mei 2025, 09:30", qty: "+10 pcs", status: "Disetujui" },
+    { id: "ADJ-2025-0035", ref: "RSK-0523-01", desc: "Fitting T 1/2 Inch (Kemasan bocor)", date: "21 Mei 2025, 08:05", qty: "-2 pcs", status: "Menunggu" },
   ];
 
   const recentActivities = [
@@ -76,7 +79,7 @@ export default function PenyesuaianStokToko() {
           <section className="penyesuaian-content-box">
             <div className="penyesuaian-filters">
               <select className="filter-select"><option>Semua Status</option></select>
-              <input type="text" className="filter-date" placeholder="01 Mei 2025 - 24 Mei 2025" />
+              <DateRangePicker />
               <select className="filter-select"><option>Semua Jenis</option></select>
               <select className="filter-select"><option>Semua Alasan</option></select>
               <div className="filter-search">
@@ -106,7 +109,7 @@ export default function PenyesuaianStokToko() {
                   <th>Produk / Keterangan</th>
                   <th>Tanggal ↓</th>
                   <th>Qty Selisih</th>
-                  <th>Nilai (Rp)</th>
+
                   <th>Status</th>
                   <th>Aksi</th>
                 </tr>
@@ -124,7 +127,7 @@ export default function PenyesuaianStokToko() {
                     <td>{row.desc}</td>
                     <td>{row.date}</td>
                     <td style={{ fontWeight: 600, color: row.qty.startsWith("-") ? "#ef4444" : "#22c55e" }}>{row.qty}</td>
-                    <td style={{ fontWeight: 600, color: row.value.startsWith("-") ? "#ef4444" : "#22c55e" }}>{row.value}</td>
+
                     <td>
                       <span className={`status-badge status--${row.status.toLowerCase()}`}>
                         {row.status}
@@ -132,7 +135,7 @@ export default function PenyesuaianStokToko() {
                     </td>
                     <td>
                       <div className="action-btns">
-                        <button className="btn-action">👁️</button>
+                        <button className="btn-action" onClick={() => setDetailModal(row)}>👁️</button>
                         <button className="btn-action">⋯</button>
                       </div>
                     </td>
@@ -175,8 +178,8 @@ export default function PenyesuaianStokToko() {
                   <span style={{ fontWeight: 700 }}>420 <span style={{ fontWeight: 400, fontSize: "10px", color: "#94a3b8" }}>item</span></span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px" }}>
-                  <span style={{ color: "#64748b" }}>Rata-rata per Transaksi</span>
-                  <span style={{ fontWeight: 700 }}>Rp 292.969</span>
+                  <span style={{ color: "#64748b" }}>Rata-rata Selisih Item</span>
+                  <span style={{ fontWeight: 700 }}>6 <span style={{ fontWeight: 400, fontSize: "10px", color: "#94a3b8" }}>item</span></span>
                 </div>
               </div>
             </div>
@@ -235,6 +238,21 @@ export default function PenyesuaianStokToko() {
           </aside>
         </div>
       </motion.div>
+
+      {/* DETAIL MODAL */}
+      <DetailModal
+        isOpen={!!detailModal}
+        onClose={() => setDetailModal(null)}
+        title="Detail Penyesuaian Stok"
+        subtitle={detailModal ? `${detailModal.id} • ${detailModal.ref}` : ''}
+        details={detailModal ? [
+          { label: "Tanggal", value: detailModal.date },
+          { label: "Keterangan", value: detailModal.desc },
+          { label: "Status", value: detailModal.status, color: detailModal.status === 'Disetujui' ? '#52c41a' : detailModal.status === 'Menunggu' ? '#fa8c16' : detailModal.status === 'Ditolak' ? '#ef4444' : '#1890ff' },
+        ] : []}
+        itemsTitle="Qty Selisih"
+        items={detailModal ? [`${detailModal.qty}`] : []}
+      />
     </div>
   );
 }

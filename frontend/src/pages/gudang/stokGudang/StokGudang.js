@@ -1,232 +1,452 @@
-import { useState, useMemo, useEffect } from "react";
-import { motion } from "framer-motion";
+import { useMemo, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import Card from "../../../components/common/Card";
-import "./StokGudang.css";
-import { subscribeWarehouseStock } from "../../../services/wmsApi";
-
-const fmtIDR = (n) =>
-  new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 }).format(n);
+import { subscribeWarehouseStock, addWarehouseStock, editWarehouseStock } from "../../../services/wmsApi";
+import "../../admin/PageAdmin.css";
+import "../../admin/manajemenProduk/ManajemenProdukAdmin.css";
 
 export default function StokGudang() {
-  const [activeTab, setActiveTab] = useState("Semua Produk");
-  const [dbItems, setDbItems] = useState([]);
-
+  const navigate = useNavigate();
+  const [allStock, setAllStock] = useState([]);
+  
+  // Modal State
+  const [editModal, setEditModal] = useState(null);
+  const [editQty, setEditQty] = useState(0);
+  const [addModal, setAddModal] = useState(false);
+  const [newProduct, setNewProduct] = useState({
+    name: "",
+    sku: "",
+    cat: "General",
+    customCat: "",
+    qty: 0,
+    image: ""
+  });
+  
+  const [toastMessage, setToastMessage] = useState("");
+  const showToast = (msg) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(""), 3000);
+  };
+  
+  // Filters
+  const [search, setSearch] = useState("");
+  const [filterStatus, setFilterStatus] = useState("Semua");
+  
   useEffect(() => {
-    const unsub = subscribeWarehouseStock(setDbItems);
-    return () => unsub?.();
+    const unsubStock = subscribeWarehouseStock((data) => setAllStock(data || []));
+    return () => {
+      if (unsubStock) unsubStock();
+    };
   }, []);
 
-  const products = useMemo(() => {
-    const mock = [
-      { id: 1, name: "Pipa PVC 1/2 Inch", sku: "PPI-001", cat: "Plumbing", unit: "Pcs", rack: "PLB", stock: 450, value: 45000000, status: "Aman", active: true, image: "" },
-      { id: 2, name: "Elbow PVC 1/2 Inch", sku: "ELB-001", cat: "Plumbing", unit: "Pcs", rack: "PLB", stock: 320, value: 28880000, status: "Aman", active: true, image: "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=200&h=200&fit=crop" },
-      { id: 3, name: "Fitting T 1/2 Inch", sku: "FIT-001", cat: "Plumbing", unit: "Pcs", rack: "PLB", stock: 120, value: 9600000, status: "Menipis", active: true, image: "https://images.unsplash.com/photo-1542013936693-884638332954?w=200&h=200&fit=crop" },
-      { id: 4, name: "Lem PVC 100ml", sku: "LEM-001", cat: "Plumbing", unit: "Pcs", rack: "PLB", stock: 85, value: 2575000, status: "Menipis", active: true, image: "https://images.unsplash.com/photo-1530124560676-4cb383637180?w=200&h=200&fit=crop" },
-      { id: 5, name: "Kabel NYM 3x1.5mm", sku: "KAB-001", cat: "Elektrikal", unit: "Meter", rack: "ELK", stock: 380, value: 114000000, status: "Aman", active: true, image: "https://images.unsplash.com/photo-1558494949-ef0109583a85?w=200&h=200&fit=crop" },
-      { id: 6, name: "Lampu LED 12W Putih", sku: "LED-012", cat: "Elektrikal", unit: "Pcs", rack: "ELK", stock: 240, value: 20800000, status: "Aman", active: true, image: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=200&h=200&fit=crop" },
-      { id: 7, name: "Stop Kontak Arde", sku: "SKA-001", cat: "Elektrikal", unit: "Pcs", rack: "ELK", stock: 60, value: 3600000, status: "Menipis", active: true, image: "https://images.unsplash.com/photo-1517055727180-d2972fd45244?w=200&h=200&fit=crop" },
-      { id: 8, name: "Semen Portland 40kg", sku: "SEM-001", cat: "Bahan Bangunan", unit: "Zak", rack: "BAK", stock: 0, value: 0, status: "Habis", active: false, image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=200&h=200&fit=crop" },
-      { id: 9, name: "Cat Tembok Putih 5kg", sku: "CAT-001", cat: "Bahan Bangunan", unit: "Kaleng", rack: "BAK", stock: 15, value: 1350000, status: "Habis", active: false, image: "https://images.unsplash.com/photo-1589939705384-5185138a047a?w=200&h=200&fit=crop" },
-      { id: 10, name: "Baut M8 x 40mm", sku: "BAU-001", cat: "Hardware", unit: "Pcs", rack: "HDW", stock: 200, value: 4000000, status: "Aman", active: true, image: "https://images.unsplash.com/photo-1586864387917-f538a5a94781?w=200&h=200&fit=crop" },
+  // Map the stock
+  const mappedStocks = useMemo(() => {
+    return allStock.map(stock => {
+      let stockStatus = "Aman";
+      if (stock.qty === 0) stockStatus = "Habis";
+      else if (stock.qty <= (stock.minQty || 20)) stockStatus = "Stok rendah";
+
+      // Mock image agar terlihat bagus sementara
+      let mockImage = "";
+      if (stock.type === "Elektronik") mockImage = "https://images.unsplash.com/photo-1558494949-ef0109583a85?w=200&h=200&fit=crop";
+      else if (stock.type === "Minuman") mockImage = "https://images.unsplash.com/photo-1542013936693-884638332954?w=200&h=200&fit=crop";
+      else if (stock.type === "Pakaian") mockImage = "https://images.unsplash.com/photo-1586864387917-f538a5a94781?w=200&h=200&fit=crop";
+      else mockImage = "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=200&h=200&fit=crop";
+
+      return {
+        ...stock,
+        stockStatus,
+        image: stock.image || mockImage
+      };
+    });
+  }, [allStock]);
+
+  // Aplikasikan Filter
+  const filteredStocks = useMemo(() => {
+    return mappedStocks.filter(s => {
+      const matchSearch = s.name?.toLowerCase().includes(search.toLowerCase()) || s.sku?.toLowerCase().includes(search.toLowerCase());
+      const matchStatus = filterStatus === "Semua" ? true : s.stockStatus.toLowerCase() === filterStatus.toLowerCase();
+      return matchSearch && matchStatus;
+    });
+  }, [mappedStocks, search, filterStatus]);
+
+  // Statistik
+  const stats = useMemo(() => {
+    const totalProdukUnik = new Set(filteredStocks.map(s => s.sku)).size;
+    const totalItemFisik = filteredStocks.reduce((sum, s) => sum + s.qty, 0);
+    const stokHabis = filteredStocks.filter(s => s.qty === 0).length;
+    const stokRendah = filteredStocks.filter(s => s.qty > 0 && s.qty <= (s.minQty || 20)).length;
+
+    return [
+      { label: "Macam Produk", value: totalProdukUnik, hint: "SKU unik yang ditampilkan", icon: "📦", color: "#e4915a", bg: "#fff8f3" },
+      { label: "Total Item Fisik", value: totalItemFisik, hint: "Jumlah Pcs keseluruhan", icon: "📊", color: "#4a90e2", bg: "#f0f7ff" },
+      { label: "Stok Menipis", value: stokRendah, hint: "Butuh perhatian/restock", icon: "⚠️", color: "#fa8c16", bg: "#fff7e6" },
+      { label: "Stok Habis (Kosong)", value: stokHabis, hint: "Tidak tersedia di gudang", icon: "🚫", color: "#ff4d4f", bg: "#fff1f0" },
     ];
-
-    if (activeTab === "Aktif") return mock.filter(p => p.active);
-    if (activeTab === "Tidak Aktif") return mock.filter(p => !p.active);
-    return mock;
-  }, [activeTab]);
-
-  const stats = [
-    { label: "Total Produk", value: "3.245", sub: "Produk", hint: "Lihat semua produk ›", icon: "📦", color: "#722ed1", bg: "#f9f0ff" },
-    { label: "Total Stok", value: "12.560", sub: "Item", hint: "Nilai: Rp 2.450.000.000", icon: "🏠", color: "#1890ff", bg: "#e6f7ff" },
-    { label: "Stok Tersedia", value: "11.230", sub: "Item", hint: "● 89.4% dari total stok", icon: "✅", color: "#52c41a", bg: "#f6ffed" },
-    { label: "Stok Menipis", value: "520", sub: "Item", hint: "● 16.0% dari total produk", icon: "⚠️", color: "#fa8c16", bg: "#fff7e6" },
-    { label: "Stok Habis", value: "180", sub: "Item", hint: "● 5.5% dari total produk", icon: "🚫", color: "#ff4d4f", bg: "#fff1f0" },
-  ];
+  }, [filteredStocks]);
 
   return (
-    <div className="gdash">
-      <div className="spGudang">
-        {/* HEADER */}
-        <header className="spGudang__head">
-          <div>
-            <h1 className="spGudang__title">Stok & Produk</h1>
-            <p className="spGudang__subtitle">Lihat informasi stok barang dan kelola data produk di gudang.</p>
-            <div className="trBarang__breadcrumb">
-              <span>Gudang</span> <span>›</span> <span style={{ color: '#e4915a', fontWeight: 700 }}>Stok & Produk</span>
-            </div>
-          </div>
-        </header>
-
-        {/* STATS */}
-        <div className="spGudang__stats">
-          {stats.map((s, i) => (
-            <Card key={i} className="spGudang__statCard">
-              <div className="spGudang__statIcon" style={{ background: s.bg, color: s.color }}>{s.icon}</div>
-              <div className="spGudang__statMain">
-                <p className="spGudang__statLabel">{s.label}</p>
-                <h3 className="spGudang__statValue">{s.value} <span style={{ fontSize: '11px', color: '#888', fontWeight: 500 }}>{s.sub}</span></h3>
-                <p className="spGudang__statHint" style={{ color: s.color === "#52c41a" ? "#52c41a" : s.color === "#fa8c16" ? "#fa8c16" : s.color === "#ff4d4f" ? "#ff4d4f" : "#888" }}>{s.hint}</p>
-              </div>
-            </Card>
-          ))}
+    <div className="pageAdmin stokAdm">
+      {/* HEADER */}
+      <header className="mpAdmin__head">
+        <div>
+          <h1 className="mpAdmin__title">Stok & Produk</h1>
+          <p className="mpAdmin__subtitle">
+            Lihat informasi stok barang dan kelola data produk di gudang secara langsung.
+          </p>
         </div>
-
-        {/* FILTER BAR */}
-        <div className="spGudang__filterBar">
-          <select className="moAdmin__select"><option>Semua Kategori</option></select>
-          <select className="moAdmin__select"><option>Semua Satuan</option></select>
-          <select className="moAdmin__select"><option>Semua Lokasi Rak</option></select>
-          <select className="moAdmin__select"><option>Status Stok</option></select>
-          <div className="moAdmin__searchWrap" style={{ flex: 1 }}>
-            <span className="moAdmin__searchIcon">🔍</span>
-            <input placeholder="Cari nama produk, SKU, atau barcode..." style={{ padding: '10px 12px 10px 32px' }} />
-          </div>
-          <button className="btn-reset-filter">Reset</button>
+        <div className="mpAdmin__headRight" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <span className="mtAdmin__badge mtAdmin__badge--live">
+            <span className="mtAdmin__dot" />
+            Live Inventory
+          </span>
+          <button 
+            className="btn-add-stock" 
+            style={{ padding: '8px 16px', background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+            onClick={() => setAddModal(true)}
+          >
+            <span style={{ fontSize: '16px' }}>+</span> Tambah Produk
+          </button>
         </div>
+      </header>
 
-        {/* TABS */}
-        <div className="spGudang__tabs">
-          {["Semua Produk", "Aktif", "Tidak Aktif"].map(tab => (
-            <div
-              key={tab}
-              className={`spGudang__tab ${activeTab === tab ? 'active' : ''}`}
-              onClick={() => setActiveTab(tab)}
-            >
-              {tab}
+      {/* STATS */}
+      <div className="mpAdmin__stats">
+        {stats.map((s, i) => (
+          <Card key={i} className="mpAdmin__statCard">
+            <div className="mpAdmin__statIcon" style={{ background: s.bg, color: s.color }}>{s.icon}</div>
+            <div className="mpAdmin__statContent">
+              <p className="mpAdmin__statLabel">{s.label}</p>
+              <h3 className="mpAdmin__statValue">{s.value}</h3>
+              <p className="mpAdmin__statHint">{s.hint}</p>
             </div>
-          ))}
+          </Card>
+        ))}
+      </div>
+
+      {/* FILTER BAR */}
+      <div className="mpAdmin__filterBar">
+        <div className="mpAdmin__searchWrap" style={{ flex: 1 }}>
+          <span className="mpAdmin__searchIcon">🔍</span>
+          <input 
+            placeholder="Cari nama produk atau SKU..." 
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
+        <div className="mpAdmin__filterGroup">
+          <select 
+            className="mpAdmin__select"
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+          >
+            <option value="Semua">Semua Status</option>
+            <option value="Aman">Aman</option>
+            <option value="Stok rendah">Stok Menipis</option>
+            <option value="Habis">Habis</option>
+          </select>
 
-        {/* MAIN CONTENT */}
-        <div className="spGudang__mainGrid">
-          <div className="spGudang__leftCol">
-            <div className="spGudang__grid">
-              {products.map((p) => (
-                <div key={p.id} className="spGudang__productCard">
-                  <span className={`spGudang__badge ${p.status.toLowerCase()}`}>
-                    ● {p.status}
-                  </span>
-                  <div className="spGudang__imgWrap">
-                    <img src={p.image} alt={p.name} />
-                  </div>
-                  <h4 className="spGudang__prodName">{p.name}</h4>
-                  <p className="spGudang__prodSKU">{p.sku}</p>
-                  <div className="spGudang__prodMeta">
-                    <div>Kategori: <b>{p.cat}</b></div>
-                    <div>Satuan: <b>{p.unit}</b></div>
-                    <div>Rak: <b>{p.rack}</b></div>
-                  </div>
-                  <div className="spGudang__stockRow">
-                    <span>Stok Tersedia</span>
-                    <b className={`spGudang__stockValue ${p.status.toLowerCase()}`}>{p.stock}</b>
-                  </div>
-                  <div className="spGudang__stockRow">
-                    <span>Nilai Stok</span>
-                    <b className="spGudang__stockValue">Rp {fmtIDR(p.value)}</b>
-                  </div>
-                  <div className="spGudang__prodActions">
-                    <button className="btn-icon">👁️</button>
-                    <button className="btn-icon">⋮</button>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <footer className="spGudang__footer">
-              <span style={{ fontSize: '12px', color: '#888' }}>Menampilkan 1 - 10 dari 3.245 data</span>
-              <div className="pagination">
-                <select className="mpAdmin__select" style={{ padding: '4px 8px' }}><option>10 / halaman</option></select>
-                <div className="page-controls">
-                  <button disabled>⟨</button>
-                  <button className="active">1</button>
-                  <button>2</button>
-                  <button>3</button>
-                  <span>...</span>
-                  <button>325</button>
-                  <button>⟩</button>
-                </div>
-              </div>
-            </footer>
-          </div>
-
-          <div className="spGudang__sideStack">
-            <div className="spGudang__sideCard">
-              <div className="spGudang__sideHead">
-                <h3>Ringkasan Stok</h3>
-                <button className="btn-icon">📥</button>
-              </div>
-              <div className="donut-container">
-                <svg viewBox="0 0 36 36" style={{ transform: 'rotate(-90deg)' }}>
-                  <circle cx="18" cy="18" r="16" fill="none" stroke="#eee" strokeWidth="4" />
-                  <circle cx="18" cy="18" r="16" fill="none" stroke="#52c41a" strokeWidth="4" strokeDasharray="89.4 100" />
-                  <circle cx="18" cy="18" r="16" fill="none" stroke="#fa8c16" strokeWidth="4" strokeDasharray="16 100" strokeDashoffset="-89.4" />
-                  <circle cx="18" cy="18" r="16" fill="none" stroke="#ff4d4f" strokeWidth="4" strokeDasharray="5.5 100" strokeDashoffset="-105.4" />
-                </svg>
-                <div className="donut-text">
-                  <span>Total</span>
-                  <strong>12.560</strong>
-                  <span>Item</span>
-                </div>
-              </div>
-              <div className="spGudang__list" style={{ gap: '8px' }}>
-                {[
-                  { label: "Aman", val: "11.230", pct: "89.4%", color: "#52c41a" },
-                  { label: "Menipis", val: "520", pct: "16.0%", color: "#fa8c16" },
-                  { label: "Habis", val: "180", pct: "5.5%", color: "#ff4d4f" },
-                  { label: "Lewat Minimum", val: "95", pct: "3.0%", color: "#722ed1" },
-                ].map((s, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', fontSize: '11px' }}>
-                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: s.color, marginRight: '8px' }}></span>
-                    <span style={{ flex: 1, color: '#666' }}>{s.label}</span>
-                    <span style={{ fontWeight: 700 }}>{s.val} ({s.pct})</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="spGudang__sideCard">
-              <div className="spGudang__sideHead">
-                <h3>Top Kategori (Nilai Stok)</h3>
-              </div>
-              <div className="spGudang__list" style={{ gap: '16px' }}>
-                {[
-                  { label: "Plumbing", val: "Rp 1.250.000.000", icon: "🔧", color: "#1890ff" },
-                  { label: "Elektrikal", val: "Rp 950.000.000", icon: "⚡", color: "#faad14" },
-                  { label: "Bahan Bangunan", val: "Rp 180.000.000", icon: "🧱", color: "#ff4d4f" },
-                  { label: "Hardware", val: "Rp 70.000.000", icon: "⚙️", color: "#52c41a" },
-                ].map((c, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: `${c.color}15`, color: c.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{c.icon}</div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: '11px', fontWeight: 700 }}>{c.label}</div>
-                      <div style={{ fontSize: '12px', fontWeight: 800 }}>{c.val}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="spGudang__sideCard">
-              <div className="spGudang__sideHead">
-                <h3>Stok Menipis & Habis</h3>
-                <button className="btn-text">Lihat Semua</button>
-              </div>
-              <div className="spGudang__list">
-                {products.filter(p => p.status !== "Aman").slice(0, 5).map((p, i) => (
-                  <div key={i} className="spGudang__listItem">
-                    <img src={p.image} alt="" />
-                    <div className="spGudang__listInfo">
-                      <div className="spGudang__listName">{p.name}</div>
-                      <div className="spGudang__listStock">{p.stock} / 50 Pcs</div>
-                    </div>
-                    <div className={`spGudang__listStatus ${p.status.toLowerCase()}`}>{p.status}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          <button 
+            className="btn-icon" 
+            title="Reset Filter"
+            onClick={() => {
+              setSearch("");
+              setFilterStatus("Semua");
+            }}
+          >
+            🔄 Reset
+          </button>
         </div>
       </div>
+
+      {/* MAIN GRID */}
+      <div className="mpAdmin__grid">
+        {filteredStocks.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '40px', color: '#888', gridColumn: '1 / -1' }}>
+            Data inventaris kosong atau tidak ada stok yang cocok dengan filter.
+          </div>
+        ) : (
+          filteredStocks.map((p, i) => {
+            const isAman = p.stockStatus === 'Aman';
+            const isHabis = p.stockStatus === 'Habis';
+            const badgeClass = isAman ? 'aman' : isHabis ? 'habis' : 'rendah';
+            
+            return (
+              <div key={`${p.sku}-${i}`} className="mpAdmin__productCard">
+                <span className={`mpAdmin__badge ${badgeClass}`}>
+                  ● {p.stockStatus}
+                </span>
+                <div className="mpAdmin__imgWrap">
+                  {p.image ? <img src={p.image} alt={p.name} /> : "📦"}
+                </div>
+                <h4 className="mpAdmin__prodName">{p.name}</h4>
+                <p className="mpAdmin__prodSKU">{p.sku}</p>
+                <div className="mpAdmin__prodMeta">
+                  <div><span>Kategori:</span> <b>{p.type || "General"}</b></div>
+                </div>
+                <div className="mpAdmin__stockRow">
+                  <span>Sisa Stok (Fisik)</span>
+                  <b className={`mpAdmin__stockValue ${badgeClass}`}>{p.qty} Unit</b>
+                </div>
+                <div className="mpAdmin__prodActions">
+                  <button 
+                    className="btn-icon" 
+                    title="Edit Stok Manual" 
+                    onClick={() => { setEditModal(p); setEditQty(p.qty); }}
+                  >✏️</button>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      <AnimatePresence>
+        {editModal && (
+          <motion.div 
+            className="modal-overlay"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            onClick={() => setEditModal(null)}
+          >
+            <motion.div 
+              className="modal-content"
+              initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+              style={{ background: '#fff', padding: '24px', borderRadius: '16px', width: '400px', maxWidth: '90%', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 style={{ marginTop: 0, color: '#1e293b' }}>Edit Stok Manual</h3>
+              <p style={{ color: '#64748b', fontSize: '13px' }}>Ubah jumlah fisik untuk produk <b>{editModal.name}</b></p>
+              
+              <div style={{ marginTop: '20px', marginBottom: '24px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', color: '#1e293b' }}>Sisa Stok (Fisik) Terbaru</label>
+                <input 
+                  type="number" 
+                  value={editQty} 
+                  onChange={(e) => setEditQty(Number(e.target.value))} 
+                  style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none', boxSizing: 'border-box' }} 
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+                <button 
+                  onClick={() => setEditModal(null)}
+                  style={{ padding: '10px 16px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#fff', cursor: 'pointer', color: '#64748b', fontWeight: '600' }}
+                >Batal</button>
+                <button 
+                  onClick={() => {
+                    editWarehouseStock(editModal.sku, editModal.branchId, editQty);
+                    showToast(`Stok ${editModal.name} berhasil diperbarui menjadi ${editQty} unit!`);
+                    setEditModal(null);
+                  }}
+                  style={{ padding: '10px 16px', borderRadius: '8px', border: 'none', background: 'var(--primary)', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}
+                >Simpan Perubahan</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {addModal && (
+          <motion.div 
+            className="modal-overlay"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
+            onClick={() => setAddModal(false)}
+          >
+            <motion.div 
+              className="modal-content"
+              initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+              style={{ background: '#fff', padding: '24px', borderRadius: '16px', width: '500px', maxWidth: '100%', boxShadow: '0 10px 30px rgba(0,0,0,0.2)', maxHeight: '90vh', overflowY: 'auto' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 style={{ marginTop: 0, color: '#1e293b' }}>Tambah Produk Baru</h3>
+              <p style={{ color: '#64748b', fontSize: '13px', marginBottom: '20px' }}>Masukkan detail produk untuk ditambahkan ke gudang secara manual.</p>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '6px', color: '#1e293b' }}>Nama Barang</label>
+                  <input 
+                    type="text" 
+                    value={newProduct.name} 
+                    onChange={(e) => setNewProduct({...newProduct, name: e.target.value})} 
+                    placeholder="Contoh: Lampu LED 12W"
+                    style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none', boxSizing: 'border-box' }} 
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '6px', color: '#1e293b' }}>Kode Barang / SKU</label>
+                  <input 
+                    type="text" 
+                    value={newProduct.sku} 
+                    onChange={(e) => setNewProduct({...newProduct, sku: e.target.value})} 
+                    placeholder="Contoh: LED-012"
+                    style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none', boxSizing: 'border-box' }} 
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '6px', color: '#1e293b' }}>Kategori</label>
+                  <select 
+                    value={newProduct.cat}
+                    onChange={(e) => setNewProduct({...newProduct, cat: e.target.value})}
+                    style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none', boxSizing: 'border-box', background: '#fff' }}
+                  >
+                    <option value="General">General</option>
+                    <option value="Elektronik">Elektronik</option>
+                    <option value="Minuman">Minuman</option>
+                    <option value="Pakaian">Pakaian</option>
+                    <option value="Bahan Bangunan">Bahan Bangunan</option>
+                    <option value="Hardware">Hardware</option>
+                    <option value="Lainnya">Lainnya (Ketik Sendiri)</option>
+                  </select>
+                </div>
+                {newProduct.cat === "Lainnya" && (
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '6px', color: '#1e293b' }}>Sebutkan Jenis Barang</label>
+                    <input 
+                      type="text" 
+                      value={newProduct.customCat} 
+                      onChange={(e) => setNewProduct({...newProduct, customCat: e.target.value})} 
+                      placeholder="Masukkan jenis barang..."
+                      style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none', boxSizing: 'border-box' }} 
+                    />
+                  </div>
+                )}
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '6px', color: '#1e293b' }}>Sisa Stok Fisik</label>
+                  <input 
+                    type="number" 
+                    value={newProduct.qty} 
+                    onChange={(e) => setNewProduct({...newProduct, qty: Number(e.target.value)})} 
+                    placeholder="0"
+                    style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none', boxSizing: 'border-box' }} 
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', color: '#1e293b' }}>Foto Barang</label>
+                  <div style={{
+                    border: '2px dashed #cbd5e1', 
+                    borderRadius: '12px', 
+                    padding: '24px 16px', 
+                    textAlign: 'center', 
+                    background: '#f8fafc',
+                    position: 'relative',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}>
+                    <input 
+                      type="file" 
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = (event) => {
+                            const img = new Image();
+                            img.onload = () => {
+                              const canvas = document.createElement('canvas');
+                              const MAX_WIDTH = 400;
+                              const MAX_HEIGHT = 400;
+                              let width = img.width;
+                              let height = img.height;
+
+                              if (width > height) {
+                                if (width > MAX_WIDTH) {
+                                  height *= MAX_WIDTH / width;
+                                  width = MAX_WIDTH;
+                                }
+                              } else {
+                                if (height > MAX_HEIGHT) {
+                                  width *= MAX_HEIGHT / height;
+                                  height = MAX_HEIGHT;
+                                }
+                              }
+                              canvas.width = width;
+                              canvas.height = height;
+                              const ctx = canvas.getContext('2d');
+                              ctx.drawImage(img, 0, 0, width, height);
+                              
+                              const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                              setNewProduct({...newProduct, image: dataUrl});
+                            };
+                            img.src = event.target.result;
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }} 
+                      style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer', width: '100%', height: '100%', zIndex: 10 }}
+                    />
+                    
+                    {!newProduct.image ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '28px' }}>📸</span>
+                        <span style={{ fontSize: '13px', color: '#64748b', fontWeight: 500 }}>Klik atau Drop foto di sini</span>
+                        <span style={{ fontSize: '11px', color: '#94a3b8' }}>Maks. ukuran 2MB (JPG/PNG)</span>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <img src={newProduct.image} alt="Preview" style={{ maxWidth: '100%', maxHeight: '140px', objectFit: 'contain', borderRadius: '8px', marginBottom: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }} />
+                        <span style={{ fontSize: '12px', color: '#1890ff', fontWeight: 600, background: '#e6f7ff', padding: '4px 12px', borderRadius: '4px' }}>Ubah Foto</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+                <button 
+                  onClick={() => setAddModal(false)}
+                  style={{ padding: '10px 16px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#fff', cursor: 'pointer', color: '#64748b', fontWeight: '600' }}
+                >Batal</button>
+                <button 
+                  onClick={() => {
+                    const typeToSave = newProduct.cat === "Lainnya" ? newProduct.customCat : newProduct.cat;
+                    addWarehouseStock({
+                      name: newProduct.name || "Produk Tanpa Nama",
+                      sku: newProduct.sku || `SKU-${Math.floor(Math.random() * 1000)}`,
+                      type: typeToSave,
+                      qty: newProduct.qty || 0,
+                      image: newProduct.image || null
+                    });
+                    showToast(`Produk ${newProduct.name || "Baru"} berhasil ditambahkan!`);
+                    setAddModal(false);
+                    setNewProduct({ name: "", sku: "", cat: "General", customCat: "", qty: 0, image: "" });
+                  }}
+                  style={{ padding: '10px 16px', borderRadius: '8px', border: 'none', background: 'var(--primary)', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}
+                >Tambah Produk</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {toastMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 50, scale: 0.9 }}
+            style={{
+              position: 'fixed',
+              bottom: '32px',
+              right: '32px',
+              background: '#52c41a',
+              color: '#fff',
+              padding: '16px 24px',
+              borderRadius: '12px',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+              zIndex: 10000,
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px'
+            }}
+          >
+            <span style={{ fontSize: '20px' }}>✅</span>
+            {toastMessage}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

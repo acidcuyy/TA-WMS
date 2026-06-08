@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import "../PageAdmin.css";
 
 export default function ProfileAdmin() {
+  const navigate = useNavigate();
   const [notifStock, setNotifStock] = useState(true);
   const [notifRequests, setNotifRequests] = useState(true);
 
@@ -56,7 +58,7 @@ export default function ProfileAdmin() {
         <div className="hero-actions">
           <button className="btn-primary">Edit Profil</button>
           <button className="btn-outline">Ubah Password</button>
-          <button className="btn-text">Lihat Aktivitas</button>
+          <button className="btn-text" onClick={() => navigate('/admin/requests')}>Lihat Aktivitas</button>
         </div>
       </section>
 
@@ -141,7 +143,7 @@ export default function ProfileAdmin() {
               <h3>Aktivitas Terbaru</h3>
               <p>Log ringkas untuk monitoring</p>
             </div>
-            <button className="text-btn-sm">Lihat Semua</button>
+            <button className="text-btn-sm" onClick={() => navigate('/admin/requests')}>Lihat Semua</button>
           </div>
           <div className="activity-list-modern">
             {activities.map((a, i) => (
