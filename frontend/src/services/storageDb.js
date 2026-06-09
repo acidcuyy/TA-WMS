@@ -48,7 +48,14 @@ const seed = () => ({
     vehicle: "Truck Hino (B 1234 ABC)",
     status: "Online",
     lastLogin: "13 Mei 2025, 09:40",
-  }
+  },
+
+  // Stok inventaris milik toko (bukan gudang)
+  // Ditambah manual oleh toko atau otomatis dari request selesai
+  tokoInventory: [],
+
+  // Catatan pengeluaran barang dari toko
+  tokoOutflow: [],
 });
 
 function safeParse(raw) {

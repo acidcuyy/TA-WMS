@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useNavigate, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import "./TokoLayout.css";
 import { useTheme } from "../../app/ThemeProvider";
@@ -8,6 +8,7 @@ import logoSideDefault from "../../assets/images/LogoSide_default.png";
 
 import Sidebar from "../../components/layout/Sidebar";
 import NotificationSystem from "../../components/layout/NotificationSystem";
+import { subscribeNotifications, markMultipleNotificationsAsRead } from "../../services/wmsApi";
 
 export default function TokoLayout() {
   const navigate = useNavigate();
@@ -22,19 +23,41 @@ export default function TokoLayout() {
     navigate("/login");
   };
 
+  const [notifications, setNotifications] = useState([]);
+  
+  useEffect(() => {
+    return subscribeNotifications(data => {
+      setNotifications(data.filter(n => !n.isRead && n.targetRoles && n.targetRoles.includes("toko")));
+    });
+  }, []);
+
+  // Compute Badges
+  const reqNotifications = notifications.filter(n => ["request_accepted", "request_declined"].includes(n.type));
+  const terimaNotifications = notifications.filter(n => ["shipping_ready", "shipping", "done", "received"].includes(n.type));
+
+  const reqBadge = reqNotifications.length;
+  const terimaBadge = terimaNotifications.length;
+
+  // Clear badges when visiting the page
+  useEffect(() => {
+    if (location.pathname === "/toko/request" && reqNotifications.length > 0) {
+      const ids = reqNotifications.map(n => n.id);
+      markMultipleNotificationsAsRead(ids);
+    } else if (location.pathname === "/toko/penerimaan" && terimaNotifications.length > 0) {
+      const ids = terimaNotifications.map(n => n.id);
+      markMultipleNotificationsAsRead(ids);
+    }
+  }, [location.pathname, reqNotifications, terimaNotifications]);
+
   const menuItems = [
     {
       title: "TOKO",
       items: [
         { label: "Dashboard", path: "/toko", icon: "⊞" },
         { label: "Stok & Produk", path: "/toko/stok", icon: "📦" },
-        { label: "Penerimaan Barang", path: "/toko/penerimaan", icon: "📥" },
+        { label: "Penerimaan Barang", path: "/toko/penerimaan", icon: "📥", badge: terimaBadge },
         { label: "Pengeluaran Barang", path: "/toko/pengeluaran", icon: "📤" },
-        { label: "Transfer Barang", path: "/toko/transfer", icon: "⇄" },
-        { label: "Penyesuaian Stok", path: "/toko/adj", icon: "⚖" },
-        { label: "Pesanan Penjualan", path: "/toko/pesanan", icon: "🛒" },
-        { label: "Request", path: "/toko/request", icon: "📝" },
-        { label: "Retur Penjualan", path: "/toko/retur", icon: "↩" },
+        { label: "Request", path: "/toko/request", icon: "📝", badge: reqBadge },
       ]
     }
   ];

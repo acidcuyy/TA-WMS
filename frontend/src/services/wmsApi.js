@@ -81,6 +81,17 @@ export function markNotificationAsRead(id) {
   });
 }
 
+export function markMultipleNotificationsAsRead(ids) {
+  return dbUpdate((db) => {
+    (db.notifications || []).forEach((n) => {
+      if (ids.includes(n.id)) {
+        n.isRead = true;
+      }
+    });
+    return db;
+  });
+}
+
 export function markAllNotificationsAsRead(role) {
   return dbUpdate((db) => {
     (db.notifications || []).forEach((n) => {
@@ -400,11 +411,46 @@ export function tokoSelesaiTerima(id, proofImage = null) {
     r.proofImage = proofImage;
     r.receivedAt = new Date().toISOString();
 
+    // ✅ SYNC langsung ke tokoInventory saat toko terima barang
+    // (tidak perlu menunggu driver selesaikan pengiriman)
+    db.tokoInventory = db.tokoInventory || [];
+    (r.items || []).forEach(item => {
+      const existing = db.tokoInventory.find(x => x.sku === item.sku || x.sku === item.code);
+      const sku = item.sku || item.code || `SKU-${item.name}`;
+      if (existing) {
+        existing.qty += Number(item.qty) || 0;
+      } else {
+        db.tokoInventory.push({
+          sku,
+          name: item.name || sku,
+          category: item.category || item.type || "Umum",
+          unit: item.unit || "pcs",
+          qty: Number(item.qty) || 0,
+          minQty: 5,
+          price: 0,
+          addedAt: new Date().toISOString().slice(0, 10),
+          source: "request",
+          requestId: r.id,
+        });
+      }
+    });
+
+    // ✅ Kurangi stok gudang sumber
+    db.warehouseStock = db.warehouseStock || [];
+    (r.items || []).forEach(item => {
+      const gudangStock = db.warehouseStock.find(
+        s => s.branchId === r.toBranchId && (s.sku === item.sku || s.sku === item.code)
+      );
+      if (gudangStock) {
+        gudangStock.qty = Math.max(0, gudangStock.qty - (Number(item.qty) || 0));
+      }
+    });
+
     db.notifications.unshift({
       id: newId("NTF"),
       type: "received",
       title: "Barang Diterima Toko",
-      message: `Toko ${r.fromName} telah mengkonfirmasi penerimaan barang (${id}). Driver silakan selesaikan pengiriman.`,
+      message: `Toko ${r.fromName} telah mengkonfirmasi penerimaan barang (${id}). Stok toko telah diperbarui.`,
       time: nowTimeHHMM(),
       isRead: false,
       targetRoles: ["driver", "gudang", "admin"],
@@ -413,6 +459,7 @@ export function tokoSelesaiTerima(id, proofImage = null) {
     return db;
   });
 }
+
 
 /**
  * Driver menyelesaikan pengiriman (setelah toko konfirmasi penerimaan)
@@ -430,7 +477,7 @@ export function driverSelesaikanPengiriman(id) {
     r.status = "Selesai";
     r.completedAt = new Date().toISOString();
 
-    // TRANSFER STOK SECARA FISIK
+    // TRANSFER STOK SECARA FISIK ke warehouseStock
     db.warehouseStock = db.warehouseStock || [];
     (r.items || []).forEach(item => {
       // 1. Kurangi dari Gudang (Sumber)
@@ -439,7 +486,7 @@ export function driverSelesaikanPengiriman(id) {
         gudangStock.qty = Math.max(0, gudangStock.qty - item.qty);
       }
 
-      // 2. Tambah ke Toko (Tujuan)
+      // 2. Tambah ke Toko (Tujuan) di warehouseStock
       const tokoStock = db.warehouseStock.find(s => s.branchId === (r.fromBranchId || "BRC-003") && s.sku === item.sku);
       if (tokoStock) {
         tokoStock.qty += item.qty;
@@ -456,11 +503,35 @@ export function driverSelesaikanPengiriman(id) {
       }
     });
 
+    // SYNC KE tokoInventory (stok barang yang terlihat di page Stok & Produk akun toko)
+    db.tokoInventory = db.tokoInventory || [];
+    (r.items || []).forEach(item => {
+      const existing = db.tokoInventory.find(x => x.sku === item.sku);
+      if (existing) {
+        // Tambah qty jika SKU sudah ada
+        existing.qty += Number(item.qty) || 0;
+      } else {
+        // Buat entri baru jika belum ada
+        db.tokoInventory.push({
+          sku: item.sku,
+          name: item.name || item.sku,
+          category: item.category || item.type || "Umum",
+          unit: item.unit || "pcs",
+          qty: Number(item.qty) || 0,
+          minQty: 5,
+          price: 0,
+          addedAt: new Date().toISOString().slice(0, 10),
+          source: "request",
+          requestId: r.id,
+        });
+      }
+    });
+
     db.notifications.unshift({
       id: newId("NTF"),
       type: "done",
       title: "Pengiriman Selesai",
-      message: `Pengiriman ${id} telah diselesaikan oleh ${r.driverName || "Driver"}.`,
+      message: `Pengiriman ${id} telah diselesaikan. Stok toko diperbarui.`,
       time: nowTimeHHMM(),
       isRead: false,
       targetRoles: ["gudang", "admin", "toko"],
@@ -469,6 +540,7 @@ export function driverSelesaikanPengiriman(id) {
     return db;
   });
 }
+
 
 /* =========================================================
  * RESTOCK gudang -> admin
@@ -885,3 +957,206 @@ export function uploadGudangReport(payload) {
     return db;
   });
 }
+
+/* =======================================================================
+ * TOKO INVENTORY (Stok Barang di Toko Sendiri)
+ * ======================================================================= */
+
+export function getTokoInventory() {
+  return dbLoad().tokoInventory || [];
+}
+
+export function subscribeTokoInventory(callback) {
+  return makeSub(getTokoInventory, callback);
+}
+
+/**
+ * Tambah barang ke inventaris toko secara manual
+ */
+export function addTokoInventory(item) {
+  return dbUpdate((db) => {
+    db.tokoInventory = db.tokoInventory || [];
+    const existing = db.tokoInventory.find(x => x.sku === item.sku);
+    if (existing) {
+      existing.qty += Number(item.qty) || 0;
+    } else {
+      db.tokoInventory.push({
+        sku: item.sku || newId("SKU"),
+        name: item.name || item.sku,
+        category: item.category || "Umum",
+        unit: item.unit || "pcs",
+        qty: Number(item.qty) || 0,
+        minQty: Number(item.minQty) || 5,
+        price: Number(item.price) || 0,
+        addedAt: new Date().toISOString().slice(0, 10),
+        source: item.source || "manual",
+        requestId: item.requestId || null,
+      });
+    }
+    return db;
+  });
+}
+
+/**
+ * Edit kuantitas barang di inventaris toko
+ */
+export function editTokoInventory(sku, qty) {
+  return dbUpdate((db) => {
+    const item = (db.tokoInventory || []).find(x => x.sku === sku);
+    if (item) item.qty = Math.max(0, qty);
+    return db;
+  });
+}
+
+/**
+ * Hapus barang dari inventaris toko
+ */
+export function deleteTokoInventory(sku) {
+  return dbUpdate((db) => {
+    db.tokoInventory = (db.tokoInventory || []).filter(x => x.sku !== sku);
+    return db;
+  });
+}
+
+/**
+ * Sync inventaris toko dari request yang sudah Selesai.
+ * Dipanggil saat driverSelesaikanPengiriman.
+ */
+function syncTokoInventoryFromRequest(db, request) {
+  db.tokoInventory = db.tokoInventory || [];
+  (request.items || []).forEach(item => {
+    const existing = db.tokoInventory.find(x => x.sku === item.sku);
+    if (existing) {
+      existing.qty += Number(item.qty) || 0;
+    } else {
+      db.tokoInventory.push({
+        sku: item.sku,
+        name: item.name || item.sku,
+        category: item.category || item.type || "Umum",
+        unit: item.unit || "pcs",
+        qty: Number(item.qty) || 0,
+        minQty: 5,
+        price: 0,
+        addedAt: new Date().toISOString().slice(0, 10),
+        source: "request",
+        requestId: request.id,
+      });
+    }
+  });
+}
+
+/* =======================================================================
+ * TOKO OUTFLOW (Pengeluaran Barang dari Toko)
+ * ======================================================================= */
+
+export function getTokoOutflow() {
+  return dbLoad().tokoOutflow || [];
+}
+
+export function subscribeTokoOutflow(callback) {
+  return makeSub(getTokoOutflow, callback);
+}
+
+/**
+ * Catat pengeluaran barang dari toko
+ * @param {Object} payload - { items: [{sku, name, qty}], tujuan, jenis, catatan }
+ */
+export function createTokoOutflow(payload) {
+  const {
+    items = [],
+    tujuan = "",
+    jenis = "Penjualan",
+    catatan = "",
+    tokoId = "BRC-003",
+    tokoName = "Toko Utama",
+  } = payload || {};
+
+  return dbUpdate((db) => {
+    const id = newId("OUT");
+    const createdAt = new Date().toISOString();
+
+    db.tokoOutflow = db.tokoOutflow || [];
+    db.tokoInventory = db.tokoInventory || [];
+
+    // Kurangi stok dari inventaris toko
+    items.forEach(item => {
+      const inv = db.tokoInventory.find(x => x.sku === item.sku);
+      if (inv) {
+        inv.qty = Math.max(0, inv.qty - (Number(item.qty) || 0));
+      }
+    });
+
+    const totalQty = items.reduce((s, i) => s + (Number(i.qty) || 0), 0);
+
+    db.tokoOutflow.unshift({
+      id,
+      createdAt,
+      tokoId,
+      tokoName,
+      items,
+      totalQty,
+      tujuan,
+      jenis,
+      catatan,
+      status: "Selesai",
+    });
+
+    return db;
+  });
+}
+
+/* =======================================================================
+ * OVERRIDE driverSelesaikanPengiriman to also sync tokoInventory
+ * ======================================================================= */
+const _origDriverSelesaikan = driverSelesaikanPengiriman;
+// Re-export patched version — sync tokoInventory setelah request selesai
+export function driverSelesaikanPengirimanWithSync(id) {
+  return dbUpdate((db) => {
+    const r = (db.requests || []).find((x) => x.id === id);
+    if (!r) return db;
+    if (r.status !== "Diterima Toko") return db;
+
+    db.notifications = db.notifications || [];
+
+    r.status = "Selesai";
+    r.completedAt = new Date().toISOString();
+
+    // Transfer stok ke warehouseStock
+    db.warehouseStock = db.warehouseStock || [];
+    (r.items || []).forEach(item => {
+      const gudangStock = db.warehouseStock.find(s => s.branchId === r.toBranchId && s.sku === item.sku);
+      if (gudangStock) gudangStock.qty = Math.max(0, gudangStock.qty - item.qty);
+
+      const tokoStock = db.warehouseStock.find(s => s.branchId === (r.fromBranchId || "BRC-003") && s.sku === item.sku);
+      if (tokoStock) {
+        tokoStock.qty += item.qty;
+      } else {
+        db.warehouseStock.push({
+          sku: item.sku,
+          name: item.name || item.sku,
+          type: item.category || item.type || "General",
+          qty: item.qty,
+          minQty: 10,
+          image: null,
+          branchId: r.fromBranchId || "BRC-003"
+        });
+      }
+    });
+
+    // Sync ke tokoInventory
+    syncTokoInventoryFromRequest(db, r);
+
+    db.notifications.unshift({
+      id: newId("NTF"),
+      type: "done",
+      title: "Pengiriman Selesai",
+      message: `Pengiriman ${id} telah diselesaikan. Stok toko diperbarui.`,
+      time: nowTimeHHMM(),
+      isRead: false,
+      targetRoles: ["gudang", "admin", "toko"],
+    });
+
+    return db;
+  });
+}
+

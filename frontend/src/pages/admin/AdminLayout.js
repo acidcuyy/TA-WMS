@@ -10,6 +10,7 @@ import { useTheme } from "../../app/ThemeProvider";
 
 import Sidebar from "../../components/layout/Sidebar";
 import NotificationSystem from "../../components/layout/NotificationSystem";
+import { subscribeNotifications, markMultipleNotificationsAsRead } from "../../services/wmsApi";
 
 export default function AdminLayout() {
   const location = useLocation();
@@ -25,6 +26,23 @@ export default function AdminLayout() {
     navigate("/login");
   };
 
+  const [notifications, setNotifications] = useState([]);
+  
+  useEffect(() => {
+    return subscribeNotifications(data => {
+      setNotifications(data.filter(n => !n.isRead && n.targetRoles && n.targetRoles.includes("admin")));
+    });
+  }, []);
+
+  const reqNotifications = notifications.filter(n => ["restock", "request_toko"].includes(n.type));
+  const reqBadge = reqNotifications.length;
+
+  useEffect(() => {
+    if (location.pathname === "/admin/requests" && reqNotifications.length > 0) {
+      markMultipleNotificationsAsRead(reqNotifications.map(n => n.id));
+    }
+  }, [location.pathname, reqNotifications]);
+
   const menuItems = [
     {
       title: "MAIN",
@@ -34,7 +52,7 @@ export default function AdminLayout() {
         { label: "Manajemen Gudang", path: "/admin/gudang", icon: "⌂" },
         { label: "Manajemen Toko", path: "/admin/toko", icon: "🛒" },
         { label: "Manajemen Produk", path: "/admin/produk", icon: "📦" },
-        { label: "Request", path: "/admin/requests", icon: "🚚" },
+        { label: "Request", path: "/admin/requests", icon: "🚚", badge: reqBadge },
       ]
     },
     {

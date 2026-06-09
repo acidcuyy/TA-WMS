@@ -25,6 +25,7 @@ export default function Sidebar({ logo, role, menuItems, bottomItems, onLogoutCl
               >
                 <span className="nav-icon">{item.icon}</span>
                 <span className="nav-label">{item.label}</span>
+                {item.badge > 0 && <span className="nav-badge">{item.badge}</span>}
               </NavLink>
             ))}
           </React.Fragment>

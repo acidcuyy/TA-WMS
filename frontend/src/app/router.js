@@ -45,10 +45,6 @@ import SettingsToko from "../pages/toko/SettingsToko";
 import PengirimanToko from "../pages/toko/PengirimanToko";
 import PenerimaanBarangToko from "../pages/toko/penerimaanBarangToko/PenerimaanBarangToko";
 import PengeluaranBarangToko from "../pages/toko/pengeluaranBarangToko/PengeluaranBarangToko";
-import TransferBarangToko from "../pages/toko/transferBarangToko/TransferBarangToko";
-import PenyesuaianStokToko from "../pages/toko/penyesuaianStokToko/PenyesuaianStokToko";
-import PesananPenjualanToko from "../pages/toko/pesananPenjualanToko/PesananPenjualanToko";
-import ReturPenjualanToko from "../pages/toko/returPenjualanToko/ReturPenjualanToko";
 
 // Driver
 import DriverLayout from "../pages/driver/DriverLayout";
@@ -134,14 +130,10 @@ export const router = createBrowserRouter([
       { index: true, element: <TokoDashboard /> },
 
       { path: "request", element: <RequestToko /> },
-      { path: "pesanan", element: <PesananPenjualanToko /> },
 
       { path: "stok", element: <StokToko /> },
       { path: "penerimaan", element: <PenerimaanBarangToko /> },
       { path: "pengeluaran", element: <PengeluaranBarangToko /> },
-      { path: "transfer", element: <TransferBarangToko /> },
-      { path: "adj", element: <PenyesuaianStokToko /> },
-      { path: "retur", element: <ReturPenjualanToko /> },
 
       { path: "profile", element: <ProfileToko /> },
       { path: "settings", element: <SettingsToko /> },

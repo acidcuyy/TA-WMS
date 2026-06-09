@@ -1,12 +1,35 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import "../PageAdmin.css";
 
 export default function ProfileAdmin() {
   const navigate = useNavigate();
   const [notifStock, setNotifStock] = useState(true);
   const [notifRequests, setNotifRequests] = useState(true);
+
+  // Edit Profile Modal State
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    nama: "Admin",
+    email: "admin@gmail.com",
+    phone: "081234567890",
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: ""
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSaveProfile = (e) => {
+    e.preventDefault();
+    // mock save action
+    setIsEditModalOpen(false);
+    // Optional: show a toast or success message here
+  };
 
   const stats = [
     { label: "Requests Baru", value: "12", sub: "Hari ini", icon: "🗒️" },
@@ -48,15 +71,15 @@ export default function ProfileAdmin() {
           <div className="hero-avatar">A</div>
           <div className="hero-details">
             <div className="hero-name-row">
-              <h2>Admin</h2>
+              <h2>{formData.nama}</h2>
               <span className="status-badge online"><i className="dot"></i> Online</span>
             </div>
-            <p className="hero-email">admin@gmail.com <span>Admin</span></p>
+            <p className="hero-email">{formData.email} <span>Admin</span></p>
             <p className="hero-role">Admin</p>
           </div>
         </div>
         <div className="hero-actions">
-          <button className="btn-primary">Edit Profil</button>
+          <button className="btn-primary" onClick={() => setIsEditModalOpen(true)}>Edit Profil</button>
           <button className="btn-outline">Ubah Password</button>
           <button className="btn-text" onClick={() => navigate('/admin/requests')}>Lihat Aktivitas</button>
         </div>
@@ -75,11 +98,15 @@ export default function ProfileAdmin() {
           <div className="info-list">
             <div className="info-item">
               <span className="info-label">👤 Nama</span>
-              <span className="info-value">Admin</span>
+              <span className="info-value">{formData.nama}</span>
             </div>
             <div className="info-item">
               <span className="info-label">✉️ Email</span>
-              <span className="info-value">admin@gmail.com</span>
+              <span className="info-value">{formData.email}</span>
+            </div>
+            <div className="info-item">
+              <span className="info-label">📞 Telepon</span>
+              <span className="info-value">{formData.phone}</span>
             </div>
             <div className="info-item">
               <span className="info-label">👤 Role</span>
@@ -93,10 +120,6 @@ export default function ProfileAdmin() {
               <span className="info-label">📅 Bergabung Sejak</span>
               <span className="info-value">10 Januari 2025</span>
             </div>
-          </div>
-          <div className="card-actions">
-            <button className="btn-primary">Simpan Perubahan</button>
-            <button className="btn-outline">Batalkan</button>
           </div>
         </section>
 
@@ -157,6 +180,111 @@ export default function ProfileAdmin() {
           </div>
         </section>
       </div>
+
+      {/* EDIT PROFILE MODAL */}
+      <AnimatePresence>
+        {isEditModalOpen && (
+          <div className="profile-modal-overlay" onClick={() => setIsEditModalOpen(false)}>
+            <motion.div 
+              className="profile-modal-content"
+              onClick={(e) => e.stopPropagation()}
+              initial={{ opacity: 0, y: 30, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 20, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="profile-modal-header">
+                <div>
+                  <h2>Edit Profil</h2>
+                  <p>Perbarui informasi akun dan kredensial Anda.</p>
+                </div>
+                <button className="close-modal-btn" onClick={() => setIsEditModalOpen(false)}>×</button>
+              </div>
+              <form className="profile-modal-body" onSubmit={handleSaveProfile}>
+                <div className="form-group-row">
+                  <div className="form-group">
+                    <label>Nama Lengkap</label>
+                    <input 
+                      type="text" 
+                      name="nama"
+                      value={formData.nama}
+                      onChange={handleInputChange}
+                      placeholder="Masukkan nama lengkap"
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Nomor Telepon</label>
+                    <input 
+                      type="tel" 
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      placeholder="08xxxxxxxxxx"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Alamat Email</label>
+                  <input 
+                    type="email" 
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    placeholder="Masukkan alamat email"
+                    required
+                  />
+                </div>
+
+                <div className="form-divider">
+                  <span>Ubah Password (Opsional)</span>
+                </div>
+
+                <div className="form-group">
+                  <label>Password Lama</label>
+                  <input 
+                    type="password" 
+                    name="oldPassword"
+                    value={formData.oldPassword}
+                    onChange={handleInputChange}
+                    placeholder="Masukkan password lama"
+                  />
+                </div>
+
+                <div className="form-group-row">
+                  <div className="form-group">
+                    <label>Password Baru</label>
+                    <input 
+                      type="password" 
+                      name="newPassword"
+                      value={formData.newPassword}
+                      onChange={handleInputChange}
+                      placeholder="Masukkan password baru"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Konfirmasi Password</label>
+                    <input 
+                      type="password" 
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleInputChange}
+                      placeholder="Ulangi password baru"
+                    />
+                  </div>
+                </div>
+
+                <div className="profile-modal-footer">
+                  <button type="button" className="btn-outline" onClick={() => setIsEditModalOpen(false)}>Batal</button>
+                  <button type="submit" className="btn-primary">Simpan Perubahan</button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

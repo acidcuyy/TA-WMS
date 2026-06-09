@@ -1,5 +1,5 @@
 import { Outlet, useLocation, useNavigate, Link } from "react-router-dom";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "../../app/ThemeProvider";
 import "./GudangLayout.css";
@@ -10,6 +10,7 @@ import avatarImg from "../../assets/images/stok.jpg"; // Placeholder avatar
 
 import Sidebar from "../../components/layout/Sidebar";
 import NotificationSystem from "../../components/layout/NotificationSystem";
+import { subscribeNotifications, markMultipleNotificationsAsRead } from "../../services/wmsApi";
 
 export default function GudangLayout() {
   const location = useLocation();
@@ -24,15 +25,37 @@ export default function GudangLayout() {
     navigate("/login");
   };
 
+  const [notifications, setNotifications] = useState([]);
+  
+  useEffect(() => {
+    return subscribeNotifications(data => {
+      setNotifications(data.filter(n => !n.isRead && n.targetRoles && n.targetRoles.includes("gudang")));
+    });
+  }, []);
+
+  const reqMasukNotifications = notifications.filter(n => ["request_received", "request_toko", "received", "done"].includes(n.type));
+  const penerimaanNotifications = notifications.filter(n => ["restock", "restock_accepted", "restock_declined", "restock_done"].includes(n.type));
+
+  const reqMasukBadge = reqMasukNotifications.length;
+  const penerimaanBadge = penerimaanNotifications.length;
+
+  useEffect(() => {
+    if (location.pathname === "/gudang/requests" && reqMasukNotifications.length > 0) {
+      markMultipleNotificationsAsRead(reqMasukNotifications.map(n => n.id));
+    } else if (location.pathname === "/gudang/penerimaan" && penerimaanNotifications.length > 0) {
+      markMultipleNotificationsAsRead(penerimaanNotifications.map(n => n.id));
+    }
+  }, [location.pathname, reqMasukNotifications, penerimaanNotifications]);
+
   const menuItems = [
     {
       title: "GUDANG",
       items: [
         { label: "Dashboard", path: "/gudang", icon: "⊞" },
-        { label: "Penerimaan Barang", path: "/gudang/penerimaan", icon: "⬇️" },
+        { label: "Penerimaan Barang", path: "/gudang/penerimaan", icon: "⬇️", badge: penerimaanBadge },
         { label: "Pengeluaran Barang", path: "/gudang/pengeluaran", icon: "⬆️" },
         { label: "Stok & Produk", path: "/gudang/stok", icon: "📦" },
-        { label: "Request Masuk", path: "/gudang/requests", icon: "📥" },
+        { label: "Request Masuk", path: "/gudang/requests", icon: "📥", badge: reqMasukBadge },
         { label: "Buat Request", path: "/gudang/buat-request", icon: "📝" },
       ]
     }
