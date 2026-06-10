@@ -1,3 +1,4 @@
+// ntar gue garap -JorloJor
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -39,14 +40,14 @@ export default function RequestsGudang() {
     const unsubRestock = subscribeRestockToAdmin((rows) => setRestockToAdmin(rows || []));
     return () => { unsubReq?.(); unsubRestock?.(); };
   }, []);
-  
+
   const openProof = (img) => {
     setProofImg(img);
     setProofOpen(true);
   };
-  
+
   // ... rest of the component logic ...
-  
+
   // Update the button in the grid:
   // {r.proofImage && <button className="btn-action-small" style={{ fontSize: '10px' }} onClick={() => openProof(r.proofImage)}>Lihat Bukti Foto</button>}
 
@@ -140,8 +141,8 @@ export default function RequestsGudang() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '100%', alignItems: 'center' }}>
                     <span style={{ color: "#52c41a", fontSize: "12px", fontWeight: 600 }}>✅ Selesai Diterima</span>
                     {r.proofImage && (
-                      <button 
-                        className="btn-action-small" 
+                      <button
+                        className="btn-action-small"
                         style={{ fontSize: '10px', color: 'var(--primary)', textDecoration: 'underline' }}
                         onClick={() => openProof(r.proofImage)}
                       >
@@ -183,11 +184,11 @@ export default function RequestsGudang() {
 
         {proofOpen && (
           <div className="rqGudang__modalOverlay" onClick={() => setProofOpen(false)}>
-            <motion.div 
-              className="rqGudang__modal" 
-              onClick={e => e.stopPropagation()} 
-              initial={{ scale: 0.9, opacity: 0 }} 
-              animate={{ scale: 1, opacity: 1 }} 
+            <motion.div
+              className="rqGudang__modal"
+              onClick={e => e.stopPropagation()}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               style={{ maxWidth: '500px' }}
             >
