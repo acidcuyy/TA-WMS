@@ -1,3 +1,4 @@
+// ntar gue garap -JorloJor
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import Card from "../../../components/common/Card";
@@ -46,15 +47,15 @@ export default function DriverTracking() {
   if (!activeRequest || !shipment) {
     return (
       <div className="dtracking dtracking--empty">
-        <motion.div 
+        <motion.div
           className="empty-state"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
           <div className="empty-icon">🚛</div>
           <h2>Tidak Ada Pengiriman Aktif</h2>
-          <p>Anda sedang tidak memiliki tugas pengiriman yang berjalan. <br/> Silakan cek Dashboard untuk mengambil tugas baru.</p>
-          <button className="btn-goto-dash" onClick={() => window.location.href='/driver'}>Ke Dashboard</button>
+          <p>Anda sedang tidak memiliki tugas pengiriman yang berjalan. <br /> Silakan cek Dashboard untuk mengambil tugas baru.</p>
+          <button className="btn-goto-dash" onClick={() => window.location.href = '/driver'}>Ke Dashboard</button>
         </motion.div>
       </div>
     );
@@ -91,8 +92,8 @@ export default function DriverTracking() {
 
           <div className="progress-section">
             <div className="progress-bar-bg">
-              <motion.div 
-                className="progress-bar-fill" 
+              <motion.div
+                className="progress-bar-fill"
                 initial={false}
                 animate={{ width: `${progress * 100}%` }}
               ></motion.div>
@@ -119,7 +120,7 @@ export default function DriverTracking() {
           </div>
 
           <div className="delivery-footer">
-            <button 
+            <button
               className={`btn-action ${isArrived ? "pulse" : "disabled"}`}
               disabled={!isArrived}
               onClick={() => alert("Silakan tunggu pihak Toko melakukan konfirmasi penerimaan barang.")}
@@ -127,7 +128,7 @@ export default function DriverTracking() {
               {isArrived ? "Tiba di Tujuan" : "Sedang Mengantar..."}
             </button>
             <p className="footer-note">
-              {isArrived 
+              {isArrived
                 ? "Pesanan akan selesai otomatis setelah Toko mengunggah bukti penerimaan."
                 : "Informasi lokasi Anda dibagikan secara live ke Toko & Gudang."}
             </p>
