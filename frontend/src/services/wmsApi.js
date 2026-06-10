@@ -981,11 +981,11 @@ export function createTokoOutflow(payload) {
     const createdAt = new Date().toISOString();
 
     db.tokoOutflow = db.tokoOutflow || [];
-    db.tokoInventory = db.tokoInventory || [];
+    db.warehouseStock = db.warehouseStock || [];
 
-    // Kurangi stok dari inventaris toko
+    // Kurangi stok dari inventaris toko (warehouseStock untuk cabang BRC-003)
     items.forEach(item => {
-      const inv = db.tokoInventory.find(x => x.sku === item.sku);
+      const inv = db.warehouseStock.find(x => x.sku === item.sku && x.branchId === tokoId);
       if (inv) {
         inv.qty = Math.max(0, inv.qty - (Number(item.qty) || 0));
       }
