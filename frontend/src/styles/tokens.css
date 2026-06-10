@@ -31,6 +31,9 @@ html[data-theme="warm"],
   --primary-hover: #d37b40;
   --accent: #e4915a;
 
+  --brand: #e4915a;
+  --brand-hover: #d37b40;
+
   --border: #d5d5d5;
   --border-subtle: #e8e8e8;
 
@@ -54,9 +57,11 @@ html[data-theme="dark"] {
   --subtle: #94a3b8;
 
   --primary: #e4915a;
-  /* Keeping orange accent for contrast, or change to slate? I'll stick to a vibrant orange for call-to-actions */
   --primary-hover: #f97316;
   --accent: #e4915a;
+
+  --brand: #e4915a;
+  --brand-hover: #f97316;
 
   --border: #334155;
   --border-subtle: #1e293b;

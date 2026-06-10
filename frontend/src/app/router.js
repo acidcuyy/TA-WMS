@@ -1,5 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "./App";
+import ProtectedRoute from "../components/common/ProtectedRoute";
 
 import Splash from "../features/auth/Splash";
 import Login from "../features/auth/Login";
@@ -65,31 +66,41 @@ export const router = createBrowserRouter([
 
       {
         path: "admin",
-        element: <AdminLayout />,
+        element: <ProtectedRoute allowedRole="admin" />,
         children: [
-          { index: true, element: <AdminDashboard /> },
-          { path: "profile", element: <ProfileAdmin /> },
-          { path: "settings", element: <SettingsAdmin /> },
-          { path: "requests", element: <RequestsAdmin /> },
+          {
+            element: <AdminLayout />,
+            children: [
+              { index: true, element: <AdminDashboard /> },
+              { path: "profile", element: <ProfileAdmin /> },
+              { path: "settings", element: <SettingsAdmin /> },
+              { path: "requests", element: <RequestsAdmin /> },
 
-          { path: "stok-gudang", element: <ManajemenStok /> },
-          { path: "gudang", element: <ManajemenGudang /> },
-          { path: "toko", element: <ManajemenToko /> },
-          { path: "produk", element: <ManajemenProduk /> },
-          { path: "laporan", element: <LaporanAdmin /> },
-          { path: "registrasi", element: <RegistrasiEntitas /> },
-          { path: "pengiriman/:id", element: <PengirimanGudang /> },
+              { path: "stok-gudang", element: <ManajemenStok /> },
+              { path: "gudang", element: <ManajemenGudang /> },
+              { path: "toko", element: <ManajemenToko /> },
+              { path: "produk", element: <ManajemenProduk /> },
+              { path: "laporan", element: <LaporanAdmin /> },
+              { path: "registrasi", element: <RegistrasiEntitas /> },
+              { path: "pengiriman/:id", element: <PengirimanGudang /> },
+            ],
+          },
         ],
       },
 
       {
         path: "driver",
-        element: <DriverLayout />,
+        element: <ProtectedRoute allowedRole="driver" />,
         children: [
-          { index: true, element: <DriverDashboard /> },
-          { path: "tracking", element: <DriverTracking /> },
-          { path: "history", element: <DriverHistory /> },
-          { path: "profile", element: <ProfileDriver /> },
+          {
+            element: <DriverLayout />,
+            children: [
+              { index: true, element: <DriverDashboard /> },
+              { path: "tracking", element: <DriverTracking /> },
+              { path: "history", element: <DriverHistory /> },
+              { path: "profile", element: <ProfileDriver /> },
+            ],
+          },
         ],
       },
     ],
@@ -97,48 +108,58 @@ export const router = createBrowserRouter([
 
   {
     path: "gudang",
-    element: <GudangLayout />,
+    element: <ProtectedRoute allowedRole="gudang" />,
     errorElement: <ErrorPage />,
     children: [
-      { index: true, element: <GudangDashboard /> },
-      { path: "penerimaan", element: <PenerimaanBarang /> },
-      { path: "pengeluaran", element: <PengeluaranBarang /> },
-      { path: "transfer", element: <TransferBarang /> },
-      { path: "requests", element: <RequestsGudang /> },
-      { path: "buat-request", element: <BuatRequestGudang /> },
-      { path: "orders", element: <OrdersGudang /> },
-      { path: "profile", element: <ProfileGudang /> },
-      { path: "settings", element: <SettingsGudang /> },
+      {
+        element: <GudangLayout />,
+        children: [
+          { index: true, element: <GudangDashboard /> },
+          { path: "penerimaan", element: <PenerimaanBarang /> },
+          { path: "pengeluaran", element: <PengeluaranBarang /> },
+          { path: "transfer", element: <TransferBarang /> },
+          { path: "requests", element: <RequestsGudang /> },
+          { path: "buat-request", element: <BuatRequestGudang /> },
+          { path: "orders", element: <OrdersGudang /> },
+          { path: "profile", element: <ProfileGudang /> },
+          { path: "settings", element: <SettingsGudang /> },
 
-      { path: "stok", element: <StokGudang /> },
+          { path: "stok", element: <StokGudang /> },
 
-      // ✅ Gudang pengiriman (benar)
-      { path: "pengiriman", element: <PengirimanGudang /> },
-      { path: "pengiriman/:id", element: <PengirimanGudang /> },
+          // Gudang pengiriman
+          { path: "pengiriman", element: <PengirimanGudang /> },
+          { path: "pengiriman/:id", element: <PengirimanGudang /> },
 
-      // ✅ Alias FIX (karena URL kamu sempat /gudang/pengirim/REQ-xxx)
-      { path: "pengirim", element: <PengirimanGudang /> },
-      { path: "pengirim/:id", element: <PengirimanGudang /> },
+          // Alias (backward compat)
+          { path: "pengirim", element: <PengirimanGudang /> },
+          { path: "pengirim/:id", element: <PengirimanGudang /> },
+        ],
+      },
     ],
   },
 
   {
     path: "toko",
-    element: <TokoLayout />,
+    element: <ProtectedRoute allowedRole="toko" />,
     errorElement: <ErrorPage />,
     children: [
-      { index: true, element: <TokoDashboard /> },
+      {
+        element: <TokoLayout />,
+        children: [
+          { index: true, element: <TokoDashboard /> },
 
-      { path: "request", element: <RequestToko /> },
+          { path: "request", element: <RequestToko /> },
 
-      { path: "stok", element: <StokToko /> },
-      { path: "penerimaan", element: <PenerimaanBarangToko /> },
-      { path: "pengeluaran", element: <PengeluaranBarangToko /> },
+          { path: "stok", element: <StokToko /> },
+          { path: "penerimaan", element: <PenerimaanBarangToko /> },
+          { path: "pengeluaran", element: <PengeluaranBarangToko /> },
 
-      { path: "profile", element: <ProfileToko /> },
-      { path: "settings", element: <SettingsToko /> },
+          { path: "profile", element: <ProfileToko /> },
+          { path: "settings", element: <SettingsToko /> },
 
-      { path: "pengiriman/:id", element: <PengirimanToko /> },
+          { path: "pengiriman/:id", element: <PengirimanToko /> },
+        ],
+      },
     ],
   },
 ]);
