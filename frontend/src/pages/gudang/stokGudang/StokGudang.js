@@ -2,7 +2,8 @@ import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import Card from "../../../components/common/Card";
-import { subscribeWarehouseStock, addWarehouseStock, editWarehouseStock } from "../../../services/wmsApi";
+import DetailModal from "../../../components/common/DetailModal";
+import { subscribeWarehouseStock, addWarehouseStock, editWarehouseStock, deleteWarehouseStock } from "../../../services/wmsApi";
 import "../../admin/PageAdmin.css";
 import "../../admin/manajemenProduk/ManajemenProdukAdmin.css";
 
@@ -11,8 +12,9 @@ export default function StokGudang() {
   const [allStock, setAllStock] = useState([]);
   
   // Modal State
+  const [detailModal, setDetailModal] = useState(null);
   const [editModal, setEditModal] = useState(null);
-  const [editQty, setEditQty] = useState(0);
+  const [editForm, setEditForm] = useState({ name: "", sku: "", type: "", qty: 0, image: "", supplier: "", notes: "" });
   const [addModal, setAddModal] = useState(false);
   const [newProduct, setNewProduct] = useState({
     name: "",
@@ -42,16 +44,19 @@ export default function StokGudang() {
 
   // Map the stock
   const mappedStocks = useMemo(() => {
-    return allStock.map(stock => {
+    return allStock
+      .filter(stock => !stock.branchId || stock.branchId === "BRC-001")
+      .map(stock => {
       let stockStatus = "Aman";
       if (stock.qty === 0) stockStatus = "Habis";
-      else if (stock.qty <= (stock.minQty || 20)) stockStatus = "Stok rendah";
+      else if (stock.qty <= 50) stockStatus = "Stok rendah";
 
       // Mock image agar terlihat bagus sementara
       let mockImage = "";
-      if (stock.type === "Elektronik") mockImage = "https://images.unsplash.com/photo-1558494949-ef0109583a85?w=200&h=200&fit=crop";
-      else if (stock.type === "Minuman") mockImage = "https://images.unsplash.com/photo-1542013936693-884638332954?w=200&h=200&fit=crop";
-      else if (stock.type === "Pakaian") mockImage = "https://images.unsplash.com/photo-1586864387917-f538a5a94781?w=200&h=200&fit=crop";
+      const cat = (stock.type || stock.category || "Umum").toLowerCase();
+      if (cat === "elektronik") mockImage = "https://images.unsplash.com/photo-1558494949-ef0109583a85?w=200&h=200&fit=crop";
+      else if (cat === "minuman") mockImage = "https://images.unsplash.com/photo-1542013936693-884638332954?w=200&h=200&fit=crop";
+      else if (cat === "pakaian") mockImage = "https://images.unsplash.com/photo-1586864387917-f538a5a94781?w=200&h=200&fit=crop";
       else mockImage = "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=200&h=200&fit=crop";
 
       return {
@@ -192,9 +197,34 @@ export default function StokGudang() {
                 <div className="mpAdmin__prodActions">
                   <button 
                     className="btn-icon" 
-                    title="Edit Stok Manual" 
-                    onClick={() => { setEditModal(p); setEditQty(p.qty); }}
+                    title="Lihat Detail" 
+                    onClick={() => setDetailModal(p)}
+                  >👁️</button>
+                  <button 
+                    className="btn-icon" 
+                    title="Edit Produk" 
+                    onClick={() => { 
+                      setEditModal(p); 
+                      setEditForm({ 
+                        name: p.name, 
+                        sku: p.sku, 
+                        type: p.type || "Umum", 
+                        qty: p.qty, 
+                        image: p.image || "", 
+                        supplier: p.supplier || "", 
+                        notes: p.notes || "" 
+                      }); 
+                    }}
                   >✏️</button>
+                  <button 
+                    className="btn-icon btn-icon--danger" 
+                    title="Hapus Produk"
+                    onClick={() => {
+                      if(window.confirm(`Hapus produk ${p.name}?`)) {
+                        deleteWarehouseStock(p.sku, p.branchId);
+                      }
+                    }}
+                  >🗑️</button>
                 </div>
               </div>
             );
@@ -213,20 +243,76 @@ export default function StokGudang() {
             <motion.div 
               className="modal-content"
               initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
-              style={{ background: '#fff', padding: '24px', borderRadius: '16px', width: '400px', maxWidth: '90%', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}
+              style={{ background: '#fff', padding: '24px', borderRadius: '16px', width: '500px', maxWidth: '95%', boxShadow: '0 10px 30px rgba(0,0,0,0.2)', maxHeight: '90vh', overflowY: 'auto' }}
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 style={{ marginTop: 0, color: '#1e293b' }}>Edit Stok Manual</h3>
-              <p style={{ color: '#64748b', fontSize: '13px' }}>Ubah jumlah fisik untuk produk <b>{editModal.name}</b></p>
+              <h3 style={{ marginTop: 0, color: '#1e293b' }}>Edit Detail Produk</h3>
+              <p style={{ color: '#64748b', fontSize: '13px', marginBottom: '20px' }}>Ubah informasi detail untuk produk <b>{editModal.name}</b></p>
               
-              <div style={{ marginTop: '20px', marginBottom: '24px' }}>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', color: '#1e293b' }}>Sisa Stok (Fisik) Terbaru</label>
-                <input 
-                  type="number" 
-                  value={editQty} 
-                  onChange={(e) => setEditQty(Number(e.target.value))} 
-                  style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none', boxSizing: 'border-box' }} 
-                />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
+                <div style={{ display: 'flex', gap: '16px' }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '6px', color: '#1e293b' }}>Kode Barang / SKU</label>
+                    <input type="text" value={editForm.sku} disabled style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none', boxSizing: 'border-box', background: '#f1f5f9', cursor: 'not-allowed', color: '#64748b' }} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '6px', color: '#1e293b' }}>Sisa Stok Fisik</label>
+                    <input type="number" value={editForm.qty} onChange={(e) => setEditForm({...editForm, qty: Number(e.target.value)})} style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none', boxSizing: 'border-box' }} />
+                  </div>
+                </div>
+                
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '6px', color: '#1e293b' }}>Nama Barang</label>
+                  <input type="text" value={editForm.name} onChange={(e) => setEditForm({...editForm, name: e.target.value})} style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none', boxSizing: 'border-box' }} />
+                </div>
+                
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '6px', color: '#1e293b' }}>Jenis Barang (Kategori)</label>
+                  <input type="text" value={editForm.type} onChange={(e) => setEditForm({...editForm, type: e.target.value})} style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none', boxSizing: 'border-box' }} />
+                </div>
+                
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '6px', color: '#1e293b' }}>Belian dari Supplier</label>
+                  <input type="text" value={editForm.supplier} onChange={(e) => setEditForm({...editForm, supplier: e.target.value})} placeholder="Contoh: PT. Makmur Jaya" style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none', boxSizing: 'border-box' }} />
+                </div>
+                
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '6px', color: '#1e293b' }}>Catatan</label>
+                  <textarea value={editForm.notes} onChange={(e) => setEditForm({...editForm, notes: e.target.value})} rows="3" placeholder="Informasi tambahan..." style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none', boxSizing: 'border-box', resize: 'vertical' }} />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '6px', color: '#1e293b' }}>Ubah Foto Barang</label>
+                  <div style={{ padding: '12px', border: '2px dashed #cbd5e1', borderRadius: '12px', background: '#f8fafc', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <input 
+                      type="file" 
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = (ev) => setEditForm({...editForm, image: ev.target.result});
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                      style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer', width: '100%', height: '100%', zIndex: 10 }}
+                    />
+                    
+                    {!editForm.image || editForm.image.startsWith("http") ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                        {editForm.image && editForm.image.startsWith("http") && <img src={editForm.image} alt="Current" style={{ height: '60px', borderRadius: '8px', marginBottom: '4px', objectFit: 'contain' }} />}
+                        <span style={{ fontSize: '20px' }}>📸</span>
+                        <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500 }}>Klik atau Drop foto baru di sini</span>
+                        <span style={{ fontSize: '11px', color: '#94a3b8' }}>Maks. 2MB (JPG/PNG)</span>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <img src={editForm.image} alt="Preview" style={{ maxWidth: '100%', maxHeight: '100px', objectFit: 'contain', borderRadius: '8px', marginBottom: '8px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }} />
+                        <span style={{ fontSize: '11px', color: '#1890ff', fontWeight: 600, background: '#e6f7ff', padding: '4px 10px', borderRadius: '4px' }}>Ubah Foto</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
@@ -236,8 +322,8 @@ export default function StokGudang() {
                 >Batal</button>
                 <button 
                   onClick={() => {
-                    editWarehouseStock(editModal.sku, editModal.branchId, editQty);
-                    showToast(`Stok ${editModal.name} berhasil diperbarui menjadi ${editQty} unit!`);
+                    editWarehouseStock(editModal.sku, editModal.branchId, editForm);
+                    showToast(`Data ${editForm.name} berhasil diperbarui!`);
                     setEditModal(null);
                   }}
                   style={{ padding: '10px 16px', borderRadius: '8px', border: 'none', background: 'var(--primary)', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}
@@ -447,6 +533,20 @@ export default function StokGudang() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <DetailModal
+        isOpen={!!detailModal}
+        onClose={() => setDetailModal(null)}
+        title="Rincian Produk"
+        subtitle={detailModal ? `${detailModal.sku} · ${detailModal.type || detailModal.category || "Umum"}` : ""}
+        details={detailModal ? [
+          { label: "Nama Barang", value: detailModal.name },
+          { label: "Kategori", value: detailModal.type || detailModal.category || "Umum" },
+          { label: "Jumlah Stok Fisik", value: detailModal.qty },
+          { label: "Belian dari Supplier", value: detailModal.supplier || "-" },
+          { label: "Catatan", value: detailModal.notes || "-" }
+        ] : []}
+      />
     </div>
   );
 }

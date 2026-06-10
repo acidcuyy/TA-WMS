@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { useMemo, useState, useEffect } from "react";
 import DateRangePicker from "../../../components/common/DateRangePicker";
 import "./TokoDashboard.css";
-import { subscribeTokoInventory, subscribeRequests, subscribeNotifications, subscribeTokoOutflow } from "../../../services/wmsApi";
+import { subscribeWarehouseStock, subscribeRequests, subscribeNotifications, subscribeTokoOutflow } from "../../../services/wmsApi";
 
 export default function TokoDashboard() {
   const easing = useMemo(() => [0.22, 1, 0.36, 1], []);
@@ -13,7 +13,7 @@ export default function TokoDashboard() {
   const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
-    const unsubStock = subscribeTokoInventory(data => setStock(data));
+    const unsubStock = subscribeWarehouseStock(data => setStock((data || []).filter(x => x.branchId === "BRC-003")));
     const unsubReq = subscribeRequests(data => setRequests(data.filter(r => (r.fromRole || "").toLowerCase() === "toko")));
     const unsubOut = subscribeTokoOutflow(data => setOutflows(data));
     const unsubNotif = subscribeNotifications(data => {

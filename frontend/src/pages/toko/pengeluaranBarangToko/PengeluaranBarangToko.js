@@ -2,10 +2,9 @@ import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import DetailModal from "../../../components/common/DetailModal";
 import {
-  subscribeTokoInventory,
+  subscribeWarehouseStock,
   subscribeTokoOutflow,
   createTokoOutflow,
-  getTokoInventory,
 } from "../../../services/wmsApi";
 import "./PengeluaranBarangToko.css";
 
@@ -210,7 +209,7 @@ export default function PengeluaranBarangToko() {
 
   useEffect(() => {
     const unsubOut = subscribeTokoOutflow(setOutflows);
-    const unsubInv = subscribeTokoInventory(setInventory);
+    const unsubInv = subscribeWarehouseStock(data => setInventory((data || []).filter(x => x.branchId === "BRC-003")));
     return () => { unsubOut(); unsubInv(); };
   }, []);
 

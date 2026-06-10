@@ -34,7 +34,7 @@
   padding: 11px 22px;
   border-radius: 12px;
   border: none;
-  background: linear-gradient(135deg, #6366f1, #7c3aed);
+  background: var(--primary);
   color: white;
   font-size: 14px;
   font-weight: 700;
@@ -96,7 +96,7 @@
   flex-shrink: 0;
 }
 
-.summary-card__icon--purple { background: #f5f3ff; color: #8b5cf6; }
+.summary-card__icon--purple { background: #fff7ed; color: #8b5cf6; }
 .summary-card__icon--blue   { background: #eff6ff; color: #3b82f6; }
 .summary-card__icon--green  { background: #f0fdf4; color: #22c55e; }
 .summary-card__icon--orange { background: #fff7ed; color: #f97316; }
@@ -204,7 +204,7 @@
 }
 
 .btn-reset:hover {
-  background: #ede9fe;
+  background: #fff7ed;
 }
 
 /* ─── TABS ──────────────────────────────────────────────── */
@@ -303,7 +303,7 @@
   font-size: 12px;
   font-family: 'Courier New', monospace;
   color: var(--primary);
-  background: #ede9fe;
+  background: #fff7ed;
   padding: 3px 8px;
   border-radius: 6px;
 }
@@ -365,7 +365,7 @@
 .status--selesai  { background: #f0fdf4; color: #16a34a; }
 .status--diterima { background: #f0fdf4; color: #16a34a; }
 .status--dikirim  { background: #eff6ff; color: #3b82f6; }
-.status--diproses { background: #f5f3ff; color: #7c3aed; }
+.status--diproses { background: #fff7ed; color: var(--primary); }
 .status--menunggu { background: #fff7ed; color: #ea580c; }
 .status--ditolak  { background: #fef2f2; color: #ef4444; }
 

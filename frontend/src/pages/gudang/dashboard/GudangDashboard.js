@@ -48,7 +48,9 @@ export default function GudangDashboard() {
       }
    };
 
-   const totalStok = allStock.reduce((acc, item) => acc + item.qty, 0);
+   const gudangStock = useMemo(() => allStock.filter(stock => !stock.branchId || stock.branchId === "BRC-001"), [allStock]);
+
+   const totalStok = gudangStock.reduce((acc, item) => acc + item.qty, 0);
    const barangMasuk = allRestocks.length; 
    const barangKeluar = allRequests.filter(r => r.status === "Selesai" || r.status === "Diterima Toko").length;
    const orderMenunggu = allRequests.filter(r => r.status === "Menunggu" || r.status === "Pending").length;
@@ -139,10 +141,10 @@ export default function GudangDashboard() {
        return d;
    };
 
-   const stokAman = allStock.filter(s => s.qty > (s.minQty || 10)).length;
-   const stokMenipis = allStock.filter(s => s.qty <= (s.minQty || 10) && s.qty > 0).length;
-   const stokHabis = allStock.filter(s => s.qty === 0).length;
-   const totalProduk = allStock.length;
+   const stokAman = gudangStock.filter(s => s.qty > 50).length;
+   const stokMenipis = gudangStock.filter(s => s.qty <= 50 && s.qty > 0).length;
+   const stokHabis = gudangStock.filter(s => s.qty === 0).length;
+   const totalProduk = gudangStock.length;
 
    return (
       <motion.div 

@@ -2,7 +2,7 @@ import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import Card from "../../../components/common/Card";
-import { subscribeWarehouseStock, subscribeBranches } from "../../../services/wmsApi";
+import { subscribeWarehouseStock, subscribeBranches, editWarehouseStock, deleteWarehouseStock } from "../../../services/wmsApi";
 import "../PageAdmin.css";
 import "./ManajemenProdukAdmin.css";
 
@@ -42,9 +42,10 @@ export default function ManajemenProduk() {
 
       // Mock image agar terlihat bagus sementara
       let mockImage = "";
-      if (stock.type === "Elektronik") mockImage = "https://images.unsplash.com/photo-1558494949-ef0109583a85?w=200&h=200&fit=crop";
-      else if (stock.type === "Minuman") mockImage = "https://images.unsplash.com/photo-1542013936693-884638332954?w=200&h=200&fit=crop";
-      else if (stock.type === "Pakaian") mockImage = "https://images.unsplash.com/photo-1586864387917-f538a5a94781?w=200&h=200&fit=crop";
+      const cat = (stock.type || stock.category || "Umum").toLowerCase();
+      if (cat === "elektronik") mockImage = "https://images.unsplash.com/photo-1558494949-ef0109583a85?w=200&h=200&fit=crop";
+      else if (cat === "minuman") mockImage = "https://images.unsplash.com/photo-1542013936693-884638332954?w=200&h=200&fit=crop";
+      else if (cat === "pakaian") mockImage = "https://images.unsplash.com/photo-1586864387917-f538a5a94781?w=200&h=200&fit=crop";
       else mockImage = "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=200&h=200&fit=crop";
 
       return {
@@ -171,12 +172,12 @@ export default function ManajemenProduk() {
 
       {/* MAIN GRID */}
       <div className="mpAdmin__grid">
-        {filteredStocks.length === 0 ? (
+        {filteredStocks.filter(p => p.qty > 0).length === 0 ? (
           <div style={{ textAlign: 'center', padding: '40px', color: '#888', gridColumn: '1 / -1' }}>
             Data inventaris kosong atau tidak ada stok yang cocok dengan filter.
           </div>
         ) : (
-          filteredStocks.map((p, i) => {
+          filteredStocks.filter(p => p.qty > 0).map((p, i) => {
             const isAman = p.stockStatus === 'Aman';
             const isHabis = p.stockStatus === 'Habis';
             const badgeClass = isAman ? 'aman' : isHabis ? 'habis' : 'rendah';
@@ -217,6 +218,15 @@ export default function ManajemenProduk() {
                     title="Edit Stok Manual" 
                     onClick={() => { setEditModal(p); setEditQty(p.qty); }}
                   >✏️</button>
+                  <button 
+                    className="btn-icon btn-icon--danger" 
+                    title="Hapus Produk"
+                    onClick={() => {
+                      if(window.confirm(`Hapus produk ${p.name}?`)) {
+                        deleteWarehouseStock(p.sku, p.branchId);
+                      }
+                    }}
+                  >🗑️</button>
                   <button 
                     className="btn-icon" 
                     title="Detail Pergerakan Stok"
@@ -263,7 +273,7 @@ export default function ManajemenProduk() {
                 >Batal</button>
                 <button 
                   onClick={() => {
-                    alert(`Stok ${editModal.name} berhasil diperbarui menjadi ${editQty} unit!`);
+                    editWarehouseStock(editModal.sku, editModal.branchId, editQty);
                     setEditModal(null);
                   }}
                   style={{ padding: '10px 16px', borderRadius: '8px', border: 'none', background: 'var(--primary)', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}

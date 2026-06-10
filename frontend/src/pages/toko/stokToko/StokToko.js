@@ -5,10 +5,9 @@ import DetailModal from "../../../components/common/DetailModal";
 import {
   subscribeBranches,
   subscribeWarehouseStock,
-  subscribeTokoInventory,
-  addTokoInventory,
-  deleteTokoInventory,
-  editTokoInventory,
+  addWarehouseStock,
+  deleteWarehouseStock,
+  editWarehouseStock,
 } from "../../../services/wmsApi";
 import "./StokToko.css";
 
@@ -39,12 +38,13 @@ function TambahBarangModal({ isOpen, onClose }) {
     if (!form.name.trim()) { setError("Nama barang harus diisi."); return; }
     if (Number(form.qty) <= 0) { setError("Jumlah stok harus lebih dari 0."); return; }
     setSaving(true);
-    addTokoInventory({
+    addWarehouseStock({
       ...form,
       sku: form.sku.trim() || `SKU-${Date.now()}`,
       qty: Number(form.qty),
       minQty: Number(form.minQty),
       price: Number(form.price),
+      branchId: "BRC-003"
     });
     setSaving(false);
     setForm({ sku:"", name:"", category:"Umum", unit:"pcs", qty:1, minQty:5, price:0 });
@@ -134,13 +134,11 @@ export default function StokToko() {
   const [selectedBranchId, setSelectedBranchId] = useState("");
   const [branches, setBranches] = useState([]);
   const [allStock, setAllStock] = useState([]);
-  const [tokoInventory, setTokoInventory] = useState([]);
 
   useEffect(() => {
     const unsubBranches = subscribeBranches(setBranches);
     const unsubStock    = subscribeWarehouseStock(setAllStock);
-    const unsubInv      = subscribeTokoInventory(setTokoInventory);
-    return () => { unsubBranches(); unsubStock(); unsubInv(); };
+    return () => { unsubBranches(); unsubStock(); };
   }, []);
 
   // Gudang branches
@@ -152,8 +150,17 @@ export default function StokToko() {
 
   /* ─── STOK TOKO SENDIRI ─── */
   const tokoInventoryWithStatus = useMemo(() =>
-    tokoInventory.map(s => ({ ...s, status: getStatusLabel(s.qty, s.minQty) })),
-    [tokoInventory]
+    allStock.filter(x => x.branchId === "BRC-003").map(s => {
+      let mockImage = "";
+      const cat = (s.category || s.type || "Umum").toLowerCase();
+      if (cat === "elektronik") mockImage = "https://images.unsplash.com/photo-1558494949-ef0109583a85?w=200&h=200&fit=crop";
+      else if (cat === "minuman") mockImage = "https://images.unsplash.com/photo-1542013936693-884638332954?w=200&h=200&fit=crop";
+      else if (cat === "pakaian") mockImage = "https://images.unsplash.com/photo-1586864387917-f538a5a94781?w=200&h=200&fit=crop";
+      else mockImage = "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=200&h=200&fit=crop";
+
+      return { ...s, image: s.image || mockImage, status: getStatusLabel(s.qty, s.minQty) };
+    }),
+    [allStock]
   );
 
   const tokoCategories = useMemo(() => [...new Set(tokoInventoryWithStatus.map(s => s.category || "Umum"))], [tokoInventoryWithStatus]);
@@ -196,7 +203,16 @@ export default function StokToko() {
   /* ─── STOK GUDANG (reference section) ─── */
   const branchStock = useMemo(() => {
     if (!selectedBranchId) return [];
-    return allStock.filter(s => s.branchId === selectedBranchId).map(s => ({ ...s, status: getStatusLabel(s.qty, s.minQty) }));
+    return allStock.filter(s => s.branchId === selectedBranchId).map(s => {
+      let mockImage = "";
+      const cat = (s.type || s.category || "Umum").toLowerCase();
+      if (cat === "elektronik") mockImage = "https://images.unsplash.com/photo-1558494949-ef0109583a85?w=200&h=200&fit=crop";
+      else if (cat === "minuman") mockImage = "https://images.unsplash.com/photo-1542013936693-884638332954?w=200&h=200&fit=crop";
+      else if (cat === "pakaian") mockImage = "https://images.unsplash.com/photo-1586864387917-f538a5a94781?w=200&h=200&fit=crop";
+      else mockImage = "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=200&h=200&fit=crop";
+      
+      return { ...s, image: s.image || mockImage, status: getStatusLabel(s.qty, s.minQty) };
+    });
   }, [allStock, selectedBranchId]);
 
   const handleReset = () => {
@@ -279,7 +295,7 @@ export default function StokToko() {
               </section>
 
               {/* HINT jika dari request */}
-              {tokoInventory.some(i => i.source === "request") && (
+              {tokoInventoryWithStatus.some(i => i.source === "request") && (
                 <div className="request-sync-banner">
                   <span>✅</span>
                   <span>Beberapa barang ditambahkan otomatis dari request yang diselesaikan.</span>
@@ -316,7 +332,7 @@ export default function StokToko() {
                   </div>
 
                   <AnimatePresence mode="wait">
-                    {tokoInventory.length === 0 ? (
+                    {tokoInventoryWithStatus.length === 0 ? (
                       <motion.div key="empty-toko" className="empty-state" initial={{ opacity:0, scale:0.95 }} animate={{ opacity:1, scale:1 }} exit={{ opacity:0 }}>
                         <div className="empty-state__icon">🏪</div>
                         <h3>Stok Toko Masih Kosong</h3>
@@ -345,8 +361,8 @@ export default function StokToko() {
                           >
                             <span className={`product-card__status status--${p.status.toLowerCase()}`}>{p.status}</span>
                             {p.source === "request" && <span className="product-card__source-badge">📦 Request</span>}
-                            <div className="product-card__img-wrap">
-                              {catIcons[p.category] || "📦"}
+                            <div className="product-card__img-wrap" style={{ padding: 0, overflow: 'hidden' }}>
+                              <img src={p.image} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             </div>
                             <span className="product-card__name">{p.name}</span>
                             <span className="product-card__sku">SKU: {p.sku}</span>
@@ -372,7 +388,7 @@ export default function StokToko() {
 
                             <div className="product-card__actions">
                               <button className="btn-icon" title="Detail" onClick={() => setDetailModal(p)}>👁️</button>
-                              <button className="btn-icon btn-icon--danger" title="Hapus" onClick={() => deleteTokoInventory(p.sku)}>🗑️</button>
+                              <button className="btn-icon btn-icon--danger" title="Hapus" onClick={() => deleteWarehouseStock(p.sku, "BRC-003")}>🗑️</button>
                             </div>
                           </motion.div>
                         ))}
@@ -382,7 +398,7 @@ export default function StokToko() {
 
                   {filteredToko.length > 0 && (
                     <div className="pagination-area">
-                      <span>Menampilkan {filteredToko.length} dari {tokoInventory.length} produk</span>
+                      <span>Menampilkan {filteredToko.length} dari {tokoInventoryWithStatus.length} produk</span>
                     </div>
                   )}
                 </section>
@@ -391,7 +407,7 @@ export default function StokToko() {
                 <aside className="stok-sidebar">
                   <div className="sidebar-widget">
                     <div className="widget-header"><h3 className="widget-title">Ringkasan Stok Toko</h3></div>
-                    {tokoInventory.length === 0 ? (
+                    {tokoInventoryWithStatus.length === 0 ? (
                       <div className="sidebar-empty"><span>📊</span><p>Belum ada stok</p></div>
                     ) : (
                       <>
@@ -468,7 +484,7 @@ export default function StokToko() {
                     </div>
                   )}
 
-                  {tokoInventory.length === 0 && (
+                  {tokoInventoryWithStatus.length === 0 && (
                     <div className="sidebar-widget">
                       <h3 className="widget-title">Panduan</h3>
                       <div className="sidebar-guide">
@@ -548,7 +564,9 @@ export default function StokToko() {
                       transition={{ delay:0.04*idx }}
                     >
                       <span className={`product-card__status status--${p.status.toLowerCase()}`}>{p.status}</span>
-                      <div className="product-card__img-wrap">{catIcons[p.type]||"📦"}</div>
+                      <div className="product-card__img-wrap" style={{ padding: 0, overflow: 'hidden' }}>
+                        <img src={p.image} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </div>
                       <span className="product-card__name">{p.name}</span>
                       <span className="product-card__sku">SKU: {p.sku}</span>
                       <div className="product-card__info-row">
