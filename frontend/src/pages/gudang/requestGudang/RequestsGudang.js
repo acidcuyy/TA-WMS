@@ -35,6 +35,7 @@ export default function RequestsGudang() {
   const [proofImg, setProofImg] = useState(null);
   const [uploadModal, setUploadModal] = useState({ open: false, data: null });
   const [uploadPhotos, setUploadPhotos] = useState({ checkBarang: [], resiDriver: [], pemasukanBarang: [] });
+  const [uploadData, setUploadData] = useState({ qtyGood: '', qtyBad: '', notes: '' });
   const [confirmModal, setConfirmModal] = useState({ open: false, requestId: null });
   const [detailModal, setDetailModal] = useState({ open: false, data: null });
 
@@ -84,6 +85,7 @@ export default function RequestsGudang() {
   const openUploadModal = (req) => {
     setUploadModal({ open: true, data: req });
     setUploadPhotos({ checkBarang: [], resiDriver: [], pemasukanBarang: [] });
+    setUploadData({ qtyGood: req.jumlah || '', qtyBad: '', notes: '' });
   };
 
   const compressImage = (file, callback) => {
@@ -145,7 +147,7 @@ export default function RequestsGudang() {
 
   const confirmFinishRequest = () => {
     if (confirmModal.requestId) {
-      gudangUploadProofAndFinish(confirmModal.requestId, uploadPhotos);
+      gudangUploadProofAndFinish(confirmModal.requestId, uploadPhotos, uploadData);
       setUploadModal({ open: false, data: null });
     }
     setConfirmModal({ open: false, requestId: null });
@@ -210,7 +212,12 @@ export default function RequestsGudang() {
                   </div>
                   <div className="rqGudang__cardRow">
                     <span>Total Qty</span>
-                    <b className="rqGudang__cardValue">{r.jumlah} {r.satuan}</b>
+                    <b className="rqGudang__cardValue">
+                      {r.status === 'Selesai' && r.confirmationData 
+                        ? `${r.confirmationData.qtyGood} ${r.satuan} (Diterima)`
+                        : `${r.jumlah} ${r.satuan}`
+                      }
+                    </b>
                   </div>
                   
                   <div className="rqGudang__cardActions">
@@ -321,10 +328,26 @@ export default function RequestsGudang() {
                       <div className="detailRow"><span className="detailLabel">Supplier</span><span className="detailValue">{detailModal.data.supplier}</span></div>
                       <div className="detailRow"><span className="detailLabel">Prioritas</span><span className="detailValue" style={detailModal.data.prioritas === 'Urgent' ? {color: '#ff4d4f', fontWeight: 'bold'} : {}}>{detailModal.data.prioritas}</span></div>
                       
+                      {detailModal.data.status === 'Selesai' && detailModal.data.confirmationData && (
+                        <>
+                          <div className="detailRow"><span className="detailLabel">Diterima Baik</span><span className="detailValue" style={{color: '#52c41a', fontWeight: 700}}>{detailModal.data.confirmationData.qtyGood} {detailModal.data.satuan}</span></div>
+                          {Number(detailModal.data.confirmationData.qtyBad) > 0 && (
+                            <div className="detailRow"><span className="detailLabel">Rusak / Kurang</span><span className="detailValue" style={{color: '#ff4d4f', fontWeight: 700}}>{detailModal.data.confirmationData.qtyBad} {detailModal.data.satuan}</span></div>
+                          )}
+                        </>
+                      )}
+
                       {detailModal.data.catatan && (
                         <div className="detailNote">
                           <strong>Catatan Admin:</strong>
                           <p>{detailModal.data.catatan}</p>
+                        </div>
+                      )}
+
+                      {detailModal.data.status === 'Selesai' && detailModal.data.confirmationData?.notes && (
+                        <div className="detailNote" style={{ marginTop: '12px', background: '#fff1f0', borderColor: '#ffccc7' }}>
+                          <strong style={{ color: '#cf1322' }}>Catatan Kerusakan (Gudang):</strong>
+                          <p style={{ color: '#a8071a' }}>{detailModal.data.confirmationData.notes}</p>
                         </div>
                       )}
                     </div>
@@ -352,6 +375,21 @@ export default function RequestsGudang() {
                            <strong>Catatan Toko:</strong>
                            <p>{detailModal.data.note}</p>
                          </div>
+                      )}
+
+                      {detailModal.data.status === 'Selesai' && detailModal.data.confirmationData && (
+                        <>
+                          <div className="detailRow" style={{ marginTop: '16px' }}><span className="detailLabel">Diterima Baik</span><span className="detailValue" style={{color: '#52c41a', fontWeight: 700}}>{detailModal.data.confirmationData.qtyGood} pcs</span></div>
+                          {Number(detailModal.data.confirmationData.qtyBad) > 0 && (
+                            <div className="detailRow"><span className="detailLabel">Rusak / Kurang</span><span className="detailValue" style={{color: '#ff4d4f', fontWeight: 700}}>{detailModal.data.confirmationData.qtyBad} pcs</span></div>
+                          )}
+                          {detailModal.data.confirmationData.notes && (
+                            <div className="detailNote" style={{ marginTop: '12px', background: '#fff1f0', borderColor: '#ffccc7' }}>
+                              <strong style={{ color: '#cf1322' }}>Catatan Kerusakan (Toko):</strong>
+                              <p style={{ color: '#a8071a' }}>{detailModal.data.confirmationData.notes}</p>
+                            </div>
+                          )}
+                        </>
                       )}
                     </div>
                   )}
@@ -466,11 +504,60 @@ export default function RequestsGudang() {
                   </div>
                 </div>
 
+                {/* 4. Konfirmasi Jumlah & Kondisi Barang */}
+                <div className="uploadSection" style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid #eee' }}>
+                  <div className="uploadSection__header" style={{ marginBottom: '16px' }}>
+                    <h4>d. Konfirmasi Kondisi Barang</h4>
+                  </div>
+                  <div style={{ display: 'grid', gap: '16px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                      <div>
+                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 600 }}>Diterima Baik (Sehat)</label>
+                        <input 
+                          type="number" 
+                          min="0"
+                          style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #d9d9d9' }}
+                          value={uploadData.qtyGood}
+                          onChange={(e) => setUploadData({...uploadData, qtyGood: e.target.value})}
+                          placeholder={`Req: ${uploadModal.data.jumlah}`}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 600 }}>Diterima Rusak / Kurang</label>
+                        <input 
+                          type="number" 
+                          min="0"
+                          style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #d9d9d9' }}
+                          value={uploadData.qtyBad}
+                          onChange={(e) => setUploadData({...uploadData, qtyBad: e.target.value})}
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
+                    {Number(uploadData.qtyBad) > 0 && (
+                      <div style={{ animation: 'fadeIn 0.3s ease-in-out' }}>
+                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 600, color: '#cf1322' }}>Catatan Kerusakan (Wajib diisi jika ada barang rusak)</label>
+                        <textarea 
+                          style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ffccc7', minHeight: '80px', outlineColor: '#ff4d4f' }}
+                          value={uploadData.notes}
+                          onChange={(e) => setUploadData({...uploadData, notes: e.target.value})}
+                          placeholder="Jelaskan kondisi barang yang rusak atau kurang..."
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
               </div>
 
               <div className="rqGudang__modalFooter" style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
                 <button className="rqGudang__btn rqGudang__btn--ghost" onClick={() => setUploadModal({ open: false, data: null })}>Batal</button>
-                <button className="rqGudang__btn rqGudang__btn--primary" onClick={handleFinishRequestClick}>
+                <button 
+                  className="rqGudang__btn rqGudang__btn--primary" 
+                  onClick={handleFinishRequestClick}
+                  disabled={Number(uploadData.qtyBad) > 0 && !uploadData.notes.trim()}
+                  style={Number(uploadData.qtyBad) > 0 && !uploadData.notes.trim() ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+                >
                   Selesaikan Request
                 </button>
               </div>

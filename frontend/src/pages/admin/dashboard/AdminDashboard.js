@@ -115,8 +115,22 @@ export default function AdminDashboard() {
             <div className="donut-chart">
               <svg viewBox="0 0 100 100">
                 <circle cx="50" cy="50" r="40" fill="transparent" stroke="var(--border)" strokeWidth="10" />
-                <circle cx="50" cy="50" r="40" fill="transparent" stroke="#4a90e2" strokeWidth="10" strokeDasharray="150 251" />
-                <circle cx="50" cy="50" r="40" fill="transparent" stroke="#e4915a" strokeWidth="10" strokeDasharray="80 251" strokeDashoffset="-150" />
+                {totalItems > 0 && (
+                  <>
+                    {fastMoving > 0 && (
+                      <circle cx="50" cy="50" r="40" fill="transparent" stroke="#4a90e2" strokeWidth="10" strokeDasharray={`${(fastMoving / totalItems) * 251} 251`} strokeDashoffset="0" />
+                    )}
+                    {medMoving > 0 && (
+                      <circle cx="50" cy="50" r="40" fill="transparent" stroke="#e4915a" strokeWidth="10" strokeDasharray={`${(medMoving / totalItems) * 251} 251`} strokeDashoffset={`-${(fastMoving / totalItems) * 251}`} />
+                    )}
+                    {slowMoving > 0 && (
+                      <circle cx="50" cy="50" r="40" fill="transparent" stroke="#fcd34d" strokeWidth="10" strokeDasharray={`${(slowMoving / totalItems) * 251} 251`} strokeDashoffset={`-${((fastMoving + medMoving) / totalItems) * 251}`} />
+                    )}
+                    {outOfStock > 0 && (
+                      <circle cx="50" cy="50" r="40" fill="transparent" stroke="#ef4444" strokeWidth="10" strokeDasharray={`${(outOfStock / totalItems) * 251} 251`} strokeDashoffset={`-${((fastMoving + medMoving + slowMoving) / totalItems) * 251}`} />
+                    )}
+                  </>
+                )}
               </svg>
               <div className="donut-center">
                 <strong>{totalItems}</strong>

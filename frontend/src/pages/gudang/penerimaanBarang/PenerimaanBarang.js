@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import Card from "../../../components/common/Card";
 import DetailModal from "../../../components/common/DetailModal";
 import DateRangePicker from "../../../components/common/DateRangePicker";
-import { subscribeRestockToAdmin, subscribeAdminRestockToGudang } from "../../../services/wmsApi";
+import { subscribeRestockToAdmin, subscribeAdminRestockToGudang, subscribeNotifications } from "../../../services/wmsApi";
 import "./PenerimaanBarangGudang.css";
 
 export default function PenerimaanBarang() {
@@ -10,12 +10,14 @@ export default function PenerimaanBarang() {
   const [sourceFilter, setSourceFilter] = useState("Semua Sumber");
   const [allRestocks, setAllRestocks] = useState([]);
   const [adminRestocks, setAdminRestocks] = useState([]);
+  const [notifications, setNotifications] = useState([]);
   const [detailModal, setDetailModal] = useState(null);
 
   useEffect(() => {
     const unsub1 = subscribeRestockToAdmin((data) => setAllRestocks(data || []));
     const unsub2 = subscribeAdminRestockToGudang((data) => setAdminRestocks(data || []));
-    return () => { unsub1(); unsub2(); };
+    const unsub3 = subscribeNotifications(data => setNotifications(data || []));
+    return () => { unsub1(); unsub2(); unsub3(); };
   }, []);
 
   const receipts = useMemo(() => {
@@ -98,13 +100,37 @@ export default function PenerimaanBarang() {
     return result;
   }, [receipts, activeTab, sourceFilter]);
 
-  const activities = [
-    { title: "Penerimaan barang dari Supplier Jaya Abadi", sub: "GR-2026-00078", time: "5 menit lalu", color: "#fa8c16", icon: "🕒" },
-    { title: "Penerimaan barang dari Elektronik Sentosa", sub: "GR-2026-00077", time: "35 menit lalu", color: "#1890ff", icon: "⚙️" },
-    { title: "Penerimaan barang dari Bangun Jaya", sub: "GR-2026-00076", time: "2 jam lalu", color: "#52c41a", icon: "✅" },
-    { title: "Penerimaan barang dari Mitra Konstruksi", sub: "GR-2026-00075", time: "4 jam lalu", color: "#52c41a", icon: "✅" },
-    { title: "Penerimaan ditolak dari Baja Perkasa", sub: "GR-2026-00069", time: "1 hari lalu", color: "#ff4d4f", icon: "🚫" },
-  ];
+  const topSuppliers = useMemo(() => {
+    const map = {};
+    let totalVal = 0;
+    receipts.forEach(r => {
+      map[r.supplier] = (map[r.supplier] || 0) + r.value;
+      totalVal += r.value;
+    });
+    const colors = ["#52c41a", "#fa8c16", "#1890ff", "#722ed1", "#eb2f96"];
+    return Object.entries(map)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([label, val], i) => ({
+        label,
+        val: val,
+        pct: totalVal > 0 ? ((val / totalVal) * 100).toFixed(1) : 0,
+        color: colors[i % colors.length]
+      }));
+  }, [receipts]);
+
+  const activities = useMemo(() => {
+    return notifications
+      .filter(n => n.targetRoles?.includes("gudang") && (n.type?.includes("restock") || n.type?.includes("receive")))
+      .slice(0, 5)
+      .map(n => ({
+        title: n.title,
+        sub: n.message,
+        time: n.time || new Date(n.date || new Date()).toLocaleString(),
+        color: n.type?.includes("done") ? "#52c41a" : "#1890ff",
+        icon: n.type?.includes("done") ? "✅" : "ℹ️"
+      }));
+  }, [notifications]);
 
   return (
     <div className="gdash">
@@ -265,21 +291,25 @@ export default function PenerimaanBarang() {
               <div style={{ position: 'relative', width: '120px', height: '120px' }}>
                 <svg viewBox="0 0 36 36" style={{ transform: 'rotate(-90deg)' }}>
                   <circle cx="18" cy="18" r="16" fill="none" stroke="#eee" strokeWidth="4" />
-                  <circle cx="18" cy="18" r="16" fill="none" stroke="#52c41a" strokeWidth="4" strokeDasharray="34 100" />
-                  <circle cx="18" cy="18" r="16" fill="none" stroke="#fa8c16" strokeWidth="4" strokeDasharray="25 100" strokeDashoffset="-34" />
-                  <circle cx="18" cy="18" r="16" fill="none" stroke="#1890ff" strokeWidth="4" strokeDasharray="17 100" strokeDashoffset="-59" />
+                  {topSuppliers.map((s, i) => {
+                    const prevPcts = topSuppliers.slice(0, i).reduce((sum, sp) => sum + Number(sp.pct), 0);
+                    return (
+                      <circle 
+                        key={i} cx="18" cy="18" r="16" fill="none" stroke={s.color} strokeWidth="4" 
+                        strokeDasharray={`${Number(s.pct)} 100`} strokeDashoffset={-prevPcts} 
+                      />
+                    );
+                  })}
                 </svg>
               </div>
               <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {[
-                  { label: "Supplier Jaya Abadi", val: "Rp 425.000.000", pct: "34%", color: "#52c41a" },
-                  { label: "Bangun Jaya", val: "Rp 320.750.000", pct: "25.7%", color: "#fa8c16" },
-                  { label: "Elektronik Sentosa", val: "Rp 215.000.000", pct: "17.3%", color: "#1890ff" },
-                ].map((s, i) => (
+                {topSuppliers.length === 0 ? (
+                  <div style={{ textAlign: "center", color: "#888", fontSize: "11px" }}>Belum ada data</div>
+                ) : topSuppliers.map((s, i) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', fontSize: '11px' }}>
                     <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: s.color, marginRight: '8px' }}></span>
-                    <span style={{ flex: 1, color: '#666' }}>{s.label}</span>
-                    <span style={{ fontWeight: 700 }}>{s.pct}</span>
+                    <span style={{ flex: 1, color: '#666', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.label}</span>
+                    <span style={{ fontWeight: 700 }}>{s.pct}%</span>
                   </div>
                 ))}
               </div>
@@ -289,12 +319,15 @@ export default function PenerimaanBarang() {
           <div className="pbGudang__sideCard">
             <div className="pbGudang__sideHead"><h3>Aktivitas Terbaru</h3><button className="btn-text">Lihat Semua</button></div>
             <div className="gdash__timeline">
-              {activities.map((a, i) => (
+              {activities.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "20px", color: "#888", fontSize: "12px" }}>Belum ada aktivitas terbaru</div>
+              ) : activities.map((a, i) => (
                 <div key={i} className="gdash__timeItem">
                   <div className="gdash__alertIcon" style={{ width: '32px', height: '32px', background: `${a.color}15`, color: a.color, fontSize: '14px' }}>{a.icon}</div>
                   <div className="gdash__timeContent">
                     <p className="gdash__timeTitle" style={{ fontSize: '12px' }}>{a.title}</p>
-                    <p className="gdash__timeSub">{a.sub} • {a.time}</p>
+                    <p className="gdash__timeSub" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '160px' }}>{a.sub}</p>
+                    <p className="gdash__timeSub" style={{ fontSize: '10px' }}>{a.time}</p>
                   </div>
                 </div>
               ))}

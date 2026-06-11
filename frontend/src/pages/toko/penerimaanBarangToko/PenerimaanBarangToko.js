@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import DetailModal from "../../../components/common/DetailModal";
 import { subscribeRequests, getBranches } from "../../../services/wmsApi";
 import "./PenerimaanBarangToko.css";
+import LockedSelect from "../../../components/common/LockedSelect";
 
 const easing = [0.22, 1, 0.36, 1];
 
@@ -182,14 +183,13 @@ export default function PenerimaanBarangToko() {
           <section className="penerimaan-content-box">
             {/* FILTERS */}
             <div className="penerimaan-filters">
-              <select
-                className="filter-select"
+              <LockedSelect
                 value={filterGudang}
                 onChange={e => setFilterGudang(e.target.value)}
               >
                 <option>Semua Gudang</option>
                 {gudangList.map(g => <option key={g}>{g}</option>)}
-              </select>
+              </LockedSelect>
               <div className="filter-search">
                 <span>🔍</span>
                 <input
@@ -271,7 +271,9 @@ export default function PenerimaanBarangToko() {
                     <tbody>
                       {filtered.map((row, idx) => {
                         const st = mapStatus(row.status);
-                        const total = totalItems(row.items);
+                        const total = row.confirmationData 
+                          ? Number(row.confirmationData.qtyGood) 
+                          : totalItems(row.items);
                         const itemNames = (row.items || [])
                           .slice(0, 2)
                           .map(i => i.name || i.sku)

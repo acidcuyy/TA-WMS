@@ -420,7 +420,7 @@ export function driverUploadBuktiSiapKirim(id, driverName = "Driver 01", proofDa
  * - hanya boleh saat status Mengirim
  * - status -> Diterima Toko (driver masih perlu menyelesaikan)
  * =========================== */
-export function tokoSelesaiTerima(id, proofImage = null) {
+export function tokoSelesaiTerima(id, proofImage = null, confirmationData = null) {
   return dbUpdate((db) => {
     const r = (db.requests || []).find((x) => x.id === id);
     if (!r) return db;
@@ -432,14 +432,24 @@ export function tokoSelesaiTerima(id, proofImage = null) {
     r.status = "Diterima Toko";
     r.proofImage = proofImage;
     r.receivedAt = new Date().toISOString();
+    
+    if (confirmationData) {
+      r.confirmationData = confirmationData;
+    }
 
     // ✅ SYNC langsung ke warehouseStock saat toko terima barang
     db.warehouseStock = db.warehouseStock || [];
     (r.items || []).forEach(item => {
       const existing = db.warehouseStock.find(x => (x.sku === item.sku || x.sku === item.code) && x.branchId === "BRC-003");
       const sku = item.sku || item.code || `SKU-${item.name}`;
+      
+      // Gunakan qtyGood jika tersedia (dan asumsi 1 item untuk kemudahan), jika tidak fallback ke item.qty
+      const qtyToAdd = r.confirmationData && r.items.length === 1 
+        ? Number(r.confirmationData.qtyGood) 
+        : (Number(item.qty) || 0);
+
       if (existing) {
-        existing.qty += Number(item.qty) || 0;
+        existing.qty += qtyToAdd;
       } else {
         db.warehouseStock.push({
           sku,
@@ -447,7 +457,7 @@ export function tokoSelesaiTerima(id, proofImage = null) {
           type: item.category || item.type || "Umum",
           category: item.category || item.type || "Umum",
           unit: item.unit || "pcs",
-          qty: Number(item.qty) || 0,
+          qty: qtyToAdd,
           minQty: 5,
           price: 0,
           branchId: "BRC-003",
@@ -619,7 +629,7 @@ export function adminDecideRestock(id, decision) {
  * - hanya boleh saat status Diproses
  * - upload proofImage -> status Selesai
  * =========================== */
-export function gudangFinishRestockWithProof(id, proofImage) {
+export function gudangFinishRestockWithProof(id, proofImage, confirmationData = null) {
   return dbUpdate((db) => {
     const r = (db.restockToAdmin || []).find((x) => x.id === id);
     if (!r) return db;
@@ -630,19 +640,29 @@ export function gudangFinishRestockWithProof(id, proofImage) {
 
     r.proofImage = proofImage || null;
     r.status = "Selesai";
+    
+    if (confirmationData) {
+      r.confirmationData = confirmationData;
+    }
 
     // TAMBAH STOK FISIK GUDANG
     db.warehouseStock = db.warehouseStock || [];
     (r.items || []).forEach(item => {
       const stock = db.warehouseStock.find(s => s.branchId === (r.fromBranchId || "BRC-001") && s.sku === item.sku);
+      
+      // Gunakan qtyGood jika tersedia (dan asumsi 1 item), jika tidak fallback ke item.qty
+      const qtyToAdd = r.confirmationData && r.items.length === 1 
+        ? Number(r.confirmationData.qtyGood) 
+        : (Number(item.qty) || 0);
+
       if (stock) {
-        stock.qty += item.qty;
+        stock.qty += qtyToAdd;
       } else {
         db.warehouseStock.push({
           sku: item.sku,
           name: item.name || item.sku,
           type: item.category || item.type || "General",
-          qty: item.qty,
+          qty: qtyToAdd,
           minQty: 30,
           image: null,
           branchId: r.fromBranchId || "BRC-001"
@@ -650,11 +670,19 @@ export function gudangFinishRestockWithProof(id, proofImage) {
       }
     });
 
+    let notifMsg = `Proses restock ${id} telah selesai dengan bukti terlampir`;
+    if (confirmationData) {
+      notifMsg += ` Diterima baik: ${confirmationData.qtyGood}.`;
+      if (Number(confirmationData.qtyBad) > 0) {
+        notifMsg += ` Rusak: ${confirmationData.qtyBad}. Catatan: ${confirmationData.notes || '-'}`;
+      }
+    }
+
     db.notifications.unshift({
       id: newId("NTF"),
       type: "restock_done",
       title: "Restock Selesai",
-      message: `Proses restock ${id} telah selesai dengan bukti terlampir`,
+      message: notifMsg,
       time: nowTimeHHMM(),
       isRead: false,
       targetRoles: ["admin"],
@@ -751,8 +779,9 @@ export function gudangAcceptAdminRestock(id) {
   });
 }
 
-export function gudangUploadProofAndFinish(id, proofPhotos) {
+export function gudangUploadProofAndFinish(id, proofPhotos, confirmationData = null) {
   // proofPhotos = { checkBarang: [base64...], resiDriver: [base64...], pemasukanBarang: [base64...] }
+  // confirmationData = { qtyGood: 100, qtyBad: 0, notes: "" }
   return dbUpdate((db) => {
     const r = (db.adminRestockToGudang || []).find((x) => x.id === id);
     if (!r) return db;
@@ -763,29 +792,43 @@ export function gudangUploadProofAndFinish(id, proofPhotos) {
     r.proofPhotos = proofPhotos;
     r.status = "Selesai";
     r.completedAt = new Date().toISOString().slice(0, 10);
+    
+    if (confirmationData) {
+      r.confirmationData = confirmationData;
+    }
+
+    const qtyToAdd = confirmationData ? Number(confirmationData.qtyGood || 0) : Number(r.jumlah || 0);
 
     // TAMBAH STOK FISIK GUDANG
     db.warehouseStock = db.warehouseStock || [];
     const stock = db.warehouseStock.find(s => s.branchId === r.cabangGudang && s.sku === r.kodeBarang);
     if (stock) {
-      stock.qty += r.jumlah;
+      stock.qty += qtyToAdd;
     } else {
       db.warehouseStock.push({
         sku: r.kodeBarang,
         name: r.namaBarang || r.kodeBarang,
         type: r.jenisBarang || "General",
-        qty: r.jumlah,
+        qty: qtyToAdd,
         minQty: 30,
         image: null,
         branchId: r.cabangGudang
       });
     }
 
+    let notifMsg = `Proses restock ${id} (${r.namaBarang}) telah selesai. Bukti foto telah diunggah oleh Gudang.`;
+    if (confirmationData) {
+      notifMsg += ` Diterima baik: ${confirmationData.qtyGood}.`;
+      if (Number(confirmationData.qtyBad) > 0) {
+        notifMsg += ` Rusak: ${confirmationData.qtyBad}. Catatan: ${confirmationData.notes || '-'}`;
+      }
+    }
+
     db.notifications.unshift({
       id: newId("NTF"),
       type: "admin_restock_done",
       title: "Restock Selesai",
-      message: `Proses restock ${id} (${r.namaBarang}) telah selesai. Bukti foto telah diunggah oleh Gudang.`,
+      message: notifMsg,
       time: nowTimeHHMM(),
       isRead: false,
       targetRoles: ["admin"],

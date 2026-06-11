@@ -1,41 +1,88 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Card from "../../../components/common/Card";
 import DetailModal from "../../../components/common/DetailModal";
 import DateRangePicker from "../../../components/common/DateRangePicker";
+import { subscribeRequests, subscribeNotifications } from "../../../services/wmsApi";
 import "./TransferBarang.css";
 
 export default function TransferBarang() {
   const [activeTab, setActiveTab] = useState("Semua");
   const [detailModal, setDetailModal] = useState(null);
 
-  const stats = [
-    { label: "Total Transfer", value: "120", sub: "Transaksi", hint: "↑ 12.4% dari periode lalu", icon: "⇄", color: "#1890ff", bg: "#e6f7ff" },
-    { label: "Total Item Ditransfer", value: "2.850", sub: "Item", hint: "↑ 8.6% dari periode lalu", icon: "📦", color: "#52c41a", bg: "#f6ffed" },
+  const [allRequests, setAllRequests] = useState([]);
+  const [notifications, setNotifications] = useState([]);
 
-    { label: "Transfer Hari Ini", value: "6", sub: "Transaksi", hint: "Lihat detail", icon: "🚚", color: "#1890ff", bg: "#e6f7ff" },
-    { label: "Dalam Pengiriman", value: "8", sub: "Transaksi", hint: "Lihat detail", icon: "🕒", color: "#fa8c16", bg: "#fff7e6" },
-  ];
+  useEffect(() => {
+    const unsubReq = subscribeRequests(data => setAllRequests(data || []));
+    const unsubNotif = subscribeNotifications(data => setNotifications(data || []));
+    return () => { unsubReq(); unsubNotif(); };
+  }, []);
 
-  const transfers = [
-    { id: "TR-2026-00125", date: "07 Feb 2026 10:15", from: "Gudang Pusat", to: "Toko A", items: 45, value: 125450000, status: "Dalam Pengiriman", est: "08 Feb 2026" },
-    { id: "TR-2026-00124", date: "07 Feb 2026 09:30", from: "Gudang Pusat", to: "Gudang Timur", items: 30, value: 68250000, status: "Menunggu", est: "08 Feb 2026" },
-    { id: "TR-2026-00123", date: "06 Feb 2026 16:20", from: "Gudang Barat", to: "Gudang Pusat", items: 25, value: 45600000, status: "Disetujui", est: "07 Feb 2026" },
-    { id: "TR-2026-00122", date: "06 Feb 2026 14:10", from: "Gudang Pusat", to: "Toko B", items: 18, value: 32800000, status: "Selesai", est: "06 Feb 2026" },
-    { id: "TR-2026-00121", date: "06 Feb 2026 11:05", from: "Gudang Pusat", to: "Toko C", items: 22, value: 38750000, status: "Selesai", est: "06 Feb 2026" },
-    { id: "TR-2026-00120", date: "05 Feb 2026 15:45", from: "Gudang Timur", to: "Toko D", items: 32, value: 75300000, status: "Dalam Pengiriman", est: "06 Feb 2026" },
-    { id: "TR-2026-00119", date: "05 Feb 2026 11:20", from: "Gudang Barat", to: "Gudang Pusat", items: 15, value: 28150000, status: "Disetujui", est: "06 Feb 2026" },
-    { id: "TR-2026-00118", date: "04 Feb 2026 17:05", from: "Gudang Pusat", to: "Toko E", items: 28, value: 55900000, status: "Selesai", est: "05 Feb 2026" },
-    { id: "TR-2026-00117", date: "04 Feb 2026 09:30", from: "Gudang Timur", to: "Toko F", items: 20, value: 37600000, status: "Menunggu", est: "05 Feb 2026" },
-    { id: "TR-2026-00116", date: "03 Feb 2026 14:45", from: "Gudang Pusat", to: "Toko G", items: 40, value: 89500000, status: "Dibatalkan", est: "-" },
-  ];
+  const transfers = useMemo(() => {
+    return allRequests.map(r => ({
+      id: r.id.replace('REQ', 'TR'), 
+      rawId: r.id,
+      date: new Date(r.createdAt || new Date()).toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+      from: r.toName || "Gudang",
+      to: r.fromName || "Toko",
+      items: r.items ? r.items.reduce((acc, it) => acc + (it.qty || 0), 0) : 0,
+      value: r.items ? r.items.reduce((acc, it) => acc + (it.qty * 25000), 0) : 0,
+      status: r.status === "Selesai" || r.status === "Diterima Toko" ? "Selesai" : r.status === "Mengirim" ? "Dalam Pengiriman" : r.status === "Declined" ? "Dibatalkan" : r.status === "Accepted" ? "Disetujui" : "Menunggu",
+      est: r.status === "Selesai" || r.status === "Diterima Toko" ? "-" : "Segera",
+    }));
+  }, [allRequests]);
 
-  const activities = [
-    { title: "Transfer dari Gudang Pusat ke Toko A", sub: "TR-2026-00125", time: "10 menit lalu", color: "#fa8c16", icon: "🕒" },
-    { title: "Transfer dari Gudang Barat ke Gudang Pusat", sub: "TR-2026-00123", time: "1 jam lalu", color: "#52c41a", icon: "✅" },
-    { title: "Transfer dari Gudang Pusat ke Toko C", sub: "TR-2026-00121", time: "2 jam lalu", color: "#1890ff", icon: "🚚" },
-    { title: "Transfer dari Gudang Timur ke Toko D", sub: "TR-2026-00120", time: "3 jam lalu", color: "#1890ff", icon: "🚚" },
-    { title: "Transfer dari Gudang Pusat ke Toko G", sub: "TR-2026-00116", time: "1 hari lalu", color: "#ff4d4f", icon: "🚫" },
-  ];
+  const filteredTransfers = useMemo(() => {
+    if (activeTab === "Semua") return transfers;
+    return transfers.filter(t => t.status === activeTab);
+  }, [transfers, activeTab]);
+
+  const stats = useMemo(() => {
+    const total = transfers.length;
+    const totalItems = transfers.reduce((sum, t) => sum + t.items, 0);
+    const today = new Date().toISOString().slice(0, 10);
+    const todayTransfers = allRequests.filter(r => r.createdAt && r.createdAt.slice(0, 10) === today).length;
+    const shipping = transfers.filter(t => t.status === "Dalam Pengiriman").length;
+
+    return [
+      { label: "Total Transfer", value: total.toString(), sub: "Transaksi", hint: "Keseluruhan", icon: "⇄", color: "#1890ff", bg: "#e6f7ff" },
+      { label: "Total Item Ditransfer", value: totalItems.toLocaleString('id-ID'), sub: "Item", hint: "Keseluruhan", icon: "📦", color: "#52c41a", bg: "#f6ffed" },
+      { label: "Transfer Hari Ini", value: todayTransfers.toString(), sub: "Transaksi", hint: "Lihat detail", icon: "🚚", color: "#1890ff", bg: "#e6f7ff" },
+      { label: "Dalam Pengiriman", value: shipping.toString(), sub: "Transaksi", hint: "Lihat detail", icon: "🕒", color: "#fa8c16", bg: "#fff7e6" },
+    ];
+  }, [transfers, allRequests]);
+
+  const topDestinations = useMemo(() => {
+    const map = {};
+    let totalItems = 0;
+    transfers.forEach(t => {
+      map[t.to] = (map[t.to] || 0) + t.items;
+      totalItems += t.items;
+    });
+    const colors = ["#52c41a", "#fa8c16", "#1890ff", "#722ed1", "#13c2c2"];
+    return Object.entries(map)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([label, val], i) => ({
+        label,
+        val: val.toString(),
+        pct: totalItems > 0 ? ((val / totalItems) * 100).toFixed(1) : 0,
+        color: colors[i % colors.length]
+      }));
+  }, [transfers]);
+
+  const activities = useMemo(() => {
+    return notifications
+      .filter(n => n.targetRoles?.includes("gudang") && n.type?.includes("transfer"))
+      .slice(0, 5)
+      .map(n => ({
+        title: n.title,
+        sub: n.message,
+        time: n.time || new Date(n.date || new Date()).toLocaleString(),
+        color: n.type?.includes("done") ? "#52c41a" : "#1890ff",
+        icon: n.type?.includes("done") ? "✅" : "⇄"
+      }));
+  }, [notifications]);
 
   const getStatusClass = (status) => {
     switch (status) {
@@ -92,12 +139,12 @@ export default function TransferBarang() {
         {/* TABS */}
         <div className="trBarang__tabs">
           {[
-            { name: "Semua", count: 120 },
-            { name: "Menunggu", count: 8 },
-            { name: "Disetujui", count: 20 },
-            { name: "Dalam Pengiriman", count: 8 },
-            { name: "Selesai", count: 80 },
-            { name: "Dibatalkan", count: 4 }
+            { name: "Semua", count: transfers.length },
+            { name: "Menunggu", count: transfers.filter(t => t.status === "Menunggu").length },
+            { name: "Disetujui", count: transfers.filter(t => t.status === "Disetujui").length },
+            { name: "Dalam Pengiriman", count: transfers.filter(t => t.status === "Dalam Pengiriman").length },
+            { name: "Selesai", count: transfers.filter(t => t.status === "Selesai").length },
+            { name: "Dibatalkan", count: transfers.filter(t => t.status === "Dibatalkan").length }
           ].map(tab => (
             <div
               key={tab.name}
@@ -128,9 +175,15 @@ export default function TransferBarang() {
                     </tr>
                   </thead>
                   <tbody>
-                    {transfers.map((t, i) => (
+                    {filteredTransfers.length === 0 ? (
+                      <tr>
+                        <td colSpan="7" style={{ textAlign: "center", padding: "20px", color: "#888" }}>
+                          Belum ada data transfer.
+                        </td>
+                      </tr>
+                    ) : filteredTransfers.map((t, i) => (
                       <tr key={i}>
-                        <td style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <td style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }} onClick={() => setDetailModal(t)}>
                           <span style={{ fontSize: '14px', color: '#1890ff' }}>⇄</span> {t.id}
                         </td>
                         <td style={{ fontSize: '12px', color: '#888' }}>{t.date}</td>
@@ -150,7 +203,7 @@ export default function TransferBarang() {
                 </table>
               </div>
               <footer style={{ padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '12px', color: '#888' }}>Menampilkan 1 - 10 dari 120 data</span>
+                <span style={{ fontSize: '12px', color: '#888' }}>Menampilkan 1 - {filteredTransfers.length} dari {filteredTransfers.length} data</span>
                 <div className="pagination">
                   <select className="mpAdmin__select" style={{ padding: '4px 8px' }}><option>10 / halaman</option></select>
                   <div className="page-controls">
@@ -171,11 +224,9 @@ export default function TransferBarang() {
                 <div className="trBarang__sideHead">
                   <h3>Ringkasan Transfer</h3>
                 </div>
-                <p style={{ fontSize: '11px', color: '#888', marginBottom: '16px' }}>Periode: 01 - 07 Feb 2026</p>
-                <div className="trBarang__summaryItem"><span>Total Transfer</span><b>120</b></div>
-                <div className="trBarang__summaryItem"><span>Total Item Ditransfer</span><b>2.850 item</b></div>
-
-                <div className="trBarang__summaryItem"><span>Rata-rata per Transaksi</span><b>Rp 5.711.250</b></div>
+                <p style={{ fontSize: '11px', color: '#888', marginBottom: '16px' }}>Semua Waktu</p>
+                <div className="trBarang__summaryItem"><span>Total Transfer</span><b>{transfers.length}</b></div>
+                <div className="trBarang__summaryItem"><span>Total Item Ditransfer</span><b>{transfers.reduce((sum, t) => sum + t.items, 0)} item</b></div>
               </div>
 
               <div className="trBarang__sideCard">
@@ -186,26 +237,26 @@ export default function TransferBarang() {
                   <div style={{ position: 'relative', width: '120px', height: '120px' }}>
                     <svg viewBox="0 0 36 36" style={{ transform: 'rotate(-90deg)' }}>
                       <circle cx="18" cy="18" r="16" fill="none" stroke="#eee" strokeWidth="4" />
-                      <circle cx="18" cy="18" r="16" fill="none" stroke="#52c41a" strokeWidth="4" strokeDasharray="32 100" />
-                      <circle cx="18" cy="18" r="16" fill="none" stroke="#fa8c16" strokeWidth="4" strokeDasharray="20 100" strokeDashoffset="-32" />
-                      <circle cx="18" cy="18" r="16" fill="none" stroke="#1890ff" strokeWidth="4" strokeDasharray="17 100" strokeDashoffset="-52" />
-                      <circle cx="18" cy="18" r="16" fill="none" stroke="#722ed1" strokeWidth="4" strokeDasharray="15 100" strokeDashoffset="-69" />
-                      <circle cx="18" cy="18" r="16" fill="none" stroke="#13c2c2" strokeWidth="4" strokeDasharray="16 100" strokeDashoffset="-84" />
+                      {topDestinations.map((s, i) => {
+                        const prevPcts = topDestinations.slice(0, i).reduce((sum, sp) => sum + Number(sp.pct), 0);
+                        return (
+                          <circle 
+                            key={i} cx="18" cy="18" r="16" fill="none" stroke={s.color} strokeWidth="4" 
+                            strokeDasharray={`${Number(s.pct)} 100`} strokeDashoffset={-prevPcts} 
+                          />
+                        );
+                      })}
                     </svg>
                   </div>
                   <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {[
-                      { label: "Toko A", val: "38", pct: "31.7%", color: "#52c41a" },
-                      { label: "Toko B", val: "24", pct: "20.0%", color: "#fa8c16" },
-                      { label: "Gudang Timur", val: "20", pct: "16.7%", color: "#1890ff" },
-                      { label: "Toko C", val: "18", pct: "15.0%", color: "#722ed1" },
-                      { label: "Lainnya", val: "20", pct: "16.6%", color: "#13c2c2" },
-                    ].map((s, i) => (
+                    {topDestinations.length === 0 ? (
+                      <div style={{ textAlign: "center", color: "#888", fontSize: "11px" }}>Belum ada data</div>
+                    ) : topDestinations.map((s, i) => (
                       <div key={i} style={{ display: 'flex', alignItems: 'center', fontSize: '11px' }}>
                         <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: s.color, marginRight: '8px' }}></span>
-                        <span style={{ flex: 1, color: '#666' }}>{s.label}</span>
+                        <span style={{ flex: 1, color: '#666', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.label}</span>
                         <span style={{ width: '20px', textAlign: 'right', marginRight: '8px' }}>{s.val}</span>
-                        <span style={{ fontWeight: 700 }}>({s.pct})</span>
+                        <span style={{ fontWeight: 700 }}>({s.pct}%)</span>
                       </div>
                     ))}
                   </div>
@@ -215,12 +266,15 @@ export default function TransferBarang() {
               <div className="trBarang__sideCard">
                 <div className="trBarang__sideHead"><h3>Aktivitas Terbaru</h3><button className="btn-text">Lihat Semua</button></div>
                 <div className="gdash__timeline">
-                  {activities.map((a, i) => (
+                  {activities.length === 0 ? (
+                    <div style={{ textAlign: "center", padding: "20px", color: "#888", fontSize: "12px" }}>Belum ada aktivitas terbaru</div>
+                  ) : activities.map((a, i) => (
                     <div key={i} className="gdash__timeItem">
                       <div className="gdash__alertIcon" style={{ width: '32px', height: '32px', background: `${a.color}15`, color: a.color, fontSize: '14px' }}>{a.icon}</div>
                       <div className="gdash__timeContent">
                         <p className="gdash__timeTitle" style={{ fontSize: '12px' }}>{a.title}</p>
-                        <p className="gdash__timeSub">{a.sub} • {a.time}</p>
+                        <p className="gdash__timeSub" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '160px' }}>{a.sub}</p>
+                        <p className="gdash__timeSub" style={{ fontSize: '10px' }}>{a.time}</p>
                       </div>
                     </div>
                   ))}

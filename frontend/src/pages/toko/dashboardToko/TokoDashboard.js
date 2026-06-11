@@ -56,6 +56,53 @@ export default function TokoDashboard() {
   // Sort best sellers (we use top stock for now)
   const topStock = [...stock].sort((a, b) => (b.qty || 0) - (a.qty || 0)).slice(0, 5);
 
+  const chartData = useMemo(() => {
+    const data = [];
+    let maxCount = 0;
+    for (let i = 4; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().slice(0, 10);
+      const count = outflows.filter(o => o.createdAt?.slice(0, 10) === dateStr).length;
+      if (count > maxCount) maxCount = count;
+      data.push({ label: i === 0 ? "Hari Ini" : i === 1 ? "Kemarin" : `H-${i}`, count });
+    }
+    
+    let yMax = 10;
+    if (maxCount > 0) {
+      if (maxCount <= 10) {
+        yMax = 10;
+      } else if (maxCount <= 50) {
+        yMax = Math.ceil(maxCount / 10) * 10;
+      } else {
+        const magnitude = Math.pow(10, Math.floor(Math.log10(maxCount)));
+        yMax = Math.ceil(maxCount / magnitude) * magnitude;
+      }
+    }
+
+    const pts = data.map((d, i) => {
+      const x = i * 200; // 0, 200, 400, 600, 800
+      const y = 200 - (d.count / yMax) * 180; // range 20 to 200
+      return { x, y, count: d.count, label: d.label };
+    });
+
+    let pathD = `M${pts[0].x},${pts[0].y}`;
+    let areaD = `M${pts[0].x},${pts[0].y}`;
+    for (let i = 1; i < pts.length; i++) {
+      const p0 = pts[i - 1];
+      const p1 = pts[i];
+      const cp1x = p0.x + 80;
+      const cp1y = p0.y;
+      const cp2x = p1.x - 80;
+      const cp2y = p1.y;
+      pathD += ` C${cp1x},${cp1y} ${cp2x},${cp2y} ${p1.x},${p1.y}`;
+      areaD += ` C${cp1x},${cp1y} ${cp2x},${cp2y} ${p1.x},${p1.y}`;
+    }
+    areaD += ` L800,220 L0,220 Z`;
+
+    return { pts, pathD, areaD, yMax };
+  }, [outflows]);
+
   const summaryCards = [
     {
       label: "Total Stok",
@@ -212,10 +259,10 @@ export default function TokoDashboard() {
             <div className="chart-container">
               {/* Y Labels on the left */}
               <div style={{ position: "absolute", left: "0", top: "0", bottom: "30px", width: "80px", fontSize: "10px", color: "#94a3b8", display: "flex", flexDirection: "column", justifyContent: "space-between", pointerEvents: "none", zIndex: 5 }}>
-                <span>100 Trx</span>
-                <span>75 Trx</span>
-                <span>50 Trx</span>
-                <span>25 Trx</span>
+                <span>{chartData.yMax} Trx</span>
+                <span>{Math.round(chartData.yMax * 0.75)} Trx</span>
+                <span>{Math.round(chartData.yMax * 0.5)} Trx</span>
+                <span>{Math.round(chartData.yMax * 0.25)} Trx</span>
                 <span>0</span>
               </div>
               
@@ -232,7 +279,7 @@ export default function TokoDashboard() {
                 ))}
                 {/* Area */}
                 <motion.path
-                  d="M0,160 C100,140 150,100 200,120 C250,140 350,80 400,90 C450,100 550,60 600,80 C650,100 750,70 800,90 L800,220 L0,220 Z"
+                  d={chartData.areaD}
                   fill="url(#chartGradient)"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -240,7 +287,7 @@ export default function TokoDashboard() {
                 />
                 {/* Line */}
                 <motion.path
-                  d="M0,160 C100,140 150,100 200,120 C250,140 350,80 400,90 C450,100 550,60 600,80 C650,100 750,70 800,90"
+                  d={chartData.pathD}
                   fill="none"
                   stroke="#22c55e"
                   strokeWidth="3.5"
@@ -251,9 +298,7 @@ export default function TokoDashboard() {
                   transition={{ delay: 0.8, duration: 1.8, ease: "easeInOut" }}
                 />
                 {/* Points */}
-                {[
-                  {x: 0, y: 160}, {x: 200, y: 120}, {x: 400, y: 90}, {x: 600, y: 80}, {x: 800, y: 90}
-                ].map((p, i) => (
+                {chartData.pts.map((p, i) => (
                   <motion.circle 
                     key={i} cx={p.x} cy={p.y} r="5.5" fill="white" stroke="#22c55e" strokeWidth="2.5" 
                     initial={{ scale: 0 }}
@@ -264,10 +309,9 @@ export default function TokoDashboard() {
               </svg>
               {/* X Labels */}
               <div style={{ position: "absolute", left: "80px", right: "0", bottom: "0", height: "30px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div className="chart-label-x" style={{ position: "static", transform: "none" }}>H-4</div>
-                <div className="chart-label-x" style={{ position: "static", transform: "none" }}>H-3</div>
-                <div className="chart-label-x" style={{ position: "static", transform: "none" }}>H-2</div>
-                <div className="chart-label-x" style={{ position: "static", transform: "none" }}>Kemarin</div>
+                {chartData.pts.map((p, i) => (
+                  <div key={i} className="chart-label-x" style={{ position: "static", transform: "none" }}>{p.label}</div>
+                ))}
               </div>
             </div>
           </motion.div>

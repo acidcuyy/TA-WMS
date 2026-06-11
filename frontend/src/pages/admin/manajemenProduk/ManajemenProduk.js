@@ -5,6 +5,7 @@ import Card from "../../../components/common/Card";
 import { subscribeWarehouseStock, subscribeBranches, editWarehouseStock, deleteWarehouseStock } from "../../../services/wmsApi";
 import "../PageAdmin.css";
 import "./ManajemenProdukAdmin.css";
+import LockedSelect from "../../../components/common/LockedSelect";
 
 export default function ManajemenProduk() {
   const navigate = useNavigate();
@@ -128,8 +129,7 @@ export default function ManajemenProduk() {
         </div>
         <div className="mpAdmin__filterGroup">
           {/* Filter Tipe Cabang */}
-          <select 
-            className="mpAdmin__select"
+          <LockedSelect 
             value={filterType}
             onChange={(e) => {
               setFilterType(e.target.value);
@@ -139,11 +139,10 @@ export default function ManajemenProduk() {
             <option value="Semua">Semua Lokasi</option>
             <option value="Gudang">Gudang Saja</option>
             <option value="Toko">Toko Saja</option>
-          </select>
+          </LockedSelect>
 
           {/* Filter Spesifik Cabang */}
-          <select 
-            className="mpAdmin__select"
+          <LockedSelect 
             value={filterBranchId}
             onChange={(e) => setFilterBranchId(e.target.value)}
           >
@@ -154,7 +153,7 @@ export default function ManajemenProduk() {
                 <option key={b.id} value={b.id}>{b.name} ({b.type.toUpperCase()})</option>
               ))
             }
-          </select>
+          </LockedSelect>
 
           <button 
             className="btn-icon" 

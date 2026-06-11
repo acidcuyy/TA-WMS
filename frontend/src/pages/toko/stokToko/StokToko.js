@@ -10,6 +10,7 @@ import {
   editWarehouseStock,
 } from "../../../services/wmsApi";
 import "./StokToko.css";
+import LockedSelect from "../../../components/common/LockedSelect";
 
 const easing = [0.22, 1, 0.36, 1];
 
@@ -306,14 +307,14 @@ export default function StokToko() {
               <div className="stok-produk__main">
                 <section className="stok-content-box">
                   <div className="stok-filters">
-                    <select className="filter-select" value={filterCategory} onChange={e => setFilterCategory(e.target.value)}>
+                    <LockedSelect value={filterCategory} onChange={e => setFilterCategory(e.target.value)}>
                       <option>Semua Kategori</option>
                       {tokoCategories.map(c => <option key={c}>{c}</option>)}
-                    </select>
-                    <select className="filter-select" value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
+                    </LockedSelect>
+                    <LockedSelect value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
                       <option>Semua Status</option>
                       <option>Aman</option><option>Menipis</option><option>Habis</option>
-                    </select>
+                    </LockedSelect>
                     <div className="filter-search">
                       <span>🔍</span>
                       <input placeholder="Cari nama atau SKU..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />

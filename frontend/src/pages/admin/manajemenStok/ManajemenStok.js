@@ -3,25 +3,39 @@ import { motion, AnimatePresence } from "framer-motion";
 import DateRangePicker from "../../../components/common/DateRangePicker";
 import "../PageAdmin.css";
 import "./ManajemenStokAdmin.css";
-import { subscribeAdminRestockToGudang, createAdminRestockToGudang, subscribeBranches } from "../../../services/wmsApi";
+import { subscribeAdminRestockToGudang, createAdminRestockToGudang, subscribeBranches, subscribeWarehouseStock } from "../../../services/wmsApi";
 
 export default function ManajemenStok() {
-  const summary = useMemo(() => {
-    return {
-      totalPerusahaan: 2104,
-      stokGudang: 1860,
-      stokToko: 244,
-    };
-  }, []);
-
   const [requests, setRequests] = useState([]);
   const [branches, setBranches] = useState([]);
+  const [allStock, setAllStock] = useState([]);
 
   useEffect(() => {
     const unsubReq = subscribeAdminRestockToGudang((data) => setRequests(data || []));
     const unsubBranch = subscribeBranches((data) => setBranches(data || []));
-    return () => { unsubReq(); unsubBranch(); };
+    const unsubStock = subscribeWarehouseStock((data) => setAllStock(data || []));
+    return () => { unsubReq(); unsubBranch(); unsubStock(); };
   }, []);
+
+  const summary = useMemo(() => {
+    let stokGudang = 0;
+    let stokToko = 0;
+    
+    allStock.forEach(item => {
+      const branch = branches.find(b => b.id === item.branchId);
+      if (branch?.type === "toko") {
+        stokToko += Number(item.qty) || 0;
+      } else {
+        stokGudang += Number(item.qty) || 0;
+      }
+    });
+
+    return {
+      totalPerusahaan: stokGudang + stokToko,
+      stokGudang,
+      stokToko,
+    };
+  }, [allStock, branches]);
 
   const gudangBranches = useMemo(() => branches.filter(b => b.type === "gudang"), [branches]);
 
@@ -148,8 +162,12 @@ export default function ManajemenStok() {
           <div className="stokAdm__panelHead">
             <div>
               <h2>Ringkasan Stok</h2>
-              <p>● Live monitoring</p>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#e6f7ff', color: '#1890ff', padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 600, marginTop: '8px' }}>
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#1890ff', boxShadow: '0 0 0 0 rgba(24, 144, 255, 0.7)', animation: 'pulseLive 2s infinite' }} />
+                Live Monitoring
+              </div>
             </div>
+            <DateRangePicker />
           </div>
 
           <div className="stokAdm__cards">
@@ -248,7 +266,15 @@ export default function ManajemenStok() {
                     </div>
                     <div style={{ fontSize: "12px", color: "#666" }}>Supplier: {r.supplier}</div>
                   </td>
-                  <td className="stokAdm__qty">{r.jumlah} {r.satuan}</td>
+                  <td className="stokAdm__qty">
+                    {r.status === 'Selesai'
+                      ? <>
+                          {r.confirmationData && r.confirmationData.qtyGood !== '' ? r.confirmationData.qtyGood : r.jumlah} {r.satuan} 
+                          <span style={{fontSize: '11px', color: '#888', display: 'block'}}>(Req: {r.jumlah})</span>
+                        </>
+                      : <>{r.jumlah} {r.satuan}</>
+                    }
+                  </td>
                   <td>
                     <div style={{ display: "flex", flexDirection: "column", gap: "6px", alignItems: "flex-start" }}>
                       <span className={`stokAdm__status ${getStatusClass(r.status)}`}>
@@ -398,6 +424,26 @@ export default function ManajemenStok() {
                 <button className="stokAdm__closeBtn" onClick={() => setProofModal({ open: false, data: null })}>×</button>
               </div>
               <div className="stokAdm__proofBody" style={{ padding: '24px' }}>
+                {proofModal.data.confirmationData && (
+                  <div style={{ marginBottom: '24px', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                    <div style={{ flex: 1, minWidth: '200px', background: '#f6ffed', border: '1px solid #b7eb8f', padding: '12px 16px', borderRadius: '8px' }}>
+                      <span style={{ display: 'block', fontSize: '12px', color: '#52c41a', fontWeight: 'bold', marginBottom: '4px' }}>Diterima Baik</span>
+                      <strong style={{ fontSize: '16px' }}>{proofModal.data.confirmationData.qtyGood} {proofModal.data.satuan}</strong>
+                    </div>
+                    {Number(proofModal.data.confirmationData.qtyBad) > 0 && (
+                      <div style={{ flex: 1, minWidth: '200px', background: '#fff2f0', border: '1px solid #ffccc7', padding: '12px 16px', borderRadius: '8px' }}>
+                        <span style={{ display: 'block', fontSize: '12px', color: '#ff4d4f', fontWeight: 'bold', marginBottom: '4px' }}>Barang Rusak / Kurang</span>
+                        <strong style={{ fontSize: '16px', color: '#cf1322' }}>{proofModal.data.confirmationData.qtyBad} {proofModal.data.satuan}</strong>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {proofModal.data.confirmationData?.notes && (
+                  <div style={{ marginBottom: '24px', background: '#fff1f0', border: '1px solid #ffccc7', padding: '16px', borderRadius: '8px' }}>
+                    <strong style={{ color: '#cf1322', display: 'block', marginBottom: '8px' }}>Catatan Kerusakan dari Gudang:</strong>
+                    <p style={{ color: '#a8071a', margin: 0, fontSize: '14px', lineHeight: '1.5' }}>{proofModal.data.confirmationData.notes}</p>
+                  </div>
+                )}
                 <ProofViewer photos={proofModal.data.proofPhotos} />
               </div>
             </motion.div>

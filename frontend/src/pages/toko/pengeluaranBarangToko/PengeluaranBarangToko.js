@@ -7,6 +7,7 @@ import {
   createTokoOutflow,
 } from "../../../services/wmsApi";
 import "./PengeluaranBarangToko.css";
+import LockedSelect from "../../../components/common/LockedSelect";
 
 const easing = [0.22, 1, 0.36, 1];
 
@@ -328,14 +329,13 @@ export default function PengeluaranBarangToko() {
           <section className="pengeluaran-content-box">
             {/* FILTERS */}
             <div className="pengeluaran-filters">
-              <select
-                className="filter-select"
+              <LockedSelect
                 value={filterJenis}
                 onChange={e => setFilterJenis(e.target.value)}
               >
                 <option>Semua Jenis</option>
                 {jenisList.map(j => <option key={j}>{j}</option>)}
-              </select>
+              </LockedSelect>
               <div className="filter-search">
                 <span>🔍</span>
                 <input

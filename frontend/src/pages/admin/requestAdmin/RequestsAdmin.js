@@ -10,6 +10,7 @@ import { subscribeRestockToAdmin, subscribeRequests, adminDecideRestock, subscri
 export default function RequestsAdmin() {
   const [activeTab, setActiveTab] = useState("Dari Toko ke Gudang");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [formLocked, setFormLocked] = useState(false);
   const [detailModal, setDetailModal] = useState(null);
   const [actualGudangReqs, setActualGudangReqs] = useState([]);
   const [actualTokoReqs, setActualTokoReqs] = useState([]);
@@ -44,17 +45,27 @@ export default function RequestsAdmin() {
 
   // Data Request: Dari Admin ke Gudang
   const adminToGudang = actualAdminReqs.map(r => {
-    const qty = r.items ? r.items.reduce((sum, item) => sum + (Number(item.qty) || 0), 0) : 0;
+    let itemsLabel = r.jumlah ? `${r.jumlah} ${r.satuan || 'pcs'}` : '0';
+    let noteStr = r.catatan || "-";
+
+    if (r.confirmationData) {
+      itemsLabel = `${r.confirmationData.qtyGood} ${r.satuan || 'pcs'} (Req: ${r.jumlah})`;
+      if (Number(r.confirmationData.qtyBad) > 0) {
+        noteStr = `Rusak: ${r.confirmationData.qtyBad}. Catatan: ${r.confirmationData.notes}`;
+      }
+    }
+
     return {
       id: r.id,
       date: r.createdAt,
       time: "-",
-      target: r.toName || r.gudangId,
+      target: r.toName || r.cabangGudangNama || r.cabangGudang,
       city: "-",
-      items: qty,
-      note: r.note,
+      items: itemsLabel,
+      note: noteStr,
       status: r.status,
-      createdBy: r.fromName || "Admin / Owner"
+      createdBy: r.fromName || "Admin / Owner",
+      rawData: r // passed for detail modal
     };
   });
 
@@ -258,14 +269,32 @@ export default function RequestsAdmin() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
             >
-              <div className="rqAdmin__modalHead">
-                <h2>Tambah Permintaan Restock</h2>
-                <button onClick={() => setIsAddModalOpen(false)} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer' }}>✕</button>
+              <div className="rqAdmin__modalHead" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                <h2 style={{ margin: 0 }}>Tambah Permintaan Restock</h2>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                  <button
+                    type="button"
+                    onClick={() => setFormLocked(v => !v)}
+                    title={formLocked ? "Buka kunci form" : "Kunci form agar tidak ada yang berubah"}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '6px',
+                      padding: '5px 12px', borderRadius: '8px', border: '1.5px solid',
+                      fontSize: '12px', fontWeight: 700, cursor: 'pointer',
+                      background: formLocked ? '#fff7ed' : '#f8fafc',
+                      borderColor: formLocked ? '#f97316' : '#e2e8f0',
+                      color: formLocked ? '#f97316' : '#64748b',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    {formLocked ? '🔒 Terkunci' : '🔓 Kunci Form'}
+                  </button>
+                  <button onClick={() => { setIsAddModalOpen(false); setFormLocked(false); }} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer' }}>✕</button>
+                </div>
               </div>
               <div className="rqAdmin__form">
                 <div className="rqAdmin__formGroup">
                   <label>Gudang Tujuan</label>
-                  <select>
+                  <select disabled={formLocked} style={{ cursor: formLocked ? 'not-allowed' : undefined, opacity: formLocked ? 0.6 : 1 }}>
                     <option>Pilih Gudang...</option>
                     <option>Gudang Pusat (Jakarta)</option>
                     <option>Gudang Barat (Bandung)</option>
@@ -274,15 +303,15 @@ export default function RequestsAdmin() {
                 </div>
                 <div className="rqAdmin__formGroup">
                   <label>Barang yang Diminta</label>
-                  <textarea placeholder="Contoh: Lampu LED 12W (100 pcs), Kabel NYM (50 roll)..." rows={4}></textarea>
+                  <textarea placeholder="Contoh: Lampu LED 12W (100 pcs), Kabel NYM (50 roll)..." rows={4} disabled={formLocked} style={{ cursor: formLocked ? 'not-allowed' : undefined, opacity: formLocked ? 0.6 : 1 }}></textarea>
                 </div>
                 <div className="rqAdmin__formGroup">
                   <label>Catatan (Opsional)</label>
-                  <input placeholder="Tambahkan catatan untuk staf gudang..." />
+                  <input placeholder="Tambahkan catatan untuk staf gudang..." disabled={formLocked} style={{ cursor: formLocked ? 'not-allowed' : undefined, opacity: formLocked ? 0.6 : 1 }} />
                 </div>
                 <div className="rqAdmin__modalFoot">
-                  <button className="btn-outline" style={{ flex: 1 }} onClick={() => setIsAddModalOpen(false)}>Batal</button>
-                  <button className="btn-primary" style={{ flex: 2 }} onClick={() => setIsAddModalOpen(false)}>Kirim Permintaan</button>
+                  <button className="btn-outline" style={{ flex: 1 }} onClick={() => { setIsAddModalOpen(false); setFormLocked(false); }}>Batal</button>
+                  <button className="btn-primary" style={{ flex: 2, opacity: formLocked ? 0.5 : 1, cursor: formLocked ? 'not-allowed' : 'pointer' }} onClick={formLocked ? undefined : () => { setIsAddModalOpen(false); setFormLocked(false); }} disabled={formLocked}>{formLocked ? '🔒 Form Terkunci' : 'Kirim Permintaan'}</button>
                 </div>
               </div>
             </motion.div>
@@ -299,10 +328,21 @@ export default function RequestsAdmin() {
           { label: "Tanggal & Waktu", value: `${detailModal.date} ${detailModal.time}` },
           { label: "Status", value: detailModal.status, color: detailModal.status === 'Selesai' || detailModal.status === 'Accepted' ? '#52c41a' : detailModal.status === 'Ditolak' || detailModal.status === 'Declined' ? '#ff4d4f' : '#1890ff' },
           { label: "Dibuat Oleh", value: detailModal.createdBy },
-          { label: "Catatan", value: detailModal.note || "-" },
+          { label: "Catatan", value: detailModal.rawData?.catatan || detailModal.note || "-" },
+          ...(detailModal.rawData?.confirmationData ? [
+            { label: "Diterima Baik", value: `${detailModal.rawData.confirmationData.qtyGood} ${detailModal.rawData.satuan || ''}`, color: '#52c41a' },
+            ...(Number(detailModal.rawData.confirmationData.qtyBad) > 0 ? [
+              { label: "Barang Rusak", value: `${detailModal.rawData.confirmationData.qtyBad} ${detailModal.rawData.satuan || ''}`, color: '#ff4d4f' },
+              { label: "Catatan Gudang", value: detailModal.rawData.confirmationData.notes, color: '#ff4d4f' }
+            ] : [])
+          ] : [])
         ] : []}
         itemsTitle="Daftar Kebutuhan"
-        items={detailModal ? [`${detailModal.items} Item (Kalkulasi otomatis dari sistem)`] : []}
+        items={detailModal ? [
+          detailModal.rawData?.confirmationData 
+            ? `${detailModal.rawData.confirmationData.qtyGood} Item (Diterima) / ${detailModal.rawData.jumlah} Item (Diminta)`
+            : `${detailModal.rawData?.jumlah || detailModal.items} Item (Kalkulasi otomatis dari sistem)`
+        ] : []}
       />
     </div>
   );

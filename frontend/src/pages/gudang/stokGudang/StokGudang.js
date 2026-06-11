@@ -6,6 +6,7 @@ import DetailModal from "../../../components/common/DetailModal";
 import { subscribeWarehouseStock, addWarehouseStock, editWarehouseStock, deleteWarehouseStock } from "../../../services/wmsApi";
 import "../../admin/PageAdmin.css";
 import "../../admin/manajemenProduk/ManajemenProdukAdmin.css";
+import LockedSelect from "../../../components/common/LockedSelect";
 
 export default function StokGudang() {
   const navigate = useNavigate();
@@ -141,8 +142,7 @@ export default function StokGudang() {
           />
         </div>
         <div className="mpAdmin__filterGroup">
-          <select 
-            className="mpAdmin__select"
+          <LockedSelect 
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
           >
@@ -150,7 +150,7 @@ export default function StokGudang() {
             <option value="Aman">Aman</option>
             <option value="Stok rendah">Stok Menipis</option>
             <option value="Habis">Habis</option>
-          </select>
+          </LockedSelect>
 
           <button 
             className="btn-icon" 

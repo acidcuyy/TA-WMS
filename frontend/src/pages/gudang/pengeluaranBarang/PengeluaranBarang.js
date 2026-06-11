@@ -2,17 +2,19 @@ import { useState, useEffect, useMemo } from "react";
 import Card from "../../../components/common/Card";
 import DetailModal from "../../../components/common/DetailModal";
 import DateRangePicker from "../../../components/common/DateRangePicker";
-import { subscribeRequests } from "../../../services/wmsApi";
+import { subscribeRequests, subscribeNotifications } from "../../../services/wmsApi";
 import "./PengeluaranBarang.css";
 
 export default function PengeluaranBarang() {
   const [activeTab, setActiveTab] = useState("Semua");
   const [allRequests, setAllRequests] = useState([]);
+  const [notifications, setNotifications] = useState([]);
   const [detailModal, setDetailModal] = useState(null);
 
   useEffect(() => {
     const unsub = subscribeRequests((data) => setAllRequests(data || []));
-    return () => unsub();
+    const unsubNotif = subscribeNotifications((data) => setNotifications(data || []));
+    return () => { unsub(); unsubNotif(); };
   }, []);
 
   const transactions = useMemo(() => {
@@ -55,13 +57,37 @@ export default function PengeluaranBarang() {
     return transactions.filter(t => t.status === activeTab);
   }, [transactions, activeTab]);
 
-  const activities = [
-    { title: "Pengeluaran barang untuk Toko A", sub: "DO-2026-00125", time: "10 menit lalu", color: "#fa8c16", icon: "🕒" },
-    { title: "Pengeluaran barang untuk Toko B", sub: "DO-2026-00124", time: "40 menit lalu", color: "#1890ff", icon: "⚙️" },
-    { title: "Pengeluaran barang untuk Gudang Timur", sub: "DO-2026-00123", time: "1 jam lalu", color: "#52c41a", icon: "✅" },
-    { title: "Pengeluaran barang untuk Toko C", sub: "DO-2026-00122", time: "3 jam lalu", color: "#52c41a", icon: "✅" },
-    { title: "Pengeluaran barang dibatalkan", sub: "DO-2026-00116", time: "1 hari lalu", color: "#ff4d4f", icon: "🚫" },
-  ];
+  const topDestinations = useMemo(() => {
+    const map = {};
+    let totalVal = 0;
+    transactions.forEach(t => {
+      map[t.destination] = (map[t.destination] || 0) + t.value;
+      totalVal += t.value;
+    });
+    const colors = ["#52c41a", "#fa8c16", "#1890ff", "#722ed1", "#13c2c2"];
+    return Object.entries(map)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([label, val], i) => ({
+        label,
+        val: val,
+        pct: totalVal > 0 ? ((val / totalVal) * 100).toFixed(1) : 0,
+        color: colors[i % colors.length]
+      }));
+  }, [transactions]);
+
+  const activities = useMemo(() => {
+    return notifications
+      .filter(n => n.targetRoles?.includes("gudang") && (n.type?.includes("request") || n.type?.includes("dispatch")))
+      .slice(0, 5)
+      .map(n => ({
+        title: n.title,
+        sub: n.message,
+        time: n.time || new Date(n.date || new Date()).toLocaleString(),
+        color: n.type?.includes("done") ? "#52c41a" : "#fa8c16",
+        icon: n.type?.includes("done") ? "✅" : "🕒"
+      }));
+  }, [notifications]);
 
   const getStatusClass = (status) => {
     switch (status) {
@@ -235,25 +261,25 @@ export default function PengeluaranBarang() {
                 <div style={{ position: 'relative', width: '120px', height: '120px' }}>
                   <svg viewBox="0 0 36 36" style={{ transform: 'rotate(-90deg)' }}>
                     <circle cx="18" cy="18" r="16" fill="none" stroke="#eee" strokeWidth="4" />
-                    <circle cx="18" cy="18" r="16" fill="none" stroke="#52c41a" strokeWidth="4" strokeDasharray="25 100" />
-                    <circle cx="18" cy="18" r="16" fill="none" stroke="#fa8c16" strokeWidth="4" strokeDasharray="20 100" strokeDashoffset="-25" />
-                    <circle cx="18" cy="18" r="16" fill="none" stroke="#1890ff" strokeWidth="4" strokeDasharray="18 100" strokeDashoffset="-45" />
-                    <circle cx="18" cy="18" r="16" fill="none" stroke="#722ed1" strokeWidth="4" strokeDasharray="15 100" strokeDashoffset="-63" />
-                    <circle cx="18" cy="18" r="16" fill="none" stroke="#13c2c2" strokeWidth="4" strokeDasharray="22 100" strokeDashoffset="-78" />
+                    {topDestinations.map((s, i) => {
+                      const prevPcts = topDestinations.slice(0, i).reduce((sum, sp) => sum + Number(sp.pct), 0);
+                      return (
+                        <circle 
+                          key={i} cx="18" cy="18" r="16" fill="none" stroke={s.color} strokeWidth="4" 
+                          strokeDasharray={`${Number(s.pct)} 100`} strokeDashoffset={-prevPcts} 
+                        />
+                      );
+                    })}
                   </svg>
                 </div>
                 <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {[
-                    { label: "Toko A", val: "Rp 245.300.000", pct: "24.9%", color: "#52c41a" },
-                    { label: "Toko B", val: "Rp 198.750.000", pct: "20.2%", color: "#fa8c16" },
-                    { label: "Gudang Timur", val: "Rp 175.600.000", pct: "17.8%", color: "#1890ff" },
-                    { label: "Toko C", val: "Rp 149.800.000", pct: "15.2%", color: "#722ed1" },
-                    { label: "Lainnya", val: "Rp 216.300.000", pct: "21.9%", color: "#13c2c2" },
-                  ].map((s, i) => (
+                  {topDestinations.length === 0 ? (
+                    <div style={{ textAlign: "center", color: "#888", fontSize: "11px" }}>Belum ada data</div>
+                  ) : topDestinations.map((s, i) => (
                     <div key={i} style={{ display: 'flex', alignItems: 'center', fontSize: '11px' }}>
                       <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: s.color, marginRight: '8px' }}></span>
-                      <span style={{ flex: 1, color: '#666' }}>{s.label}</span>
-                      <span style={{ fontWeight: 700 }}>{s.pct}</span>
+                      <span style={{ flex: 1, color: '#666', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.label}</span>
+                      <span style={{ fontWeight: 700 }}>{s.pct}%</span>
                     </div>
                   ))}
                 </div>
@@ -263,12 +289,15 @@ export default function PengeluaranBarang() {
             <div className="pgBarang__sideCard">
               <div className="pgBarang__sideHead"><h3>Aktivitas Terbaru</h3><button className="btn-text">Lihat Semua</button></div>
               <div className="gdash__timeline">
-                {activities.map((a, i) => (
+                {activities.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: "20px", color: "#888", fontSize: "12px" }}>Belum ada aktivitas terbaru</div>
+                ) : activities.map((a, i) => (
                   <div key={i} className="gdash__timeItem">
                     <div className="gdash__alertIcon" style={{ width: '32px', height: '32px', background: `${a.color}15`, color: a.color, fontSize: '14px' }}>{a.icon}</div>
                     <div className="gdash__timeContent">
                       <p className="gdash__timeTitle" style={{ fontSize: '12px' }}>{a.title}</p>
-                      <p className="gdash__timeSub">{a.sub} • {a.time}</p>
+                      <p className="gdash__timeSub" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '160px' }}>{a.sub}</p>
+                      <p className="gdash__timeSub" style={{ fontSize: '10px' }}>{a.time}</p>
                     </div>
                   </div>
                 ))}

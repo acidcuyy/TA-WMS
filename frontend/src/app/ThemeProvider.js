@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { useGlobalSelectLock } from "../hooks/useGlobalSelectLock";
 
 const ThemeContext = createContext(null);
 
@@ -6,6 +7,9 @@ const THEME_KEY = "reastock_theme";
 const ALLOWED = new Set(["warm", "dark"]);
 
 export function ThemeProvider({ children }) {
+  // Global: tambahkan tombol kunci ke semua dropdown <select> di seluruh halaman
+  useGlobalSelectLock();
+
   // Inisialisasi state langsung dari localStorage untuk menghindari flicker
   const [theme, setThemeState] = useState(() => {
     try {

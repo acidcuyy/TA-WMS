@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { subscribeWarehouseStock, subscribeRequests, subscribeNotifications } from "../../../services/wmsApi";
+import { useEffect, useMemo } from "react";
 import "../PageAdmin.css";
 
 export default function ProfileAdmin() {
@@ -31,17 +33,39 @@ export default function ProfileAdmin() {
     // Optional: show a toast or success message here
   };
 
-  const stats = [
-    { label: "Requests Baru", value: "12", sub: "Hari ini", icon: "🗒️" },
-    { label: "Stok Menipis", value: "5", sub: "Butuh perhatian", icon: "📦" },
-    { label: "Sinkronisasi", value: "Aktif", sub: "Realtime", icon: "🔄" },
-  ];
+  const [stock, setStock] = useState([]);
+  const [requests, setRequests] = useState([]);
+  const [notifications, setNotifications] = useState([]);
 
-  const activities = [
-    { time: "10:12", text: "Request REQ-014 masuk dari Toko A", icon: "🛍️", color: "#e6f7ff" },
-    { time: "09:40", text: "Stok Barang BRG-002 menipis (Gudang)", icon: "📦", color: "#f6ffed" },
-    { time: "Kemarin", text: "Update profil admin", icon: "👤", color: "#fff7e6" },
-  ];
+  useEffect(() => {
+    const unsubStock = subscribeWarehouseStock(data => setStock(data || []));
+    const unsubReq = subscribeRequests(data => setRequests(data || []));
+    const unsubNotif = subscribeNotifications(data => setNotifications(data || []));
+    return () => { unsubStock(); unsubReq(); unsubNotif(); };
+  }, []);
+
+  const stats = useMemo(() => {
+    const today = new Date().toISOString().slice(0, 10);
+    const newRequests = requests.filter(r => r.createdAt && r.createdAt.slice(0, 10) === today).length;
+    const lowStockCount = stock.filter(s => s.qty > 0 && s.qty <= (s.minQty || 20)).length;
+    return [
+      { label: "Requests Baru", value: newRequests.toString(), sub: "Hari ini", icon: "🗒️" },
+      { label: "Stok Menipis", value: lowStockCount.toString(), sub: "Butuh perhatian", icon: "📦" },
+      { label: "Sinkronisasi", value: "Aktif", sub: "Realtime", icon: "🔄" },
+    ];
+  }, [requests, stock]);
+
+  const activities = useMemo(() => {
+    return notifications
+      .filter(n => n.targetRoles && n.targetRoles.includes("admin"))
+      .slice(0, 5)
+      .map(n => ({
+        time: n.time || new Date(n.date || new Date()).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+        text: n.message || n.title,
+        icon: n.type?.includes("request") ? "🛍️" : n.type?.includes("stock") ? "📦" : "👤",
+        color: n.type?.includes("request") ? "#e6f7ff" : n.type?.includes("stock") ? "#f6ffed" : "#fff7e6"
+      }));
+  }, [notifications]);
 
   return (
     <div className="profile-page">
@@ -169,14 +193,18 @@ export default function ProfileAdmin() {
             <button className="text-btn-sm" onClick={() => navigate('/admin/requests')}>Lihat Semua</button>
           </div>
           <div className="activity-list-modern">
-            {activities.map((a, i) => (
-              <div key={i} className="activity-row">
-                <div className="activity-icon" style={{ backgroundColor: a.color }}>{a.icon}</div>
-                <span className="activity-time">{a.time}</span>
-                <span className="activity-desc">{a.text}</span>
-                <button className="activity-detail-btn">Detail <span>›</span></button>
-              </div>
-            ))}
+            {activities.length === 0 ? (
+              <div style={{ textAlign: "center", color: "#888", padding: "20px" }}>Belum ada aktivitas terbaru</div>
+            ) : (
+              activities.map((a, i) => (
+                <div key={i} className="activity-row">
+                  <div className="activity-icon" style={{ backgroundColor: a.color }}>{a.icon}</div>
+                  <span className="activity-time">{a.time}</span>
+                  <span className="activity-desc">{a.text}</span>
+                  <button className="activity-detail-btn">Detail <span>›</span></button>
+                </div>
+              ))
+            )}
           </div>
         </section>
       </div>

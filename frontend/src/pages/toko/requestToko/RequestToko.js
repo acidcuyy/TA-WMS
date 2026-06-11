@@ -36,14 +36,21 @@ export default function RequestToko() {
   const [catatan, setCatatan] = useState("");
   const [targetGudang, setTargetGudang] = useState("");
 
+  // Form lock
+  const [formLocked, setFormLocked] = useState(false);
+
   // Confirmation Modal
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmId, setConfirmId] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [confirmTotal, setConfirmTotal] = useState(0);
+  const [uploadData, setUploadData] = useState({ qtyGood: '', qtyBad: '', notes: '' });
 
   // Proof Modal
   const [showProof, setShowProof] = useState(false);
-  const [proofImg, setProofImg] = useState(null);
+  const [proofData, setProofData] = useState(null);
+
+  const openProof = (r) => { setProofData(r); setShowProof(true); };
 
   const easing = [0.22, 1, 0.36, 1];
 
@@ -59,11 +66,6 @@ export default function RequestToko() {
       unsubBranch();
     };
   }, [targetGudang]);
-
-  const openProof = (img) => {
-    setProofImg(img);
-    setShowProof(true);
-  };
 
   const tokoReq = useMemo(() => {
     return allReq.filter((r) => (r.fromRole || "").toLowerCase() === "toko");
@@ -152,10 +154,18 @@ export default function RequestToko() {
 
   const submitTerima = async () => {
     if (!selectedFile) return alert("Pilih foto bukti terlebih dahulu!");
-    await tokoSelesaiTerima(confirmId, selectedFile);
+    await tokoSelesaiTerima(confirmId, selectedFile, uploadData);
     setShowConfirm(false);
     setConfirmId(null);
     setSelectedFile(null);
+  };
+
+  const openConfirmModal = (r) => {
+    const total = (r.items || []).reduce((s, i) => s + Number(i.qty), 0);
+    setConfirmId(r.id);
+    setConfirmTotal(total);
+    setUploadData({ qtyGood: total, qtyBad: '', notes: '' });
+    setShowConfirm(true);
   };
 
   const summaryCards = [
@@ -203,8 +213,26 @@ export default function RequestToko() {
         <div className="request-toko__main">
           <div className="request-left-col">
             {/* FORM CARD */}
-            <section className="request-form-card">
-              <div className="form-title">Buat Request Baru</div>
+            <section className="request-form-card" style={{ position: 'relative' }}>
+              <div className="form-title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span>Buat Request Baru</span>
+                <button
+                  type="button"
+                  onClick={() => setFormLocked(v => !v)}
+                  title={formLocked ? "Buka kunci form" : "Kunci form agar tidak ada yang berubah"}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '6px',
+                    padding: '5px 12px', borderRadius: '8px', border: '1.5px solid',
+                    fontSize: '12px', fontWeight: 700, cursor: 'pointer',
+                    background: formLocked ? '#fff7ed' : '#f8fafc',
+                    borderColor: formLocked ? '#f97316' : '#e2e8f0',
+                    color: formLocked ? '#f97316' : '#64748b',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  {formLocked ? '🔒 Terkunci' : '🔓 Kunci Form'}
+                </button>
+              </div>
               <p className="form-sub">Pilih gudang dan isi detail barang yang Anda butuhkan.</p>
 
               <style>{`
@@ -220,6 +248,8 @@ export default function RequestToko() {
                     className="input-field"
                     value={targetGudang}
                     onChange={(e) => setTargetGudang(e.target.value)}
+                    disabled={formLocked}
+                    style={{ cursor: formLocked ? 'not-allowed' : undefined, opacity: formLocked ? 0.6 : 1 }}
                   >
                     {branches.length === 0 && <option value="">Memuat gudang...</option>}
                     {branches.map(b => (
@@ -234,6 +264,8 @@ export default function RequestToko() {
                     value={kode}
                     onChange={(e) => setKode(e.target.value)}
                     placeholder="Contoh: BRG-002"
+                    disabled={formLocked}
+                    style={{ cursor: formLocked ? 'not-allowed' : undefined, opacity: formLocked ? 0.6 : 1 }}
                   />
                 </div>
               </div>
@@ -246,6 +278,8 @@ export default function RequestToko() {
                     value={namaBarang}
                     onChange={(e) => setNamaBarang(e.target.value)}
                     placeholder="Contoh: Susu UHT 1L"
+                    disabled={formLocked}
+                    style={{ cursor: formLocked ? 'not-allowed' : undefined, opacity: formLocked ? 0.6 : 1 }}
                   />
                 </div>
                 <div className="input-group">
@@ -254,6 +288,8 @@ export default function RequestToko() {
                     className="input-field"
                     value={kategori}
                     onChange={(e) => setKategori(e.target.value)}
+                    disabled={formLocked}
+                    style={{ cursor: formLocked ? 'not-allowed' : undefined, opacity: formLocked ? 0.6 : 1 }}
                   >
                     <option value="Elektronik">Elektronik</option>
                     <option value="Plumbing">Plumbing</option>
@@ -292,9 +328,10 @@ export default function RequestToko() {
                     />
                     <select
                       className="input-field"
-                      style={{ flex: 1 }}
+                      style={{ flex: 1, cursor: formLocked ? 'not-allowed' : undefined, opacity: formLocked ? 0.6 : 1 }}
                       value={satuan}
                       onChange={(e) => setSatuan(e.target.value)}
+                      disabled={formLocked}
                     >
                       <option value="pcs">Pcs</option>
                       <option value="box">Box</option>
@@ -310,6 +347,8 @@ export default function RequestToko() {
                     className="input-field"
                     value={prioritas}
                     onChange={(e) => setPrioritas(e.target.value)}
+                    disabled={formLocked}
+                    style={{ cursor: formLocked ? 'not-allowed' : undefined, opacity: formLocked ? 0.6 : 1 }}
                   >
                     <option value="Normal">Normal</option>
                     <option value="Urgent">Urgent (Segera)</option>
@@ -338,8 +377,13 @@ export default function RequestToko() {
                 </div>
               </div>
 
-              <button className="btn-submit" style={{ marginTop: '20px' }} onClick={sendRequest}>
-                Kirim Request ke Gudang
+              <button
+                className="btn-submit"
+                style={{ marginTop: '20px', opacity: formLocked ? 0.5 : 1, cursor: formLocked ? 'not-allowed' : 'pointer' }}
+                onClick={formLocked ? undefined : sendRequest}
+                disabled={formLocked}
+              >
+                {formLocked ? '🔒 Form Terkunci — Buka kunci untuk kirim' : 'Kirim Request ke Gudang'}
               </button>
             </section>
 
@@ -367,8 +411,9 @@ export default function RequestToko() {
                       const item = r.items?.[0];
                       const itemName = item?.name || "Item Request";
                       const itemCode = item?.code || "";
-                      const itemQty = item?.qty || 0;
-                      const itemText = `${itemName} ${itemCode ? `(${itemCode})` : ""} - ${itemQty} Pcs`;
+                      const itemQty = r.confirmationData ? Number(r.confirmationData.qtyGood) : (item?.qty || 0);
+                      const qtySuffix = r.confirmationData ? "Pcs (Diterima)" : "Pcs";
+                      const itemText = `${itemName} ${itemCode ? `(${itemCode})` : ""} - ${itemQty} ${qtySuffix}`;
                       const priorityTag = r.priority ? `[Prioritas: ${r.priority}]` : "";
                       const status = (r.status || "").toLowerCase();
                       const canSeeTrack = status.includes("mengirim");
@@ -400,8 +445,8 @@ export default function RequestToko() {
                                   {canSeeTrack && (
                                     <button className="btn-action-small" onClick={() => navigate(`/toko/pengiriman/${r.id}`)}>Lihat Pengiriman</button>
                                   )}
-                                  {canFinish && (
-                                    <button className="btn-action-small primary" onClick={() => { setConfirmId(r.id); setShowConfirm(true); }}>Terima Barang</button>
+                                  {r.status === "Mengirim" && (
+                                    <button className="btn-action-small primary" onClick={() => openConfirmModal(r)}>Terima Barang</button>
                                   )}
                                 </>
                               )}
@@ -411,7 +456,7 @@ export default function RequestToko() {
                                   {r.proofImage && (
                                     <span
                                       style={{ fontSize: '10px', color: 'var(--primary)', cursor: 'pointer', textDecoration: 'underline' }}
-                                      onClick={() => openProof(r.proofImage)}
+                                      onClick={() => openProof(r)}
                                     >
                                       Lihat Bukti
                                     </span>
@@ -477,15 +522,60 @@ export default function RequestToko() {
                     <>
                       <div style={{ fontSize: '40px', marginBottom: '12px' }}>📤</div>
                       <div style={{ fontSize: '14px', fontWeight: 700, color: '#334155' }}>Klik untuk Pilih Foto</div>
-                      <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>Ambil foto barang yang Anda terima</div>
+                      <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>Ambil foto barang saat diterima</div>
                     </>
                   )}
                   <input type="file" id="proof-upload" hidden accept="image/*" onChange={handleFileChange} />
                 </div>
+
+                <div style={{ marginTop: '16px', textAlign: 'left' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 600 }}>Diterima Baik</label>
+                      <input 
+                        type="number" 
+                        min="0"
+                        style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                        value={uploadData.qtyGood}
+                        onChange={(e) => setUploadData({...uploadData, qtyGood: e.target.value})}
+                        placeholder={`Req: ${confirmTotal}`}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 600 }}>Diterima Rusak</label>
+                      <input 
+                        type="number" 
+                        min="0"
+                        style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                        value={uploadData.qtyBad}
+                        onChange={(e) => setUploadData({...uploadData, qtyBad: e.target.value})}
+                        placeholder="0"
+                      />
+                    </div>
+                  </div>
+                  {Number(uploadData.qtyBad) > 0 && (
+                    <div style={{ marginTop: '12px', animation: 'fadeIn 0.3s ease-in-out' }}>
+                      <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 600, color: '#ef4444' }}>Catatan Kerusakan</label>
+                      <textarea 
+                        style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #fca5a5', minHeight: '80px', outlineColor: '#ef4444' }}
+                        value={uploadData.notes}
+                        onChange={(e) => setUploadData({...uploadData, notes: e.target.value})}
+                        placeholder="Jelaskan barang yang rusak..."
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="mgAdmin__modalFooter">
                 <button className="mgAdmin__btnAction mgAdmin__btnAction--cancel" onClick={() => setShowConfirm(false)}>Batal</button>
-                <button className="mgAdmin__btnAction mgAdmin__btnAction--save" onClick={submitTerima}>Kirim & Selesai</button>
+                <button 
+                  className="mgAdmin__btnAction mgAdmin__btnAction--save" 
+                  onClick={submitTerima}
+                  disabled={Number(uploadData.qtyBad) > 0 && !uploadData.notes.trim()}
+                  style={Number(uploadData.qtyBad) > 0 && !uploadData.notes.trim() ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+                >
+                  Selesaikan
+                </button>
               </div>
             </motion.div>
           </div>
@@ -494,7 +584,7 @@ export default function RequestToko() {
 
       {/* PROOF VIEW MODAL */}
       <AnimatePresence>
-        {showProof && (
+        {showProof && proofData && (
           <div className="mgAdmin__modalOverlay" onClick={() => setShowProof(false)}>
             <motion.div
               className="mgAdmin__modal"
@@ -508,8 +598,30 @@ export default function RequestToko() {
                 <h3><span>📸</span> Bukti Foto Penerimaan</h3>
                 <button className="mgAdmin__modalClose" onClick={() => setShowProof(false)}>✕</button>
               </div>
-              <div className="mgAdmin__modalBody" style={{ textAlign: 'center', background: '#f8fafc' }}>
-                <img src={proofImg} alt="Bukti" style={{ width: '100%', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.15)', border: '4px solid white' }} />
+              <div className="mgAdmin__modalBody" style={{ textAlign: 'left', background: '#f8fafc', padding: '24px' }}>
+                {proofData.confirmationData && (
+                  <div style={{ marginBottom: '24px', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                    <div style={{ flex: 1, minWidth: '200px', background: '#f6ffed', border: '1px solid #b7eb8f', padding: '12px 16px', borderRadius: '8px' }}>
+                      <span style={{ display: 'block', fontSize: '12px', color: '#52c41a', fontWeight: 'bold', marginBottom: '4px' }}>Diterima Baik</span>
+                      <strong style={{ fontSize: '16px' }}>{proofData.confirmationData.qtyGood} pcs</strong>
+                    </div>
+                    {Number(proofData.confirmationData.qtyBad) > 0 && (
+                      <div style={{ flex: 1, minWidth: '200px', background: '#fff2f0', border: '1px solid #ffccc7', padding: '12px 16px', borderRadius: '8px' }}>
+                        <span style={{ display: 'block', fontSize: '12px', color: '#ff4d4f', fontWeight: 'bold', marginBottom: '4px' }}>Barang Rusak / Kurang</span>
+                        <strong style={{ fontSize: '16px', color: '#cf1322' }}>{proofData.confirmationData.qtyBad} pcs</strong>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {proofData.confirmationData?.notes && (
+                  <div style={{ marginBottom: '24px', background: '#fff1f0', border: '1px solid #ffccc7', padding: '16px', borderRadius: '8px' }}>
+                    <strong style={{ color: '#cf1322', display: 'block', marginBottom: '8px' }}>Catatan Kerusakan:</strong>
+                    <p style={{ color: '#a8071a', margin: 0, fontSize: '14px', lineHeight: '1.5' }}>{proofData.confirmationData.notes}</p>
+                  </div>
+                )}
+                <div style={{ textAlign: 'center' }}>
+                  <img src={proofData.proofImage} alt="Bukti" style={{ width: '100%', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.15)', border: '4px solid white' }} />
+                </div>
               </div>
               <div className="mgAdmin__modalFooter">
                 <button className="mgAdmin__btnAction mgAdmin__btnAction--save" style={{ width: '100%' }} onClick={() => setShowProof(false)}>Tutup Halaman</button>
