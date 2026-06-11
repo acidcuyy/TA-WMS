@@ -11,6 +11,7 @@ import warehouseRoute from "./modules/warehouse/warehouse.routes.js";
 import storeRoute from "./modules/stores/store.routes.js";
 import companyRoute from "./modules/company/company.routes.js";
 import productRoute from "./modules/products/product.routes.js";
+import stockRequestRoute from "./modules/stockRequest/stockRequest.routes.js";
 
 import { success } from "zod";
 
@@ -44,6 +45,8 @@ app.use("/api/warehouse", warehouseRoute);
 app.use("/api/stores", storeRoute);
 app.use("/api/company", companyRoute);
 app.use("/api/products", productRoute);
+app.use("/api/stockRequests", stockRequestRoute);
+
 // Health Check
 app.get("/api/health", (req, res) => {
   res.status(200).json({

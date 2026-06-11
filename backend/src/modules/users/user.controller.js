@@ -22,14 +22,21 @@ class UserController {
 
   async create(req, res) {
     try {
+      const { role, companiesId } = req.user;
+
       const validatedData = createUserSchema.parse(req.body);
+
+      if (role === "ADMIN") {
+        validatedData.companiesId = companiesId;
+      }
+
+      if (role === "ADMIN" && validatedData.role === "SUPER_ADMIN") {
+        return sendError(req, "ADMIN tidak boleh membuat SUPER_ADMIN", 403);
+      }
 
       const user = await userService.create(validatedData);
 
-      return res.status(201).json({
-        success: true,
-        data: user,
-      });
+      return sendSuccess(res, "User berhasil dibuat", user, 201);
     } catch (error) {
       if (error.name === "ZodError") {
         return res.status(400).json({

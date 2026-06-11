@@ -1,10 +1,11 @@
 import authService from "./auth.service.js";
-import { registerSchema, loginSchema } from "./auth.validation.js";
+import { loginSchema } from "./auth.validation.js";
+import { createUserSchema } from "../users/user.validation.js";
 
 class AuthController {
   async register(req, res) {
     try {
-      const validatedData = registerSchema.parse(req.body);
+      const validatedData = createUserSchema.parse(req.body);
 
       const user = await authService.register(validatedData);
 

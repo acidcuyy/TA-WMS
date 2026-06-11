@@ -1,6 +1,7 @@
 import prisma from "../../config/database.js";
 import { buildQueryOptions } from "../../utils/buildQueryOptions.js";
 import userQueryConfig from "./user.model.config.js";
+import bcrypt from "bcrypt";
 
 class UserService {
   async findAll(query) {
@@ -54,8 +55,12 @@ class UserService {
         id: true,
         email: true,
         name: true,
-        age: true,
         role: true,
+        companiesId: true,
+        storeId: true,
+        warehouseId: true,
+        isActive: true,
+        createdAt: true,
       },
     });
   }

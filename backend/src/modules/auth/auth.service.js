@@ -2,6 +2,7 @@ import prisma from "../../config/database.js";
 import bcrypt from "bcrypt";
 import { generateToken } from "../../utils/jwt.js";
 import userService from "../users/user.service.js";
+import { warnOnce } from "../../../generated/prisma/runtime/client.js";
 
 class AuthService {
   async register(data) {
@@ -17,7 +18,7 @@ class AuthService {
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
 
-    const user = await userService.createUser({
+    const user = await userService.create({
       ...data,
       password: hashedPassword,
     });
@@ -29,6 +30,7 @@ class AuthService {
     const user = await prisma.user.findUnique({
       where: {
         email: data.email,
+        isActive: true,
       },
     });
 
@@ -46,6 +48,11 @@ class AuthService {
       id: user.id,
       email: user.email,
       role: user.role,
+      companiesId: user.companiesId,
+      storeId: user.storeId,
+      companiesId: user.companiesId,
+      storeId: user.storeId,
+      warehouseId: user.warehouseId,
     });
 
     return {
@@ -55,6 +62,9 @@ class AuthService {
         email: user.email,
         name: user.name,
         role: user.role,
+        companiesId: user.companiesId,
+        storeId: user.storeId,
+        warehouseId: user.warehouseId,
       },
     };
   }

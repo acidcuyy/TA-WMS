@@ -1,5 +1,8 @@
 import productService from "./product.service.js";
-import { createUserSchema, updateUserSchema } from "./product.validate.js";
+import {
+  createProductSchema,
+  updateProductSchema,
+} from "./product.validate.js";
 
 class ProductController {
   async getAll(req, res) {
@@ -21,7 +24,7 @@ class ProductController {
 
   async create(req, res) {
     try {
-      const validatedData = createUserSchema.parse(req.body);
+      const validatedData = createProductSchema.parse(req.body);
       const product = await productService.create(validatedData);
       return res.status(201).json({
         success: true,
@@ -66,7 +69,7 @@ class ProductController {
   async update(req, res) {
     try {
       const id = parseInt(req.params.id);
-      const validateData = updateUserSchema.parse(req.body);
+      const validateData = updateProductSchema.parse(req.body);
 
       const updatedProduct = await productService.update(id, validateData);
 
