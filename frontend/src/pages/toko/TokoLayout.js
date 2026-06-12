@@ -15,11 +15,13 @@ export default function TokoLayout() {
   const location = useLocation();
   const { theme } = useTheme();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const branchName = sessionStorage.getItem("reastock_branch_name") || "Toko Sejahtera";
+  const userName = sessionStorage.getItem("reastock_user_name") || "Admin Toko";
 
   const currentLogo = theme === "dark" ? logoSideDark : logoSideDefault;
 
   const handleLogout = () => {
-    localStorage.removeItem("reastock_role");
+    sessionStorage.removeItem("reastock_role");
     navigate("/login");
   };
 
@@ -85,7 +87,7 @@ export default function TokoLayout() {
           <div className="toko-topbar__left">
             <div className="store-badge">🏪</div>
             <div className="store-info">
-              <span className="store-name">Toko Sejahtera</span>
+              <span className="store-name">{branchName}</span>
               <span className="store-role">Toko</span>
             </div>
             <div style={{ marginLeft: "8px", fontSize: "10px", color: "#94a3b8" }}>▼</div>
@@ -101,8 +103,8 @@ export default function TokoLayout() {
 
             <div className="user-profile" onClick={() => navigate("/toko/profile")}>
               <div className="user-info">
-                <span className="user-name">Admin Toko</span>
-                <span className="user-detail">Toko Sejahtera</span>
+                <span className="user-name">{userName}</span>
+                <span className="user-detail">{branchName}</span>
               </div>
               <div className="user-avatar">
                 <div style={{ width: "100%", height: "100%", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px" }}>

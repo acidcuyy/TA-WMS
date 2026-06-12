@@ -414,7 +414,7 @@ export default function LaporanGudang() {
               <div className="lg-modal-header">
                 <div>
                   <h3>Upload Laporan Harian</h3>
-                  <p>Laporan yang diupload akan tersimpan ke sistem arsip Gudang Pusat.</p>
+                  <p>Laporan yang diupload akan tersimpan ke sistem arsip {sessionStorage.getItem("reastock_branch_name") || "Gudang"}.</p>
                 </div>
                 <button className="lg-modal-close" onClick={() => setOpenModal(false)}>✕</button>
               </div>

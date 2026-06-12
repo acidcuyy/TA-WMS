@@ -11,7 +11,7 @@ import { Navigate, Outlet } from "react-router-dom";
  * - Sudah login dan role sesuai → render child routes (Outlet)
  */
 export default function ProtectedRoute({ allowedRole }) {
-  const currentRole = localStorage.getItem("reastock_role");
+  const currentRole = sessionStorage.getItem("reastock_role");
 
   // Belum login → ke halaman login
   if (!currentRole) {

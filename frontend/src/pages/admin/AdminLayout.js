@@ -22,7 +22,7 @@ export default function AdminLayout() {
   const currentLogo = theme === "dark" ? logoSideDark : logoSideDefault;
 
   const handleLogout = () => {
-    localStorage.removeItem("reastock_role");
+    sessionStorage.removeItem("reastock_role");
     navigate("/login");
   };
 
@@ -59,6 +59,7 @@ export default function AdminLayout() {
       title: "LAPORAN & REGISTRASI",
       items: [
         { label: "Pendaftaran Entitas", path: "/admin/registrasi", icon: "📝" },
+        { label: "Manajemen User", path: "/admin/manajemen-user", icon: "👥" },
         { label: "Arsip Laporan", path: "/admin/laporan", icon: "📄" },
       ]
     }

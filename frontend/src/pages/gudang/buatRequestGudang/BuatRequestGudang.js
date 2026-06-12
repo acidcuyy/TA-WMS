@@ -56,8 +56,12 @@ export default function BuatRequestGudang() {
   }, []);
 
   const gudangReq = useMemo(() => {
-    // Only fetch requests made by Gudang to Admin
-    return allReq.filter((r) => (r.fromRole || "").toLowerCase() === "gudang");
+    // Only fetch requests made by THIS specific Gudang to Admin
+    const currentBranchId = sessionStorage.getItem("reastock_branch_id") || "BRC-001";
+    return allReq.filter((r) => 
+      (r.fromRole || "").toLowerCase() === "gudang" && 
+      (r.fromBranchId === currentBranchId || (!r.fromBranchId && currentBranchId === "BRC-001"))
+    );
   }, [allReq]);
 
   const stats = useMemo(() => {
@@ -80,7 +84,7 @@ export default function BuatRequestGudang() {
     }
 
     await createRestockToAdmin({
-      fromName: "Gudang Pusat", // Cabang gudang yang sedang login
+      fromName: sessionStorage.getItem("reastock_branch_name") || "Gudang Pusat", // Cabang gudang yang sedang login
       items: [{ code: kode, name: namaBarang, category: finalKategori, qty: Number(jumlah) || 0 }],
       priority: prioritas,
       supplier: supplier,

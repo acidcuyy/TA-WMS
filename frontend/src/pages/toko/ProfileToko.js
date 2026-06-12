@@ -17,6 +17,12 @@ export default function ProfileToko() {
   const easing = useMemo(() => [0.22, 1, 0.36, 1], []);
   const [notifStock, setNotifStock] = useState(true);
   const [notifRequests, setNotifRequests] = useState(true);
+  const branchName = sessionStorage.getItem("reastock_branch_name") || "Toko Sejahtera";
+  const userName = sessionStorage.getItem("reastock_user_name") || "Admin Toko";
+  const userEmail = sessionStorage.getItem("reastock_user_email") || "toko@reastock.com";
+  const joinDate = sessionStorage.getItem("reastock_user_joinDate") || "10 Januari 2025";
+  
+  const initial = userName.charAt(0).toUpperCase();
 
   return (
     <div className="pageAdmin-container profile-page">
@@ -65,16 +71,16 @@ export default function ProfileToko() {
         transition={{ duration: 0.55, delay: 0.1, ease: easing }}
       >
         <div className="hero-main">
-          <div className="hero-avatar">T</div>
+          <div className="hero-avatar">{initial}</div>
           <div className="hero-info">
             <div className="hero-name-row">
-              <h2>Admin Toko</h2>
+              <h2>{userName}</h2>
               <span className="status-badge online"><span className="dot"></span>Online</span>
             </div>
             <p className="hero-email">
-              toko@reastock.com <span>Toko</span>
+              {userEmail} <span>Toko</span>
             </p>
-            <p className="hero-role">Toko Sejahtera</p>
+            <p className="hero-role">{branchName}</p>
           </div>
         </div>
         <div className="hero-actions">
@@ -100,11 +106,11 @@ export default function ProfileToko() {
           <div className="info-list">
             <div className="info-item">
               <span className="info-label" style={{display: 'flex', alignItems: 'center', gap: '10px'}}><IconUser /> Nama</span>
-              <span className="info-value">Admin Toko</span>
+              <span className="info-value">{userName}</span>
             </div>
             <div className="info-item">
               <span className="info-label" style={{display: 'flex', alignItems: 'center', gap: '10px'}}><IconMail /> Email</span>
-              <span className="info-value">toko@reastock.com</span>
+              <span className="info-value">{userEmail}</span>
             </div>
             <div className="info-item">
               <span className="info-label" style={{display: 'flex', alignItems: 'center', gap: '10px'}}><IconShield /> Role</span>
@@ -112,11 +118,11 @@ export default function ProfileToko() {
             </div>
             <div className="info-item">
               <span className="info-label" style={{display: 'flex', alignItems: 'center', gap: '10px'}}><IconClock /> Terakhir Login</span>
-              <span className="info-value">13 Mei 2025, 09:40</span>
+              <span className="info-value">Hari Ini</span>
             </div>
             <div className="info-item">
               <span className="info-label" style={{display: 'flex', alignItems: 'center', gap: '10px'}}><IconCalendar /> Bergabung Sejak</span>
-              <span className="info-value">10 Januari 2025</span>
+              <span className="info-value">{joinDate}</span>
             </div>
           </div>
           <div className="card-actions">

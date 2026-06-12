@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
   subscribeRequests,
-  subscribeDriverProfile,
   getShipment,
   driverSelesaikanPengiriman,
 } from "../../../services/wmsApi";
@@ -16,10 +15,18 @@ export default function DriverTracking() {
   const [completing, setCompleting] = useState(false);
 
   useEffect(() => {
-    const unsubReq     = subscribeRequests((rows) => setRequests(rows || []));
-    const unsubProfile = subscribeDriverProfile((data) => setProfile(data || {}));
+    const branchId = sessionStorage.getItem("reastock_branch_id");
+    const unsubReq = subscribeRequests((rows) => {
+      const myReqs = (rows || []).filter(r => r.toBranchId === branchId || r.fromBranchId === branchId);
+      setRequests(myReqs);
+    });
+    setProfile({
+      name: sessionStorage.getItem("reastock_user_name") || "Driver",
+      role: "Driver Ekspedisi",
+      branchId: branchId
+    });
     const t = setInterval(() => setTick((x) => x + 1), 1000);
-    return () => { unsubReq(); unsubProfile(); clearInterval(t); };
+    return () => { unsubReq(); clearInterval(t); };
   }, []);
 
   /* Find the request that belongs to this driver and is active */

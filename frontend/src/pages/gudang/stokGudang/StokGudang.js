@@ -43,10 +43,11 @@ export default function StokGudang() {
     };
   }, []);
 
+  const currentBranchId = sessionStorage.getItem("reastock_branch_id") || "BRC-001";
   // Map the stock
   const mappedStocks = useMemo(() => {
     return allStock
-      .filter(stock => !stock.branchId || stock.branchId === "BRC-001")
+      .filter(stock => !stock.branchId || stock.branchId === currentBranchId)
       .map(stock => {
       let stockStatus = "Aman";
       if (stock.qty === 0) stockStatus = "Habis";

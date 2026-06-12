@@ -13,9 +13,18 @@ export default function TokoDashboard() {
   const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
-    const unsubStock = subscribeWarehouseStock(data => setStock((data || []).filter(x => x.branchId === "BRC-003")));
-    const unsubReq = subscribeRequests(data => setRequests(data.filter(r => (r.fromRole || "").toLowerCase() === "toko")));
-    const unsubOut = subscribeTokoOutflow(data => setOutflows(data));
+    const unsubStock = subscribeWarehouseStock(data => setStock((data || []).filter(x => x.branchId === (sessionStorage.getItem("reastock_branch_id") || "BRC-003"))));
+    const unsubReq = subscribeRequests(data => {
+      const currentBranchId = sessionStorage.getItem("reastock_branch_id") || "BRC-003";
+      setRequests(data.filter(r => 
+        (r.fromRole || "").toLowerCase() === "toko" && 
+        (r.fromBranchId === currentBranchId || (!r.fromBranchId && currentBranchId === "BRC-003"))
+      ));
+    });
+    const unsubOut = subscribeTokoOutflow(data => {
+      const currentBranchId = sessionStorage.getItem("reastock_branch_id") || "BRC-003";
+      setOutflows((data || []).filter(o => o.tokoId === currentBranchId || (!o.tokoId && currentBranchId === "BRC-003")));
+    });
     const unsubNotif = subscribeNotifications(data => {
       setNotifications(data.filter(n => n.targetRoles && n.targetRoles.includes("toko")));
     });

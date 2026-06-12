@@ -19,6 +19,7 @@ import ManajemenToko from "../pages/admin/manajemenToko/ManajemenToko";
 import ManajemenProduk from "../pages/admin/manajemenProduk/ManajemenProduk";
 import LaporanAdmin from "../pages/admin/laporanAdmin/LaporanAdmin";
 import RegistrasiEntitas from "../pages/admin/registrasi/RegistrasiEntitas";
+import ManajemenUser from "../pages/admin/manajemenUser/ManajemenUser";
 import PenerimaanBarang from "../pages/gudang/penerimaanBarang/PenerimaanBarang";
 
 // Gudang
@@ -82,6 +83,7 @@ export const router = createBrowserRouter([
               { path: "produk", element: <ManajemenProduk /> },
               { path: "laporan", element: <LaporanAdmin /> },
               { path: "registrasi", element: <RegistrasiEntitas /> },
+              { path: "manajemen-user", element: <ManajemenUser /> },
               { path: "pengiriman/:id", element: <PengirimanGudang /> },
             ],
           },

@@ -5,7 +5,6 @@ import "./DriverDashboard.css";
 import {
   subscribeRequests,
   driverAcceptTask,
-  subscribeDriverProfile,
   driverUploadBuktiSiapKirim,
 } from "../../../services/wmsApi";
 
@@ -19,9 +18,18 @@ export default function DriverDashboard() {
   const fotoInputRef = useRef(null);
 
   useEffect(() => {
-    const unsubReq = subscribeRequests((rows) => setAllReq(rows || []));
-    const unsubProfile = subscribeDriverProfile((data) => setProfile(data || {}));
-    return () => { unsubReq(); unsubProfile(); };
+    const branchId = sessionStorage.getItem("reastock_branch_id");
+    const unsubReq = subscribeRequests((rows) => {
+      // Hanya lihat request yang berkaitan dengan Cabang Gudang driver ini
+      const branchReqs = (rows || []).filter(r => r.toBranchId === branchId || r.fromBranchId === branchId);
+      setAllReq(branchReqs);
+    });
+    setProfile({
+      name: sessionStorage.getItem("reastock_user_name") || "Driver",
+      role: "Driver Ekspedisi",
+      branchId: branchId
+    });
+    return () => unsubReq();
   }, []);
 
   /* ── Task state priorities ── */

@@ -28,7 +28,7 @@
 .registrasi-tabs {
   display: flex;
   gap: 12px;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
   background: #fff;
   padding: 8px;
   border-radius: 16px;
@@ -60,6 +60,95 @@
   background: #3b82f6;
   color: #ffffff;
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* ========== STEP INDICATOR ========== */
+.step-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 32px;
+  padding: 20px 32px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  gap: 0;
+}
+
+.step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 120px;
+}
+
+.step-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+  background: #e2e8f0;
+  color: #94a3b8;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 3px solid transparent;
+}
+
+.step-item.active .step-circle {
+  background: #3b82f6;
+  color: #ffffff;
+  border-color: rgba(59, 130, 246, 0.2);
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+  transform: scale(1.05);
+}
+
+.step-item.completed .step-circle {
+  background: #10b981;
+  color: #ffffff;
+  border-color: rgba(16, 185, 129, 0.2);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+}
+
+.step-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #94a3b8;
+  transition: color 0.3s ease;
+}
+
+.step-item.active .step-label {
+  color: #3b82f6;
+}
+
+.step-item.completed .step-label {
+  color: #10b981;
+}
+
+.step-line-container {
+  flex: 1;
+  max-width: 200px;
+  height: 4px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  margin: 0 16px;
+  margin-bottom: 28px;
+  overflow: hidden;
+}
+
+.step-line {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #3b82f6);
+  border-radius: 4px;
+  transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.step-line.filled {
+  width: 100%;
 }
 
 /* Form Container */
@@ -110,6 +199,285 @@
 select.form-input {
   appearance: none;
   cursor: pointer;
+}
+
+/* ========== BRANCH INFO BADGE (Step 2) ========== */
+.branch-info-badge {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, #eff6ff, #f0fdf4);
+  border: 2px solid #bfdbfe;
+  border-radius: 16px;
+}
+
+.branch-info-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.branch-info-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.branch-info-label {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.branch-info-name {
+  font-size: 18px;
+  font-weight: 800;
+  color: #1e293b;
+  letter-spacing: -0.3px;
+}
+
+.branch-info-id {
+  background: #3b82f6;
+  color: white;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: monospace;
+  letter-spacing: 0.5px;
+}
+
+/* ========== FORM SECTION TITLE ========== */
+.form-section-title {
+  margin-bottom: 0;
+}
+
+.form-section-title h4 {
+  margin: 0 0 4px;
+  color: #1e293b;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.form-section-title p {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+/* ========== BUTTONS ========== */
+
+/* Next Step Button (Step 1) */
+.btn-next-step {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  border: none;
+  padding: 16px 32px;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-next-step:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.35);
+}
+
+.btn-arrow {
+  font-size: 20px;
+  transition: transform 0.3s ease;
+}
+
+.btn-next-step:hover .btn-arrow {
+  transform: translateX(4px);
+}
+
+/* Add User Button (Step 2) */
+.btn-add-user {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-add-user:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.35);
+}
+
+.btn-add-user span {
+  font-size: 20px;
+  font-weight: 400;
+}
+
+/* ========== REGISTERED USERS TABLE (Step 2) ========== */
+.registered-users-section {
+  margin-top: 28px;
+  padding-top: 28px;
+  border-top: 2px dashed #e2e8f0;
+}
+
+.registered-users-title {
+  margin: 0 0 16px;
+  color: #1e293b;
+  font-size: 15px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.registered-users-table-wrap {
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+.registered-users-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.registered-users-table thead {
+  background: #f8fafc;
+}
+
+.registered-users-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 700;
+  color: #64748b;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.registered-users-table td {
+  padding: 14px 16px;
+  color: #334155;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.registered-users-table tbody tr {
+  transition: background 0.2s ease;
+}
+
+.registered-users-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.registered-users-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.registered-users-table code {
+  background: #eff6ff;
+  color: #3b82f6;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ========== STEP 2 ACTIONS ========== */
+.step2-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.btn-back-step {
+  flex: 1;
+  padding: 14px 24px;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  border: 2px solid #e2e8f0;
+  background: white;
+  color: #64748b;
+  transition: all 0.2s ease;
+}
+
+.btn-back-step:hover {
+  border-color: #94a3b8;
+  color: #1e293b;
+  background: #f8fafc;
+}
+
+.btn-finish {
+  flex: 2;
+  padding: 14px 24px;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.btn-finish:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.35);
+}
+
+.btn-finish:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Submit Button (Driver) */
+.btn-submit-reg {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 16px 32px;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  margin-top: 32px;
+}
+
+.btn-submit-reg:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
 }
 
 /* Map Picker */
@@ -175,27 +543,6 @@ select.form-input {
   font-size: 13px;
   color: #475569;
   border: 1px solid #e2e8f0;
-}
-
-/* Submit Button */
-.btn-submit-reg {
-  background: #3b82f6;
-  color: white;
-  border: none;
-  padding: 16px 32px;
-  border-radius: 14px;
-  font-weight: 700;
-  font-size: 15px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  width: 100%;
-  margin-top: 32px;
-}
-
-.btn-submit-reg:hover {
-  background: #2563eb;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
 }
 
 /* Toast Success */

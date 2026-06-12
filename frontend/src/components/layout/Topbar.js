@@ -61,7 +61,7 @@ export default function Topbar({
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("reastock_role");
+    sessionStorage.removeItem("reastock_role");
     setShowLogoutConfirm(false);
     nav("/login");
   };

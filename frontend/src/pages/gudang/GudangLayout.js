@@ -17,11 +17,13 @@ export default function GudangLayout() {
   const navigate = useNavigate();
   const { theme } = useTheme();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const branchName = sessionStorage.getItem("reastock_branch_name") || "Gudang Pusat";
+  const userName = sessionStorage.getItem("reastock_user_name") || "Admin Gudang";
 
   const currentLogo = theme === "dark" ? logoSideDark : logoSideDefault;
 
   const handleLogout = () => {
-    localStorage.removeItem("reastock_role");
+    sessionStorage.removeItem("reastock_role");
     navigate("/login");
   };
 
@@ -85,7 +87,7 @@ export default function GudangLayout() {
             <div className="location-selector">
               <div className="loc-icon">🏢</div>
               <div className="loc-info">
-                <b>Gudang Pusat</b>
+                <b>{branchName}</b>
                 <span>Gudang</span>
               </div>
               <span style={{ fontSize: '10px', color: '#888', marginLeft: '8px' }}>⌄</span>
@@ -103,8 +105,8 @@ export default function GudangLayout() {
             <div className="user-profile-top">
               <img src={avatarImg} alt="User" className="user-avatar" />
               <div className="user-info-text">
-                <b>Admin Gudang</b>
-                <span>Gudang Pusat</span>
+                <b>{userName}</b>
+                <span>{branchName}</span>
               </div>
             </div>
           </div>

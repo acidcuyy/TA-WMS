@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "../../app/ThemeProvider";
 import Sidebar from "../../components/layout/Sidebar";
 import NotificationSystem from "../../components/layout/NotificationSystem";
-import { subscribeDriverProfile } from "../../services/wmsApi";
 import logoSideDark from "../../assets/images/LogoSide_dark.png";
 import logoSideDefault from "../../assets/images/LogoSide_default.png";
 import "./DriverLayout.css";
@@ -17,14 +16,16 @@ export default function DriverLayout() {
   const [profile, setProfile] = useState({});
 
   useEffect(() => {
-    const unsub = subscribeDriverProfile((data) => setProfile(data || {}));
-    return () => unsub();
+    setProfile({
+      name: sessionStorage.getItem("reastock_user_name") || "Driver",
+      role: "Driver Ekspedisi",
+    });
   }, []);
 
   const currentLogo = theme === "dark" ? logoSideDark : logoSideDefault;
 
   const handleLogout = () => {
-    localStorage.removeItem("reastock_role");
+    sessionStorage.removeItem("reastock_role");
     navigate("/login");
   };
 

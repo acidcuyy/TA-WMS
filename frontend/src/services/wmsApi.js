@@ -147,7 +147,7 @@ export function addWarehouseStock(item) {
     db.warehouseStock = db.warehouseStock || [];
     db.warehouseStock.push({
       ...item,
-      branchId: item.branchId || "BRC-001" // Default to Gudang Pusat if none provided
+      branchId: item.branchId || sessionStorage.getItem("reastock_branch_id") || "BRC-001" // Default to current branch or fallback
     });
     return db;
   });
@@ -157,8 +157,8 @@ export function editWarehouseStock(sku, branchId, payload) {
   return dbUpdate((db) => {
     if (!db.warehouseStock) return db;
     // Bulletproof matching logic: allow Gudang items without branchId to match "BRC-001"
-    const targetBranch = branchId || "BRC-001";
-    const item = db.warehouseStock.find(x => x.sku === sku && (x.branchId || "BRC-001") === targetBranch);
+    const targetBranch = branchId || sessionStorage.getItem("reastock_branch_id") || "BRC-001";
+    const item = db.warehouseStock.find(x => x.sku === sku && (x.branchId || sessionStorage.getItem("reastock_branch_id") || "BRC-001") === targetBranch);
     if (item) {
       if (typeof payload === 'number') {
         item.qty = payload;
@@ -178,8 +178,8 @@ export function editWarehouseStock(sku, branchId, payload) {
 export function deleteWarehouseStock(sku, branchId) {
   return dbUpdate((db) => {
     if (!db.warehouseStock) return db;
-    const targetBranch = branchId || "BRC-001";
-    db.warehouseStock = db.warehouseStock.filter(x => !(x.sku === sku && (x.branchId || "BRC-001") === targetBranch));
+    const targetBranch = branchId || sessionStorage.getItem("reastock_branch_id") || "BRC-001";
+    db.warehouseStock = db.warehouseStock.filter(x => !(x.sku === sku && (x.branchId || sessionStorage.getItem("reastock_branch_id") || "BRC-001") === targetBranch));
     return db;
   });
 }
@@ -221,9 +221,9 @@ export function updateDriverProfile(payload) {
  * ========================================================= */
 export function createTokoRequest(payload) {
   const fromName = payload?.fromName || payload?.from || "Toko";
-  const fromBranchId = payload?.fromBranchId || "BRC-003";
-  const toBranchId = payload?.toBranchId || "BRC-001";
-  const toBranchName = payload?.toBranchName || "Gudang Pusat";
+  const fromBranchId = payload?.fromBranchId || sessionStorage.getItem("reastock_branch_id") || "BRC-003";
+  const toBranchId = payload?.toBranchId || sessionStorage.getItem("reastock_branch_id") || "BRC-001";
+  const toBranchName = payload?.toBranchName || sessionStorage.getItem("reastock_branch_name") || "Gudang Pusat";
   const note = payload?.note || "";
   const satuan = payload?.satuan || "pcs";
   const items = normalizeItems(payload);
@@ -440,7 +440,8 @@ export function tokoSelesaiTerima(id, proofImage = null, confirmationData = null
     // ✅ SYNC langsung ke warehouseStock saat toko terima barang
     db.warehouseStock = db.warehouseStock || [];
     (r.items || []).forEach(item => {
-      const existing = db.warehouseStock.find(x => (x.sku === item.sku || x.sku === item.code) && x.branchId === "BRC-003");
+      const targetBranchId = sessionStorage.getItem("reastock_branch_id") || "BRC-003";
+      const existing = db.warehouseStock.find(x => (x.sku === item.sku || x.sku === item.code) && x.branchId === targetBranchId);
       const sku = item.sku || item.code || `SKU-${item.name}`;
       
       // Gunakan qtyGood jika tersedia (dan asumsi 1 item untuk kemudahan), jika tidak fallback ke item.qty
@@ -460,7 +461,7 @@ export function tokoSelesaiTerima(id, proofImage = null, confirmationData = null
           qty: qtyToAdd,
           minQty: 5,
           price: 0,
-          branchId: "BRC-003",
+          branchId: sessionStorage.getItem("reastock_branch_id") || "BRC-003",
           addedAt: new Date().toISOString().slice(0, 10),
           source: "request",
           requestId: r.id,
@@ -532,7 +533,7 @@ export function driverSelesaikanPengiriman(id) {
  * ========================================================= */
 export function createRestockToAdmin(payload) {
   const fromName = payload?.fromName || payload?.from || "Gudang";
-  const fromBranchId = payload?.fromBranchId || "BRC-001";
+  const fromBranchId = payload?.fromBranchId || sessionStorage.getItem("reastock_branch_id") || "BRC-001";
   const note = payload?.note || "";
   const supplier = payload?.supplier || "";
   const satuan = payload?.satuan || "pcs";
@@ -648,7 +649,7 @@ export function gudangFinishRestockWithProof(id, proofImage, confirmationData = 
     // TAMBAH STOK FISIK GUDANG
     db.warehouseStock = db.warehouseStock || [];
     (r.items || []).forEach(item => {
-      const stock = db.warehouseStock.find(s => s.branchId === (r.fromBranchId || "BRC-001") && s.sku === item.sku);
+      const stock = db.warehouseStock.find(s => s.branchId === (r.fromBranchId || s.branchId || "BRC-001") && s.sku === item.sku);
       
       // Gunakan qtyGood jika tersedia (dan asumsi 1 item), jika tidak fallback ke item.qty
       const qtyToAdd = r.confirmationData && r.items.length === 1 
@@ -665,7 +666,7 @@ export function gudangFinishRestockWithProof(id, proofImage, confirmationData = 
           qty: qtyToAdd,
           minQty: 30,
           image: null,
-          branchId: r.fromBranchId || "BRC-001"
+          branchId: r.fromBranchId || sessionStorage.getItem("reastock_branch_id") || "BRC-001"
         });
       }
     });
@@ -706,7 +707,7 @@ export function subscribeAdminRestockToGudang(callback) {
 export function createAdminRestockToGudang(payload) {
   const {
     cabangGudang = "BRC-001",
-    cabangGudangNama = "Gudang Pusat",
+    cabangGudangNama = sessionStorage.getItem("reastock_branch_name") || "Gudang Pusat",
     kodeBarang = "",
     namaBarang = "",
     jenisBarang = "",
@@ -865,6 +866,63 @@ export function deleteBranch(id) {
 }
 
 /* =======================================================================
+ * BRANCH USERS (User accounts per cabang gudang/toko)
+ * ======================================================================= */
+export function getBranchUsers() {
+  return dbLoad().branchUsers || [];
+}
+
+export function subscribeBranchUsers(callback) {
+  return makeSub(getBranchUsers, callback);
+}
+
+export function createBranchUser(payload) {
+  return dbUpdate((db) => {
+    db.branchUsers = db.branchUsers || [];
+    const id = newId("USR");
+    db.branchUsers.push({
+      id,
+      branchId: payload.branchId,
+      branchName: payload.branchName || "",
+      branchType: payload.branchType || "gudang",
+      nama: payload.nama || "",
+      username: payload.username,
+      password: payload.password,
+      email: payload.email || "",
+      phone: payload.phone || "",
+      role: payload.role || "",
+      vehicle: payload.vehicle || "",
+      nomorSim: payload.nomorSim || "",
+      alamatDomisili: payload.alamatDomisili || "",
+      statusMitra: payload.statusMitra || "",
+      joinedAt: payload.joinedAt || "",
+      createdAt: new Date().toISOString().slice(0, 10),
+    });
+    return db;
+  });
+}
+
+export function deleteBranchUser(id) {
+  return dbUpdate((db) => {
+    db.branchUsers = (db.branchUsers || []).filter((u) => u.id !== id);
+    return db;
+  });
+}
+
+export function transferBranchUser(userId, newBranchId, newBranchName, newBranchType) {
+  return dbUpdate((db) => {
+    db.branchUsers = db.branchUsers || [];
+    const user = db.branchUsers.find((u) => u.id === userId);
+    if (user) {
+      user.branchId = newBranchId;
+      user.branchName = newBranchName;
+      user.branchType = newBranchType;
+    }
+    return db;
+  });
+}
+
+/* =======================================================================
  * LAPORAN TOKO -> ADMIN
  * ======================================================================= */
 export function getTokoReports() {
@@ -877,7 +935,7 @@ export function subscribeTokoReports(callback) {
 
 export function uploadTokoReport(payload) {
   const {
-    tokoId = "BRC-003",
+    tokoId = sessionStorage.getItem("reastock_branch_id") || "BRC-003",
     tokoName = "Toko Utama",
     type = "Laporan Harian",
     period = "",
@@ -934,7 +992,7 @@ export function subscribeGudangReports(callback) {
 export function uploadGudangReport(payload) {
   const {
     gudangId = "WH-001",
-    gudangName = "Gudang Pusat",
+    gudangName = sessionStorage.getItem("reastock_branch_name") || "Gudang Pusat",
     type = "Laporan Harian",
     period = "",
     date = new Date().toISOString().slice(0, 10),
@@ -983,7 +1041,7 @@ export function uploadGudangReport(payload) {
 export function getTokoInventory() {
   const stock = dbLoad().warehouseStock || [];
   return stock
-    .filter(s => s.branchId === "BRC-003")
+    .filter(s => s.branchId === (sessionStorage.getItem("reastock_branch_id") || "BRC-003"))
     .map(s => ({
       ...s,
       category: s.type || s.category || "Umum",
@@ -1015,7 +1073,7 @@ export function createTokoOutflow(payload) {
     tujuan = "",
     jenis = "Penjualan",
     catatan = "",
-    tokoId = "BRC-003",
+    tokoId = sessionStorage.getItem("reastock_branch_id") || "BRC-003",
     tokoName = "Toko Utama",
   } = payload || {};
 

@@ -7,6 +7,7 @@ import {
   subscribeRequests,
   tokoSelesaiTerima,
   subscribeBranches,
+  subscribeWarehouseStock,
 } from "../../../services/wmsApi";
 
 const getBadgeClass = (status) => {
@@ -35,6 +36,9 @@ export default function RequestToko() {
   const [tanggalKebutuhan, setTanggalKebutuhan] = useState("");
   const [catatan, setCatatan] = useState("");
   const [targetGudang, setTargetGudang] = useState("");
+  const [warehouseStock, setWarehouseStock] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [requestItems, setRequestItems] = useState([]);
 
   // Form lock
   const [formLocked, setFormLocked] = useState(false);
@@ -61,14 +65,28 @@ export default function RequestToko() {
       setBranches(gudangs);
       if (gudangs.length > 0 && !targetGudang) setTargetGudang(gudangs[0].id);
     });
+    const unsubStock = subscribeWarehouseStock((data) => setWarehouseStock(data || []));
     return () => {
       unsubReq();
       unsubBranch();
+      unsubStock();
     };
   }, [targetGudang]);
 
+  const availableItems = useMemo(() => {
+    if (!targetGudang) return [];
+    return warehouseStock.filter(x => 
+      x.branchId === targetGudang && 
+      (x.sku || "").toLowerCase().includes(kode.toLowerCase())
+    );
+  }, [warehouseStock, targetGudang, kode]);
+
   const tokoReq = useMemo(() => {
-    return allReq.filter((r) => (r.fromRole || "").toLowerCase() === "toko");
+    const currentBranchId = sessionStorage.getItem("reastock_branch_id") || "BRC-003";
+    return allReq.filter((r) => 
+      (r.fromRole || "").toLowerCase() === "toko" && 
+      (r.fromBranchId === currentBranchId || (!r.fromBranchId && currentBranchId === "BRC-003"))
+    );
   }, [allReq]);
 
   const stats = useMemo(() => {
@@ -80,31 +98,58 @@ export default function RequestToko() {
     return { total, pending, process, shipping, done };
   }, [tokoReq]);
 
-  const sendRequest = async () => {
-    if (!kode || !namaBarang || !jumlah || !targetGudang) return;
-    const branch = branches.find(b => b.id === targetGudang);
+  const tambahBarang = () => {
+    if (!kode || !namaBarang || !jumlah) {
+      alert("Mohon lengkapi kode, nama barang, dan jumlah.");
+      return;
+    }
     const finalKategori = kategori === "Lainnya" ? kategoriLain : kategori;
     if (kategori === "Lainnya" && !finalKategori.trim()) {
       alert("Mohon isi jenis barang.");
       return;
     }
+    
+    setRequestItems([...requestItems, {
+      code: kode,
+      name: namaBarang,
+      category: finalKategori,
+      qty: Number(jumlah) || 0,
+      unit: satuan
+    }]);
 
-    await createTokoRequest({
-      fromName: "Toko Utama", // Cabang toko yang sedang login
-      toBranchId: targetGudang,
-      toBranchName: branch?.name || "Gudang",
-      items: [{ code: kode, name: namaBarang, category: finalKategori, qty: Number(jumlah) || 0 }],
-      priority: prioritas,
-      satuan: satuan,
-      dueDate: tanggalKebutuhan,
-      note: catatan,
-    });
     setKode("");
     setNamaBarang("");
     setKategori("Elektronik");
     setKategoriLain("");
     setJumlah("");
     setSatuan("pcs");
+  };
+
+  const hapusBarang = (idx) => {
+    const newItems = [...requestItems];
+    newItems.splice(idx, 1);
+    setRequestItems(newItems);
+  };
+
+  const sendRequest = async () => {
+    if (requestItems.length === 0) {
+      alert("Daftar barang masih kosong. Tambahkan minimal 1 barang ke daftar.");
+      return;
+    }
+    if (!targetGudang) return;
+    const branch = branches.find(b => b.id === targetGudang);
+
+    await createTokoRequest({
+      fromName: sessionStorage.getItem("reastock_branch_name") || "Toko", // Cabang toko yang sedang login
+      toBranchId: targetGudang,
+      toBranchName: branch?.name || "Gudang",
+      items: requestItems,
+      priority: prioritas,
+      dueDate: tanggalKebutuhan,
+      note: catatan,
+    });
+    
+    setRequestItems([]);
     setPrioritas("Normal");
     setTanggalKebutuhan("");
     setCatatan("");
@@ -257,16 +302,51 @@ export default function RequestToko() {
                     ))}
                   </select>
                 </div>
-                <div className="input-group">
+                <div className="input-group" style={{ position: 'relative' }}>
                   <label>Kode Barang</label>
                   <input
                     className="input-field"
                     value={kode}
-                    onChange={(e) => setKode(e.target.value)}
-                    placeholder="Contoh: BRG-002"
+                    onChange={(e) => {
+                      setKode(e.target.value);
+                      setShowDropdown(true);
+                    }}
+                    onFocus={() => setShowDropdown(true)}
+                    onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
+                    placeholder="Ketik untuk mencari..."
                     disabled={formLocked}
                     style={{ cursor: formLocked ? 'not-allowed' : undefined, opacity: formLocked ? 0.6 : 1 }}
                   />
+                  {showDropdown && availableItems.length > 0 && !formLocked && (
+                    <div style={{
+                      position: 'absolute', top: '100%', left: 0, right: 0, 
+                      background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', 
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', zIndex: 10,
+                      maxHeight: '150px', overflowY: 'auto', marginTop: '4px'
+                    }}>
+                      {availableItems.map(item => (
+                        <div 
+                          key={item.sku}
+                          style={{ padding: '8px 12px', cursor: 'pointer', borderBottom: '1px solid #f1f5f9', fontSize: '13px' }}
+                          onClick={() => {
+                            setKode(item.sku);
+                            setNamaBarang(item.name || "");
+                            const cat = item.category || item.type;
+                            if (cat && ["Elektronik", "Plumbing", "Peralatan", "Material Bangunan"].includes(cat)) {
+                              setKategori(cat);
+                            } else if (cat) {
+                              setKategori("Lainnya");
+                              setKategoriLain(cat);
+                            }
+                            if (item.unit) setSatuan(item.unit);
+                            setShowDropdown(false);
+                          }}
+                        >
+                          <strong>{item.sku}</strong> - {item.name}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -341,6 +421,49 @@ export default function RequestToko() {
                     </select>
                   </div>
                 </div>
+              </div>
+
+              <button
+                className="btn-submit"
+                type="button"
+                style={{ marginTop: '20px', backgroundColor: '#3b82f6', opacity: formLocked ? 0.5 : 1, cursor: formLocked ? 'not-allowed' : 'pointer' }}
+                onClick={formLocked ? undefined : tambahBarang}
+                disabled={formLocked}
+              >
+                ➕ Tambah Barang ke Daftar
+              </button>
+
+              {requestItems.length > 0 && (
+                <div style={{ marginTop: '25px', background: '#f8fafc', padding: '15px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                  <h4 style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#334155' }}>Daftar Barang yang Diminta ({requestItems.length} item):</h4>
+                  <table className="request-table" style={{ fontSize: '13px', background: 'white' }}>
+                    <thead>
+                      <tr>
+                        <th>Kode</th>
+                        <th>Nama Barang</th>
+                        <th>Kategori</th>
+                        <th>Jumlah</th>
+                        <th>Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {requestItems.map((it, idx) => (
+                        <tr key={idx}>
+                          <td style={{ fontWeight: 600 }}>{it.code}</td>
+                          <td>{it.name}</td>
+                          <td>{it.category}</td>
+                          <td>{it.qty} {it.unit}</td>
+                          <td>
+                            <button className="btn-icon btn-icon--danger" style={{ padding: '4px' }} title="Hapus" onClick={() => hapusBarang(idx)} disabled={formLocked}>🗑️</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              <div className="form-grid" style={{ marginTop: '25px', gridTemplateColumns: '1fr 1fr' }}>
                 <div className="input-group">
                   <label>Prioritas</label>
                   <select
@@ -354,9 +477,6 @@ export default function RequestToko() {
                     <option value="Urgent">Urgent (Segera)</option>
                   </select>
                 </div>
-              </div>
-
-              <div className="form-grid" style={{ marginTop: '15px', gridTemplateColumns: '1fr 2fr' }}>
                 <div className="input-group">
                   <label>Tgl Dibutuhkan</label>
                   <input
@@ -366,6 +486,8 @@ export default function RequestToko() {
                     onChange={(e) => setTanggalKebutuhan(e.target.value)}
                   />
                 </div>
+              </div>
+              <div className="form-grid" style={{ marginTop: '15px', gridTemplateColumns: '1fr' }}>
                 <div className="input-group">
                   <label>Catatan Tambahan</label>
                   <input
@@ -379,11 +501,11 @@ export default function RequestToko() {
 
               <button
                 className="btn-submit"
-                style={{ marginTop: '20px', opacity: formLocked ? 0.5 : 1, cursor: formLocked ? 'not-allowed' : 'pointer' }}
-                onClick={formLocked ? undefined : sendRequest}
-                disabled={formLocked}
+                style={{ marginTop: '25px', opacity: (formLocked || requestItems.length === 0) ? 0.5 : 1, cursor: (formLocked || requestItems.length === 0) ? 'not-allowed' : 'pointer' }}
+                onClick={(formLocked || requestItems.length === 0) ? undefined : sendRequest}
+                disabled={formLocked || requestItems.length === 0}
               >
-                {formLocked ? '🔒 Form Terkunci — Buka kunci untuk kirim' : 'Kirim Request ke Gudang'}
+                {formLocked ? '🔒 Form Terkunci — Buka kunci untuk kirim' : '🚀 Kirim Request ke Gudang'}
               </button>
             </section>
 

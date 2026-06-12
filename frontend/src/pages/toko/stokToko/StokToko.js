@@ -45,7 +45,7 @@ function TambahBarangModal({ isOpen, onClose }) {
       qty: Number(form.qty),
       minQty: Number(form.minQty),
       price: Number(form.price),
-      branchId: "BRC-003"
+      branchId: sessionStorage.getItem("reastock_branch_id") || "BRC-003"
     });
     setSaving(false);
     setForm({ sku:"", name:"", category:"Umum", unit:"pcs", qty:1, minQty:5, price:0 });
@@ -151,7 +151,7 @@ export default function StokToko() {
 
   /* ─── STOK TOKO SENDIRI ─── */
   const tokoInventoryWithStatus = useMemo(() =>
-    allStock.filter(x => x.branchId === "BRC-003").map(s => {
+    allStock.filter(x => x.branchId === (sessionStorage.getItem("reastock_branch_id") || "BRC-003")).map(s => {
       let mockImage = "";
       const cat = (s.category || s.type || "Umum").toLowerCase();
       if (cat === "elektronik") mockImage = "https://images.unsplash.com/photo-1558494949-ef0109583a85?w=200&h=200&fit=crop";
@@ -389,7 +389,7 @@ export default function StokToko() {
 
                             <div className="product-card__actions">
                               <button className="btn-icon" title="Detail" onClick={() => setDetailModal(p)}>👁️</button>
-                              <button className="btn-icon btn-icon--danger" title="Hapus" onClick={() => deleteWarehouseStock(p.sku, "BRC-003")}>🗑️</button>
+                              <button className="btn-icon btn-icon--danger" title="Hapus" onClick={() => deleteWarehouseStock(p.sku, sessionStorage.getItem("reastock_branch_id") || "BRC-003")}>🗑️</button>
                             </div>
                           </motion.div>
                         ))}

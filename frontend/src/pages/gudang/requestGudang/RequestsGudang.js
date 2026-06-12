@@ -51,16 +51,23 @@ export default function RequestsGudang() {
   };
   
   const displayedRequests = useMemo(() => {
-    const tokoReq = allReq.filter((r) => (r.fromRole || "").toLowerCase() === "toko");
+    const currentBranchId = sessionStorage.getItem("reastock_branch_id") || "BRC-001";
+    
+    const tokoReq = allReq.filter((r) => 
+      (r.fromRole || "").toLowerCase() === "toko" && 
+      (r.toBranchId === currentBranchId || (!r.toBranchId && currentBranchId === "BRC-001"))
+    );
     
     // Convert admin restock to uniform structure for display
-    const mappedAdminRestock = adminRestock.map(r => ({
-      ...r,
-      isFromAdmin: true,
-      fromName: "Admin",
-      toName: r.cabangGudangNama,
-      fromRole: "admin"
-    }));
+    const mappedAdminRestock = adminRestock
+      .filter((r) => r.cabangGudang === currentBranchId || (!r.cabangGudang && currentBranchId === "BRC-001"))
+      .map(r => ({
+        ...r,
+        isFromAdmin: true,
+        fromName: "Admin",
+        toName: r.cabangGudangNama,
+        fromRole: "admin"
+      }));
 
     if (activeTab === "Dari Toko") return tokoReq;
     if (activeTab === "Restock Admin") return mappedAdminRestock;
@@ -235,7 +242,7 @@ export default function RequestsGudang() {
                 <>
                   <div className="rqGudang__cardMeta">
                     <div>Items: <b>{(r.items || []).length} SKU</b></div>
-                    <div>Target: <b>{r.toName || "Gudang Pusat"}</b></div>
+                    <div>Target: <b>{r.toName || sessionStorage.getItem("reastock_branch_name") || "Gudang Pusat"}</b></div>
                   </div>
                   <div className="rqGudang__cardRow">
                     <span>Total Qty</span>

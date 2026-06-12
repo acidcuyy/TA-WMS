@@ -209,8 +209,11 @@ export default function PengeluaranBarangToko() {
   const [inventory, setInventory] = useState([]);
 
   useEffect(() => {
-    const unsubOut = subscribeTokoOutflow(setOutflows);
-    const unsubInv = subscribeWarehouseStock(data => setInventory((data || []).filter(x => x.branchId === "BRC-003")));
+    const unsubOut = subscribeTokoOutflow(data => {
+      const currentBranchId = sessionStorage.getItem("reastock_branch_id") || "BRC-003";
+      setOutflows((data || []).filter(o => o.tokoId === currentBranchId || (!o.tokoId && currentBranchId === "BRC-003")));
+    });
+    const unsubInv = subscribeWarehouseStock(data => setInventory((data || []).filter(x => x.branchId === (sessionStorage.getItem("reastock_branch_id") || "BRC-003"))));
     return () => { unsubOut(); unsubInv(); };
   }, []);
 

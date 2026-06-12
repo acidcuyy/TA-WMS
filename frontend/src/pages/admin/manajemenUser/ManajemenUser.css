@@ -1,0 +1,964 @@
+/* ManajemenUser.css */
+
+.muser-page {
+  padding: 32px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ========== HEADER ========== */
+.muser-header {
+  margin-bottom: 28px;
+}
+
+.muser-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #1e293b;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.5px;
+}
+
+.muser-subtitle {
+  color: #64748b;
+  font-size: 15px;
+  margin: 0;
+}
+
+/* ========== STATS ========== */
+.muser-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.muser-stat-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.02);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.muser-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+}
+
+.muser-stat-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.muser-stat-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.muser-stat-value {
+  font-size: 24px;
+  font-weight: 800;
+  color: #1e293b;
+  line-height: 1;
+}
+
+.muser-stat-label {
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+/* ========== TABS ROW ========== */
+.muser-tabs-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 16px;
+}
+
+.muser-tabs {
+  display: flex;
+  gap: 8px;
+  background: #fff;
+  padding: 6px;
+  border-radius: 14px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+}
+
+.muser-tab {
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  background: transparent;
+}
+
+.muser-tab:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.muser-tab.active {
+  background: #ea580c;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(234, 88, 12, 0.3);
+}
+
+.muser-tab-icon {
+  font-size: 16px;
+}
+
+.muser-search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 8px 16px;
+  transition: all 0.2s ease;
+}
+
+.muser-search-box:focus-within {
+  border-color: #ea580c;
+  box-shadow: 0 0 0 4px rgba(234, 88, 12, 0.1);
+}
+
+.muser-search-box input {
+  border: none;
+  outline: none;
+  font-size: 13px;
+  width: 200px;
+  background: transparent;
+  color: #1e293b;
+}
+
+/* ========== CONTENT ========== */
+.muser-content {
+  min-height: 300px;
+}
+
+/* ========== EMPTY STATE ========== */
+.muser-empty {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 64px 32px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  border: 2px dashed #e2e8f0;
+}
+
+.muser-empty-icon {
+  font-size: 56px;
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+
+.muser-empty h3 {
+  margin: 0 0 8px;
+  color: #475569;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.muser-empty p {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+/* ========== BRANCH LIST ========== */
+.muser-branch-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.muser-branch-card {
+  background: #ffffff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+.muser-branch-card:hover {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+}
+
+.muser-branch-card.expanded {
+  border-color: #3b82f6;
+  box-shadow: 0 8px 30px rgba(59, 130, 246, 0.08);
+}
+
+.muser-branch-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.muser-branch-header:hover {
+  background: #f8fafc;
+}
+
+.muser-branch-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.muser-branch-icon-wrap {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  background: #f1f5f9;
+  border-radius: 12px;
+}
+
+.muser-branch-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.muser-branch-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.muser-branch-loc {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.muser-branch-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.muser-branch-badge {
+  background: #eff6ff;
+  color: #3b82f6;
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: monospace;
+}
+
+.muser-branch-users-count {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 600;
+  background: #f1f5f9;
+  padding: 4px 12px;
+  border-radius: 8px;
+}
+
+.muser-branch-chevron {
+  font-size: 18px;
+  color: #94a3b8;
+  transition: transform 0.3s ease;
+  line-height: 1;
+}
+
+.muser-branch-chevron.open {
+  transform: rotate(180deg);
+}
+
+/* ========== BRANCH BODY (expanded) ========== */
+.muser-branch-body {
+  overflow: hidden;
+  border-top: 1px solid #f1f5f9;
+}
+
+.muser-no-users {
+  padding: 32px;
+  text-align: center;
+  color: #94a3b8;
+}
+
+.muser-no-users span {
+  font-size: 32px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.muser-no-users p {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* ========== USERS TABLE ========== */
+.muser-users-table-wrap {
+  padding: 16px;
+}
+
+.muser-users-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+.muser-users-table thead {
+  background: #f8fafc;
+}
+
+.muser-users-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 700;
+  color: #64748b;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.muser-users-table td {
+  padding: 14px 16px;
+  color: #334155;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.muser-users-table tbody tr {
+  transition: background 0.2s ease;
+}
+
+.muser-users-table tbody tr:hover {
+  background: #fafbfc;
+}
+
+.muser-users-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.muser-users-table code {
+  background: #eff6ff;
+  color: #3b82f6;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* ========== ACTION BUTTONS ========== */
+.muser-action-btns {
+  display: flex;
+  gap: 6px;
+}
+
+.muser-btn-transfer {
+  background: none;
+  border: 2px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.muser-btn-transfer:hover {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  transform: scale(1.1);
+}
+
+/* ========== INLINE ADD USER ========== */
+.muser-add-user-section {
+  padding: 16px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.muser-btn-add-user {
+  width: 100%;
+  padding: 14px 24px;
+  border: 2px dashed #c7d2fe;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #fafbff, #f0f4ff);
+  color: #4f46e5;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.muser-btn-add-user:hover {
+  background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+  border-color: #818cf8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(79, 70, 229, 0.1);
+}
+
+.muser-btn-add-user span {
+  font-size: 20px;
+  font-weight: 400;
+}
+
+.muser-add-form {
+  background: linear-gradient(135deg, #fafbff, #f8fafc);
+  border: 2px solid #e0e7ff;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.muser-add-form-title {
+  font-size: 15px;
+  color: #1e293b;
+  font-weight: 600;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.muser-add-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.muser-add-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.muser-add-field label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+}
+
+.muser-add-field input {
+  padding: 11px 14px;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 13px;
+  color: #1e293b;
+  outline: none;
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.muser-add-field input:focus {
+  border-color: #818cf8;
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.1);
+}
+
+.muser-add-form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  justify-content: flex-end;
+}
+
+.muser-add-cancel {
+  padding: 10px 24px;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  background: white;
+  color: #64748b;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.muser-add-cancel:hover {
+  border-color: #94a3b8;
+  color: #1e293b;
+}
+
+.muser-add-submit {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
+  color: white;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.muser-add-submit:hover {
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35);
+  transform: translateY(-1px);
+}
+
+/* ========== TRANSFER MODAL ========== */
+.muser-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.muser-transfer-modal {
+  background: white;
+  border-radius: 24px;
+  max-width: 480px;
+  width: 90%;
+  padding: 32px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.2);
+}
+
+.muser-transfer-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.muser-transfer-icon {
+  width: 64px;
+  height: 64px;
+  background: #eff6ff;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  margin: 0 auto 16px;
+}
+
+.muser-transfer-header h3 {
+  margin: 0 0 6px;
+  font-size: 20px;
+  font-weight: 800;
+  color: #1e293b;
+}
+
+.muser-transfer-header p {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.muser-transfer-user-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  background: #f8fafc;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 24px;
+}
+
+.muser-transfer-user-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 800;
+  color: white;
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  flex-shrink: 0;
+}
+
+.muser-transfer-user-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.muser-transfer-user-username {
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+.muser-transfer-body {
+  margin-bottom: 24px;
+}
+
+.muser-transfer-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 10px;
+}
+
+.muser-transfer-select {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 14px;
+  color: #1e293b;
+  outline: none;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  appearance: none;
+}
+
+.muser-transfer-select:focus {
+  border-color: #3b82f6;
+  background: white;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+.muser-transfer-preview {
+  margin-top: 16px;
+}
+
+.muser-transfer-flow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: linear-gradient(135deg, #fef3c7, #fef9c3);
+  border-radius: 14px;
+  border: 1px solid #fde68a;
+}
+
+.muser-transfer-from,
+.muser-transfer-to {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+}
+
+.muser-transfer-from span:first-child,
+.muser-transfer-to span:first-child {
+  font-size: 24px;
+}
+
+.muser-transfer-from span:last-child,
+.muser-transfer-to span:last-child {
+  font-size: 12px;
+  font-weight: 700;
+  color: #78350f;
+}
+
+.muser-transfer-arrow {
+  font-size: 24px;
+  color: #d97706;
+  font-weight: 800;
+  flex-shrink: 0;
+  animation: slide-right 1.2s ease-in-out infinite;
+}
+
+@keyframes slide-right {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(4px); }
+}
+
+.muser-transfer-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.muser-transfer-cancel {
+  flex: 1;
+  padding: 14px;
+  border-radius: 14px;
+  border: 2px solid #e2e8f0;
+  background: white;
+  color: #64748b;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.muser-transfer-cancel:hover {
+  border-color: #94a3b8;
+  color: #1e293b;
+}
+
+.muser-transfer-confirm {
+  flex: 1.5;
+  padding: 14px;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  color: white;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.muser-transfer-confirm:hover:not(:disabled) {
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.35);
+  transform: translateY(-2px);
+}
+
+.muser-transfer-confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.muser-btn-delete {
+  background: none;
+  border: 2px solid #fecaca;
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.muser-btn-delete:hover {
+  background: #fef2f2;
+  border-color: #f87171;
+  transform: scale(1.1);
+}
+
+/* ========== DRIVER CARD ========== */
+.muser-driver-card {
+  background: #ffffff;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.02);
+}
+
+.muser-driver-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 28px;
+  background: linear-gradient(135deg, #fffaf5, #fff5ed);
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.muser-driver-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 800;
+  color: white;
+  background: linear-gradient(135deg, #ea580c, #f97316);
+  box-shadow: 0 4px 12px rgba(234, 88, 12, 0.3);
+}
+
+.muser-driver-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.muser-driver-name {
+  font-size: 18px;
+  font-weight: 800;
+  color: #1e293b;
+}
+
+.muser-driver-role {
+  font-size: 13px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.muser-driver-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 20px;
+}
+
+.muser-driver-status.online {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.muser-driver-status.offline {
+  background: rgba(148, 163, 184, 0.1);
+  color: #94a3b8;
+}
+
+.muser-driver-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.muser-driver-status.online .muser-driver-status-dot {
+  animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+.muser-driver-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+
+.muser-driver-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 20px 28px;
+  border-bottom: 1px solid #f1f5f9;
+  border-right: 1px solid #f1f5f9;
+}
+
+.muser-driver-detail-item:nth-child(2n) {
+  border-right: none;
+}
+
+.muser-driver-detail-item:nth-last-child(-n + 2) {
+  border-bottom: none;
+}
+
+.muser-detail-label {
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.muser-detail-value {
+  font-size: 15px;
+  color: #1e293b;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.muser-driver-footer {
+  padding: 16px 28px;
+  background: #f8fafc;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.muser-btn-delete-driver {
+  background: none;
+  border: none;
+  color: #ef4444;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.muser-btn-delete-driver:hover {
+  background: #fef2f2;
+}
+
+/* ========== TOAST ========== */
+.muser-toast {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #10b981;
+  color: white;
+  padding: 14px 28px;
+  border-radius: 100px;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 1000;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+  .muser-page {
+    padding: 20px;
+  }
+
+  .muser-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .muser-tabs-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .muser-tabs {
+    overflow-x: auto;
+  }
+
+  .muser-driver-details {
+    grid-template-columns: 1fr;
+  }
+
+  .muser-driver-detail-item {
+    border-right: none !important;
+  }
+
+  .muser-branch-right {
+    flex-wrap: wrap;
+  }
+}

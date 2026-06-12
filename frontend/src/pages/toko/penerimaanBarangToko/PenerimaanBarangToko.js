@@ -50,8 +50,12 @@ export default function PenerimaanBarangToko() {
   // Subscribe to live data
   useEffect(() => {
     const unsub = subscribeRequests((data) => {
-      // Hanya tampilkan request dari toko (fromRole === "toko")
-      setRequests(data.filter((r) => r.fromRole === "toko"));
+      const currentBranchId = sessionStorage.getItem("reastock_branch_id") || "BRC-003";
+      // Hanya tampilkan request dari toko ini
+      setRequests(data.filter((r) => 
+        r.fromRole === "toko" && 
+        (r.fromBranchId === currentBranchId || (!r.fromBranchId && currentBranchId === "BRC-003"))
+      ));
     });
     setBranches(getBranches());
     return () => unsub();

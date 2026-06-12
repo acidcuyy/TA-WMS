@@ -48,7 +48,8 @@ export default function GudangDashboard() {
       }
    };
 
-   const gudangStock = useMemo(() => allStock.filter(stock => !stock.branchId || stock.branchId === "BRC-001"), [allStock]);
+   const currentBranchId = sessionStorage.getItem("reastock_branch_id") || "BRC-001";
+   const gudangStock = useMemo(() => allStock.filter(stock => !stock.branchId || stock.branchId === currentBranchId), [allStock, currentBranchId]);
 
    const totalStok = gudangStock.reduce((acc, item) => acc + item.qty, 0);
    const barangMasuk = allRestocks.length; 

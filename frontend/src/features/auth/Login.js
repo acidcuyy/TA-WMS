@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { getBranchUsers } from "../../services/wmsApi";
 import "./Login.css";
 
 import Button from "../../components/common/Button";
@@ -37,15 +38,51 @@ export default function Login() {
       "driver@gmail.com": { pass: "driver", role: "driver", path: "/driver" },
     };
 
-    const user = users[eLower];
+    let user = users[eLower];
+
+    // Cek di branchUsers kalau bukan hardcoded
+    if (!user) {
+      const branchUsers = getBranchUsers();
+      const dynamicUser = branchUsers.find(
+        (u) =>
+          (u.username && u.username.toLowerCase() === eLower) ||
+          (u.email && u.email.toLowerCase() === eLower)
+      );
+
+      if (dynamicUser && dynamicUser.password === p) {
+        const role = dynamicUser.role === "driver" ? "driver" : (dynamicUser.branchType === "toko" ? "toko" : "gudang");
+        const path = `/${role}`;
+        user = {
+          pass: dynamicUser.password,
+          role: role,
+          path: path,
+          branchId: dynamicUser.branchId,
+          branchName: dynamicUser.branchName,
+          name: dynamicUser.nama || "User",
+          email: dynamicUser.email || dynamicUser.username,
+          joinDate: dynamicUser.createdAt || "10 Januari 2025",
+        };
+      }
+    }
 
     if (!user || user.pass !== p) {
-      setError("Email atau password salah.");
+      setError("Username/Email atau password salah.");
       return;
     }
 
     // ✅ simpan role untuk kebutuhan app (guard nanti / topbar, dll)
-    localStorage.setItem("reastock_role", user.role);
+    sessionStorage.setItem("reastock_role", user.role);
+    sessionStorage.setItem("reastock_user_name", user.name || (user.role === "admin" ? "Super Admin" : "Admin Cabang"));
+    sessionStorage.setItem("reastock_user_email", user.email || eLower);
+    sessionStorage.setItem("reastock_user_joinDate", user.joinDate || "10 Januari 2025");
+    
+    if (user.branchId) {
+      sessionStorage.setItem("reastock_branch_id", user.branchId);
+      sessionStorage.setItem("reastock_branch_name", user.branchName || "");
+    } else {
+      sessionStorage.removeItem("reastock_branch_id");
+      sessionStorage.removeItem("reastock_branch_name");
+    }
 
     // trigger fade-out
     setIsLeaving(true);

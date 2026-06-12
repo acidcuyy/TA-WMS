@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Card from "../../../components/common/Card";
-import { subscribeRequests, subscribeDriverProfile } from "../../../services/wmsApi";
+import { subscribeRequests } from "../../../services/wmsApi";
 import "./DriverHistory.css";
 
 export default function DriverHistory() {
@@ -12,13 +12,17 @@ export default function DriverHistory() {
   const [selectedRequest, setSelectedRequest] = useState(null);
 
   useEffect(() => {
-    const unsubReq = subscribeRequests((rows) => setAllReq(rows || []));
-    const unsubProfile = subscribeDriverProfile((data) => setProfile(data || {}));
-    
-    return () => {
-      unsubReq();
-      unsubProfile();
-    };
+    const branchId = sessionStorage.getItem("reastock_branch_id");
+    const unsubReq = subscribeRequests((rows) => {
+      const myReqs = (rows || []).filter(r => r.toBranchId === branchId || r.fromBranchId === branchId);
+      setAllReq(myReqs);
+    });
+    setProfile({
+      name: sessionStorage.getItem("reastock_user_name") || "Driver",
+      role: "Driver Ekspedisi",
+      branchId: branchId
+    });
+    return () => { unsubReq(); };
   }, []);
 
   // Filter requests that are finished ("Selesai") and belong to this driver

@@ -56,6 +56,10 @@ const seed = () => ({
 
   // Catatan pengeluaran barang dari toko
   tokoOutflow: [],
+
+  // User accounts per branch (gudang/toko)
+  // { id, branchId, branchName, branchType, username, password, email, phone, nama, createdAt }
+  branchUsers: [],
 });
 
 function safeParse(raw) {
@@ -112,7 +116,7 @@ export function dbLoad() {
             const skuToMatch = r.items[0].sku || r.items[0].code || `SKU-${r.items[0].name}`;
             
             // Deduct the difference from the target branch (Toko: r.fromBranchId)
-            const targetBranchId = r.fromBranchId || "BRC-003";
+            const targetBranchId = r.fromBranchId || sessionStorage.getItem("reastock_branch_id") || "BRC-003";
             const stockItem = parsed.warehouseStock.find(s => 
               s.branchId === targetBranchId && 
               (s.sku === skuToMatch || s.sku === r.items[0].sku || s.sku === r.items[0].code)

@@ -56,8 +56,8 @@ export default function RiwayatToko() {
     }
 
     uploadTokoReport({
-      tokoId: "BRC-003",
-      tokoName: "Toko Utama", // Assuming logged in as Toko Utama
+      tokoId: sessionStorage.getItem("reastock_branch_id") || "BRC-003",
+      tokoName: sessionStorage.getItem("reastock_branch_name") || "Toko Utama", // Dynamic branch name
       type: form.type,
       format: "PDF",
       fileData: fileDataUrl,
