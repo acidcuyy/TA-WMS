@@ -50,7 +50,6 @@ model User {
   store                 Stores?                @relation(fields: [storeId], references: [id])
   warehouse             Warehouse?             @relation(fields: [warehouseId], references: [id])
   company               Companies?             @relation(fields: [companiesId], references: [id])
-  stockRequests         stockRequest[]         @relation("RequestCreatedBy")
   transfers             Transfer[]
   purchaseRequestPhotos purchaseRequestPhoto[]
   transferPhotos        transferPhoto[]
@@ -161,14 +160,13 @@ model Companies {
     notes        String?
     status       TransferStatus @default(PENDING)
     isDeleted    Boolean        @default(false)
+    createdAt    DateTime?      @default(now())
     approvedAt   DateTime?
     deliveredAt  DateTime?
     companiesId  Int
-    createdById  Int?
     company      Companies      @relation(fields: [companiesId], references: [id])
     storeId      Int
     store        Stores         @relation(fields: [storeId], references: [id])
-    createdBy    User?          @relation("RequestCreatedBy", fields: [createdById], references: [id])
     transfers    Transfer[]
     requestItems RequestItems[]
   }

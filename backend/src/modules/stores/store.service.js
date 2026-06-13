@@ -3,95 +3,95 @@ import { buildQueryOptions } from "../../utils/buildQueryOptions.js";
 import storeQueryConfig from "./store.model.config.js";
 
 class StoreService {
-    async findAll(query) {
-        const options = buildQueryOptions(storeQueryConfig, query);
+  async findAll(query) {
+    const options = buildQueryOptions(storeQueryConfig, query);
 
-        console.log("Query options:", options);
+    console.log("Query options:", options);
 
-        options.where = {
-            ...options.where,
-            isDeleted: false,
-        };
-        
-        const [data, count] = await Promise.all([
-            prisma.stores.findMany(options),
+    options.where = {
+      ...options.where,
+      isDeleted: false,
+    };
 
-            prisma.stores.count({
-                where: options.where
-            }),
-        ]);
-        const currentPage = query?.pagination?.page ?? 1;
+    const [data, count] = await Promise.all([
+      prisma.stores.findMany(options),
 
-        const itemsPerPage = query?.pagination?.limit ?? 100;
+      prisma.stores.count({
+        where: options.where,
+      }),
+    ]);
+    const currentPage = query?.pagination?.page ?? 1;
 
-        const totalPages = Math.ceil(count / itemsPerPage);
+    const itemsPerPage = query?.pagination?.limit ?? 100;
 
-        return {
-            data,
-            meta: query?.pagination
-                ? {
-                    totalItems: count,
-                    totalPages,
-                    currentPage,
-                    itemsPerPage,
-                }
-                : null,
-        };
-    }
+    const totalPages = Math.ceil(count / itemsPerPage);
 
-    async create(data) {
-        return prisma.stores.create({
-            data,
-            select: {
-                id: true,
-                name: true,
-                address: true,
-                phone: true,
-                companiesId: true,
-            },
-        });
-    }
+    return {
+      data,
+      meta: query?.pagination
+        ? {
+            totalItems: count,
+            totalPages,
+            currentPage,
+            itemsPerPage,
+          }
+        : null,
+    };
+  }
 
-    async getByid(id) {
-        return prisma.stores.findUnique({
-            where: { id, isActive: true, isDeleted: false },
-            select: {
-                id: true,
-                name: true,
-                address: true,
-                phone: true,
-                companiesId: true,
-            },
-        });
-    }
+  async create(data) {
+    return prisma.stores.create({
+      data,
+      select: {
+        id: true,
+        name: true,
+        address: true,
+        phone: true,
+        companiesId: true,
+      },
+    });
+  }
 
-    async update(id, data) {
-        return prisma.stores.update({
-            where: { id, isActive: true, isDeleted: false },
-            data,
-            select: {
-                id: true,
-                name: true,
-                address: true,
-                phone: true,
-                companiesId: true,
-            },
-        });
-    }
+  async getByid(id) {
+    return prisma.stores.findUnique({
+      where: { id, isActive: true, isDeleted: false },
+      select: {
+        id: true,
+        name: true,
+        address: true,
+        phone: true,
+        companiesId: true,
+      },
+    });
+  }
 
-    async delete(id) {
-        return prisma.stores.update({
-            where: { id, isActive: true, isDeleted: false },
-            data: { isActive: false, isDeleted: true },
-            select: {
-                id: true,
-                name: true,
-                address: true,
-                phone: true,
-                companiesId: true,
-            },
-        });
-    }
+  async update(id, data) {
+    return prisma.stores.update({
+      where: { id, isActive: true, isDeleted: false },
+      data,
+      select: {
+        id: true,
+        name: true,
+        address: true,
+        phone: true,
+        companiesId: true,
+      },
+    });
+  }
+
+  async delete(id) {
+    return prisma.stores.update({
+      where: { id, isActive: true, isDeleted: false },
+      data: { isActive: false, isDeleted: true },
+      select: {
+        id: true,
+        name: true,
+        address: true,
+        phone: true,
+        companiesId: true,
+      },
+    });
+  }
 }
 
 export default new StoreService();

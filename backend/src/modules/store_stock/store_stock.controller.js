@@ -1,15 +1,18 @@
-import storeService from "./store.service.js";
-import { createStoreSchema, updateStoreSchema } from "./store.validate.js";
+import StoreStockService from "./store_stock.service.js";
+import {
+  createStoreStockSchema,
+  updateStoreStockSchema,
+} from "./store_stock.validate.js";
 
-class storeController {
+class StoreStockController {
   async getAll(req, res) {
     try {
-      const stores = await storeService.findAll(req.body);
-
+      const storeStocks = await StoreStockService.findAll(req.body);
       return res.json({
         success: true,
-        data: stores.data,
-        meta: stores.meta,
+        message: "Store Stocks retrieved successfully",
+        data: storeStocks.data,
+        meta: storeStocks.meta,
       });
     } catch (error) {
       return res.status(500).json({
@@ -21,20 +24,17 @@ class storeController {
 
   async create(req, res) {
     try {
-      const validatedData = createStoreSchema.parse(req.body);
-
-      const store = await storeService.create(validatedData);
-
+      const validatedData = createStoreStockSchema.parse(req.body);
+      const storeStock = await StoreStockService.create(validatedData);
       return res.status(201).json({
         success: true,
-        data: store,
+        data: storeStock,
       });
     } catch (error) {
-      console.log(error.message);
       if (error.name === "ZodError") {
         return res.status(400).json({
           success: false,
-          errors: error.issues[0].message,
+          errors: error.errors,
         });
       }
       return res.status(500).json({
@@ -47,16 +47,16 @@ class storeController {
   async getById(req, res) {
     try {
       const id = parseInt(req.params.id);
-      const store = await storeService.getByid(id);
-      if (!store) {
+      const storeStock = await StoreStockService.findById(id);
+      if (!storeStock) {
         return res.status(404).json({
           success: false,
-          message: "Store not found",
+          message: "Store Stock not found",
         });
       }
       return res.json({
         success: true,
-        data: store,
+        data: storeStock,
       });
     } catch (error) {
       return res.status(500).json({
@@ -69,18 +69,21 @@ class storeController {
   async update(req, res) {
     try {
       const id = parseInt(req.params.id);
-      const validatedData = updateStoreSchema.parse(req.body);
-
-      const store = await storeService.update(id, validatedData);
-      if (!store) {
+      const validatedData = updateStoreStockSchema.parse(req.body);
+      const updatedStoreStock = await StoreStockService.update(
+        id,
+        validatedData,
+      );
+      if (!updatedStoreStock) {
         return res.status(404).json({
           success: false,
-          message: "Store not found",
+          message: "Store Stock not found",
         });
       }
+
       return res.json({
         success: true,
-        data: store,
+        data: updatedStoreStock,
       });
     } catch (error) {
       if (error.name === "ZodError") {
@@ -99,16 +102,16 @@ class storeController {
   async delete(req, res) {
     try {
       const id = parseInt(req.params.id);
-      const store = await storeService.delete(id);
-      if (!store) {
+      const deleted = await StoreStockService.delete(id);
+      if (!deleted) {
         return res.status(404).json({
           success: false,
-          message: "Store not found",
+          message: "Store Stock not found",
         });
       }
       return res.json({
         success: true,
-        data: store,
+        data: deleted,
       });
     } catch (error) {
       return res.status(500).json({
@@ -119,4 +122,4 @@ class storeController {
   }
 }
 
-export default new storeController();
+export default new StoreStockController();

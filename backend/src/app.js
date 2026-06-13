@@ -11,7 +11,10 @@ import warehouseRoute from "./modules/warehouse/warehouse.routes.js";
 import storeRoute from "./modules/stores/store.routes.js";
 import companyRoute from "./modules/company/company.routes.js";
 import productRoute from "./modules/products/product.routes.js";
-import stockRequestRoute from "./modules/stockRequest/stockRequest.routes.js";
+import warehouseStockRoute from "./modules/warehouse_stock/warehouse_stock.routes.js";
+import storeStockRoute from "./modules/store_stock/store_stock.routes.js";
+import stockRequest from "./modules/stockRequest/stockRequest.routes.js";
+import requestItemsRoutes from "./modules/requestItems/requestItems.routes.js";
 
 import { success } from "zod";
 
@@ -45,7 +48,10 @@ app.use("/api/warehouse", warehouseRoute);
 app.use("/api/stores", storeRoute);
 app.use("/api/company", companyRoute);
 app.use("/api/products", productRoute);
-app.use("/api/stockRequests", stockRequestRoute);
+app.use("/api/warehouse-stocks", warehouseStockRoute);
+app.use("/api/store-stocks", storeStockRoute);
+app.use("/api/stockRequest", stockRequest);
+app.use("/api/requestItems", requestItemsRoutes);
 
 // Health Check
 app.get("/api/health", (req, res) => {

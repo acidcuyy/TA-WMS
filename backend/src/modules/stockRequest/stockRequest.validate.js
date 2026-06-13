@@ -1,12 +1,8 @@
 import { z } from "zod";
 
-export const createRequestItemSchema = z.object({
-    storeId: z.number().int().optional(),
-    notes: z.string().optional(),
-    items: z.array(
-        z.object({
-            productId: z.number().int().positive(),
-            quantity: z.number().int().min(1),
-        })
-    ).min(1, "At least one item is required"),
+export const createRequestStoreSchema = z.object({
+  notes: z.string().optional(),
+  storeId: z.number().int(),
 });
+
+export const updateRequestStoreSchema = createRequestStoreSchema.partial();
