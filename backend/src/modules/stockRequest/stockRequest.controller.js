@@ -28,11 +28,8 @@ class stockRequestController {
       const validateData = createRequestStoreSchema.parse(req.body);
 
       const stockRequest = await stockRequestService.create({
-        ...validateData,
-        companiesId: req.user.companiesId,
+        validateData,
       });
-
-      console.log(validateData);
 
       return res.status(201).json({
         success: true,

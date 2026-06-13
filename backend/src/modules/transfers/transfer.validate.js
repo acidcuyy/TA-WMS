@@ -9,5 +9,10 @@ export const createTransferSchema = z.object({
     },
   ),
   driverId: z.number().int(),
-  companiesId: z.number().int(),
+  companyId: z.number().int(),
+  requestId: z.number().int(),
+  toStoreId: z.number().int(),
+  fromWarehouseId: z.number().int(),
 });
+
+export const updateTransferSchema = createTransferSchema.partial();

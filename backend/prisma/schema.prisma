@@ -53,8 +53,8 @@ model User {
   transfers             Transfer[]
   purchaseRequestPhotos purchaseRequestPhoto[]
   transferPhotos        transferPhoto[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @default(now())
 }
 
 model Warehouse {
@@ -104,8 +104,10 @@ model Transfer {
   isDeleted       Boolean         @default(false)
   driverId        Int
   requestId       Int
+  companyId       Int
   toStoreId       Int
   fromWarehouseId Int
+  company         Companies       @relation(fields: [companyId], references: [id])
   driver          User            @relation(fields: [driverId], references: [id])
   request         stockRequest    @relation(fields: [requestId], references: [id])
   toStore         Stores          @relation(fields: [toStoreId], references: [id])
@@ -152,24 +154,25 @@ model Companies {
   stockRequests    stockRequest[]
   products         Product[]
   purchaseRequests purchaseRequest[]
+  transfers        Transfer[]
 }
 
-  model stockRequest {
-    id           Int            @id @default(autoincrement())
-    code         String
-    notes        String?
-    status       TransferStatus @default(PENDING)
-    isDeleted    Boolean        @default(false)
-    createdAt    DateTime?      @default(now())
-    approvedAt   DateTime?
-    deliveredAt  DateTime?
-    companiesId  Int
-    company      Companies      @relation(fields: [companiesId], references: [id])
-    storeId      Int
-    store        Stores         @relation(fields: [storeId], references: [id])
-    transfers    Transfer[]
-    requestItems RequestItems[]
-  }
+model stockRequest {
+  id           Int            @id @default(autoincrement())
+  code         String
+  notes        String?
+  status       TransferStatus @default(PENDING)
+  isDeleted    Boolean        @default(false)
+  createdAt    DateTime?      @default(now())
+  approvedAt   DateTime?
+  deliveredAt  DateTime?
+  companiesId  Int
+  company      Companies      @relation(fields: [companiesId], references: [id])
+  storeId      Int
+  store        Stores         @relation(fields: [storeId], references: [id])
+  transfers    Transfer[]
+  requestItems RequestItems[]
+}
 
 model RequestItems {
   id        Int          @id @default(autoincrement())

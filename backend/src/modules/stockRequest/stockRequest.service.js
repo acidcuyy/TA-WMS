@@ -40,40 +40,25 @@ class stockRequestService {
   }
 
   async create(data) {
-    const { notes, companiesId, storeId } = data;
+    const { notes, companiesId, storeId } = data.validateData;
 
     const code = await generateCode("REQ", "stockRequest");
 
     // console.log("CODE:", code);
     // console.log(typeof code);
-    // console.log(data);
-    // console.log("storeId:", storeId);
-    // console.log("companiesId:", companiesId);
+    console.log(data);
 
     return prisma.stockRequest.create({
       data: {
-        notes,
         code,
-
-        company: {
-          connect: {
-            id: companiesId,
-          },
-        },
-        store: {
-          connect: {
-            id: storeId,
-          },
-        },
+        notes,
+        companiesId,
+        storeId,
       },
       select: {
         id: true,
         code: true,
         notes: true,
-        status: true,
-        companiesId: true,
-        storeId: true,
-        createdAt: true,
       },
     });
   }

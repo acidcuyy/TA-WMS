@@ -19,7 +19,6 @@ class WarehouseStockService {
       }),
     ]);
     const currentPage = query?.pagination?.page ?? 1;
-
     const itemsPerPage = query?.pagination?.limit ?? 100;
     const totalPages = Math.ceil(count / itemsPerPage);
 

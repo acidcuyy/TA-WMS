@@ -15,6 +15,7 @@ import warehouseStockRoute from "./modules/warehouse_stock/warehouse_stock.route
 import storeStockRoute from "./modules/store_stock/store_stock.routes.js";
 import stockRequest from "./modules/stockRequest/stockRequest.routes.js";
 import requestItemsRoutes from "./modules/requestItems/requestItems.routes.js";
+import transferRoute from "./modules/transfers/transfer.routes.js";
 
 import { success } from "zod";
 
@@ -52,6 +53,7 @@ app.use("/api/warehouse-stocks", warehouseStockRoute);
 app.use("/api/store-stocks", storeStockRoute);
 app.use("/api/stockRequest", stockRequest);
 app.use("/api/requestItems", requestItemsRoutes);
+app.use("/api/transfers", transferRoute);
 
 // Health Check
 app.get("/api/health", (req, res) => {
