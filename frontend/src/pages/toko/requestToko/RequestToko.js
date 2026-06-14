@@ -538,7 +538,7 @@ export default function RequestToko() {
                       const itemText = `${itemName} ${itemCode ? `(${itemCode})` : ""} - ${itemQty} ${qtySuffix}`;
                       const priorityTag = r.priority ? `[Prioritas: ${r.priority}]` : "";
                       const status = (r.status || "").toLowerCase();
-                      const canSeeTrack = status.includes("mengirim");
+                      const canSeeTrack = status.includes("mengirim") && !r.isExternalDriver;
                       const canFinish = status.includes("mengirim");
                       const done = status.includes("selesai");
 

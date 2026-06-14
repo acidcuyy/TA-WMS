@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { subscribeWarehouseStock, subscribeRequests, subscribeNotifications } from "../../../services/wmsApi";
+import { subscribeWarehouseStock, subscribeRequests, subscribeNotifications, getBranchUsers } from "../../../services/wmsApi";
 import { useEffect, useMemo } from "react";
 import "../PageAdmin.css";
 
@@ -12,10 +12,14 @@ export default function ProfileAdmin() {
 
   // Edit Profile Modal State
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const userEmail = sessionStorage.getItem("reastock_user_email");
+  const branchUsers = getBranchUsers();
+  const currentUser = branchUsers.find(u => u.email === userEmail || u.username === userEmail) || {};
+
   const [formData, setFormData] = useState({
-    nama: "Admin",
-    email: "admin@gmail.com",
-    phone: "081234567890",
+    nama: currentUser.nama || sessionStorage.getItem("reastock_user_name") || "Admin",
+    email: currentUser.email || userEmail || "admin@gmail.com",
+    phone: currentUser.phone || "081234567890",
     oldPassword: "",
     newPassword: "",
     confirmPassword: ""
@@ -92,7 +96,7 @@ export default function ProfileAdmin() {
       {/* HERO SECTION */}
       <section className="profile-hero-section">
         <div className="hero-main">
-          <div className="hero-avatar">A</div>
+          <div className="hero-avatar">{formData.nama.charAt(0).toUpperCase()}</div>
           <div className="hero-details">
             <div className="hero-name-row">
               <h2>{formData.nama}</h2>
@@ -138,11 +142,11 @@ export default function ProfileAdmin() {
             </div>
             <div className="info-item">
               <span className="info-label">🕒 Terakhir Login</span>
-              <span className="info-value">13 Mei 2025, 09:40</span>
+              <span className="info-value">{new Date().toLocaleString("id-ID", { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
             </div>
             <div className="info-item">
               <span className="info-label">📅 Bergabung Sejak</span>
-              <span className="info-value">10 Januari 2025</span>
+              <span className="info-value">{currentUser.joinedAt || "10 Januari 2025"}</span>
             </div>
           </div>
         </section>

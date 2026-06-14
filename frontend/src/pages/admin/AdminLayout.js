@@ -10,7 +10,7 @@ import { useTheme } from "../../app/ThemeProvider";
 
 import Sidebar from "../../components/layout/Sidebar";
 import NotificationSystem from "../../components/layout/NotificationSystem";
-import { subscribeNotifications, markMultipleNotificationsAsRead } from "../../services/wmsApi";
+import { subscribeNotifications, markMultipleNotificationsAsRead, getCompanyProfile, getBranchUsers } from "../../services/wmsApi";
 
 export default function AdminLayout() {
   const location = useLocation();
@@ -18,6 +18,16 @@ export default function AdminLayout() {
   const { theme } = useTheme();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [period, setPeriod] = useState("Mingguan");
+
+  const userEmail = sessionStorage.getItem("reastock_user_email") || "";
+  const branchUsers = getBranchUsers();
+  const isCompanyAdmin = branchUsers.some(u => 
+    (u.email === userEmail || u.username === userEmail) && u.branchType === "admin"
+  );
+
+  const companyProfile = getCompanyProfile();
+  const companyLogo = isCompanyAdmin && companyProfile ? companyProfile.logo : null;
+  const userName = sessionStorage.getItem("reastock_user_name") || "Admin";
 
   const currentLogo = theme === "dark" ? logoSideDark : logoSideDefault;
 
@@ -104,7 +114,7 @@ export default function AdminLayout() {
           <div className="admin-topbar__left">
             <div className="admin-badge">🛡️</div>
             <div className="admin-info">
-              <span className="admin-name">Super Admin</span>
+              <span className="admin-name">{userName}</span>
               <span className="admin-role">Administrator</span>
             </div>
           </div>
@@ -127,8 +137,29 @@ export default function AdminLayout() {
 
             <NotificationSystem role="ADMIN" />
 
-            <div className="user-profile" onClick={() => navigate("/admin/profile")}>
-              <div className="user-avatar">A</div>
+            <div 
+              className="user-profile" 
+              onClick={() => navigate("/admin/profile")}
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '10px', 
+                padding: '4px 16px 4px 6px', 
+                background: 'var(--surface, #fff)', 
+                border: '1px solid var(--border, #e2e8f0)', 
+                borderRadius: '30px', 
+                cursor: 'pointer',
+                marginLeft: '12px'
+              }}
+            >
+              <div style={{ height: "34px", width: "34px", borderRadius: "50%", overflow: "hidden", backgroundColor: 'var(--primary-light, #fff1f0)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary, #ff4d4f)', flexShrink: 0 }}>
+                {companyLogo ? (
+                  <img src={companyLogo} alt="Logo" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                ) : (
+                  <span style={{ fontWeight: 'bold', fontSize: '16px' }}>{userName.charAt(0).toUpperCase()}</span>
+                )}
+              </div>
+              <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text, #1e293b)' }}>{userName}</span>
             </div>
           </div>
         </header>

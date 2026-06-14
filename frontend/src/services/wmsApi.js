@@ -345,6 +345,32 @@ export function gudangKirimBarang(id) {
   });
 }
 
+export function gudangKirimBarangEksternal(id) {
+  return dbUpdate((db) => {
+    const r = (db.requests || []).find((x) => x.id === id);
+    if (!r) return db;
+
+    if (r.status !== "Memproses") return db;
+
+    db.notifications = db.notifications || [];
+
+    r.status = "Mengirim";
+    r.isExternalDriver = true;
+
+    db.notifications.unshift({
+      id: newId("NTF"),
+      type: "shipping_dispatch_external",
+      title: "Barang Dikirim (Eksternal)",
+      message: `Permintaan ${id} telah dikirim menggunakan kurir eksternal.`,
+      time: nowTimeHHMM(),
+      isRead: false,
+      targetRoles: ["toko", "admin"],
+    });
+
+    return db;
+  });
+}
+
 export function driverAcceptTask(id, driverName = "Driver 01") {
   return dbUpdate((db) => {
     const r = (db.requests || []).find((x) => x.id === id);
@@ -429,7 +455,13 @@ export function tokoSelesaiTerima(id, proofImage = null, confirmationData = null
 
     db.notifications = db.notifications || [];
 
-    r.status = "Diterima Toko";
+    if (r.isExternalDriver) {
+      r.status = "Selesai";
+      r.completedAt = new Date().toISOString();
+    } else {
+      r.status = "Diterima Toko";
+    }
+
     r.proofImage = proofImage;
     r.receivedAt = new Date().toISOString();
     
@@ -872,6 +904,10 @@ export function getBranchUsers() {
   return dbLoad().branchUsers || [];
 }
 
+export function getCompanyProfile() {
+  return dbLoad().companyProfile || null;
+}
+
 export function subscribeBranchUsers(callback) {
   return makeSub(getBranchUsers, callback);
 }
@@ -898,6 +934,29 @@ export function createBranchUser(payload) {
       joinedAt: payload.joinedAt || "",
       createdAt: new Date().toISOString().slice(0, 10),
     });
+    return db;
+  });
+}
+
+export function registerCompanyAndAdmin(payload) {
+  return dbUpdate((db) => {
+    db.companyProfile = payload.company;
+    
+    db.branchUsers = db.branchUsers || [];
+    db.branchUsers.push({
+      id: newId("USR"),
+      branchId: "", 
+      branchName: "Kantor Pusat",
+      branchType: "admin",
+      nama: payload.admin.name,
+      username: payload.admin.email,
+      password: payload.admin.password,
+      email: payload.admin.email,
+      phone: payload.admin.phone,
+      role: "admin",
+      joinedAt: new Date().toISOString().slice(0, 10),
+    });
+
     return db;
   });
 }

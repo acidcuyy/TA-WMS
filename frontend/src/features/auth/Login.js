@@ -50,7 +50,15 @@ export default function Login() {
       );
 
       if (dynamicUser && dynamicUser.password === p) {
-        const role = dynamicUser.role === "driver" ? "driver" : (dynamicUser.branchType === "toko" ? "toko" : "gudang");
+        let role = "gudang";
+        if (dynamicUser.role === "admin" || dynamicUser.branchType === "admin") {
+          role = "admin";
+        } else if (dynamicUser.role === "driver") {
+          role = "driver";
+        } else if (dynamicUser.branchType === "toko") {
+          role = "toko";
+        }
+
         const path = `/${role}`;
         user = {
           pass: dynamicUser.password,

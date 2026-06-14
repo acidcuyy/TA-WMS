@@ -6,6 +6,7 @@ import "./RequestsGudang.css";
 import {
   gudangDecideRequest,
   gudangKirimBarang,
+  gudangKirimBarangEksternal,
   subscribeRequests,
   subscribeAdminRestockToGudang,
   gudangAcceptAdminRestock,
@@ -38,6 +39,7 @@ export default function RequestsGudang() {
   const [uploadData, setUploadData] = useState({ qtyGood: '', qtyBad: '', notes: '' });
   const [confirmModal, setConfirmModal] = useState({ open: false, requestId: null });
   const [detailModal, setDetailModal] = useState({ open: false, data: null });
+  const [driverModal, setDriverModal] = useState({ open: false, requestId: null });
 
   useEffect(() => {
     const unsubReq = subscribeRequests((rows) => setAllReq(rows || []));
@@ -82,7 +84,20 @@ export default function RequestsGudang() {
   ];
 
   const handleDecideToko = async (id, dec) => await gudangDecideRequest(id, dec);
-  const handleKirimToko = async (id) => await gudangKirimBarang(id);
+  
+  const handleSelectDriverInternal = async () => {
+    if (driverModal.requestId) {
+      await gudangKirimBarang(driverModal.requestId);
+      setDriverModal({ open: false, requestId: null });
+    }
+  };
+
+  const handleSelectDriverExternal = async () => {
+    if (driverModal.requestId) {
+      await gudangKirimBarangEksternal(driverModal.requestId);
+      setDriverModal({ open: false, requestId: null });
+    }
+  };
 
   // Admin Restock Actions
   const handleAcceptAdmin = (id) => {
@@ -256,11 +271,15 @@ export default function RequestsGudang() {
                         <button className="rqGudang__btn rqGudang__btn--ghost" style={{ flex: 1 }} onClick={(e) => { e.stopPropagation(); handleDecideToko(r.id, "Declined"); }}>Decline</button>
                       </div>
                     ) : r.status === "Memproses" ? (
-                      <button className="rqGudang__btn rqGudang__btn--primary" style={{ width: '100%' }} onClick={(e) => { e.stopPropagation(); handleKirimToko(r.id); }}>Siapkan & Kirim</button>
+                      <button className="rqGudang__btn rqGudang__btn--primary" style={{ width: '100%' }} onClick={(e) => { e.stopPropagation(); setDriverModal({ open: true, requestId: r.id }); }}>Siapkan & Kirim</button>
                     ) : r.status === "Siap Dikirim" ? (
                       <div style={{ fontSize: '13px', color: '#fa8c16', textAlign: 'center', width: '100%', padding: '8px', background: '#fff7e6', borderRadius: '8px', fontWeight: 600 }}>⏳ Menunggu Driver</div>
                     ) : r.status === "Mengirim" ? (
-                      <button className="rqGudang__btn rqGudang__btn--ghost" style={{ width: '100%' }} onClick={(e) => { e.stopPropagation(); navigate(`/gudang/pengiriman/${r.id}`); }}>📍 Pantau Lokasi</button>
+                      !r.isExternalDriver ? (
+                        <button className="rqGudang__btn rqGudang__btn--ghost" style={{ width: '100%' }} onClick={(e) => { e.stopPropagation(); navigate(`/gudang/pengiriman/${r.id}`); }}>📍 Pantau Lokasi</button>
+                      ) : (
+                        <div style={{ fontSize: '13px', color: '#1890ff', textAlign: 'center', width: '100%', padding: '8px', background: '#e6f7ff', borderRadius: '8px', fontWeight: 600 }}>🚚 Dikirim (Eksternal)</div>
+                      )
                     ) : r.status === "Selesai" ? (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%', alignItems: 'center' }}>
                         <div style={{ color: "#52c41a", fontSize: "13px", fontWeight: 700, textAlign: 'center', width: '100%', padding: '8px', background: '#f6ffed', borderRadius: '8px' }}>✅ Selesai Diterima</div>
@@ -287,6 +306,47 @@ export default function RequestsGudang() {
       {/* MODALS */}
       <AnimatePresence>
         
+        {/* DRIVER SELECTION MODAL */}
+        {driverModal.open && (
+          <div className="rqGudang__modalOverlay" onClick={() => setDriverModal({ open: false, requestId: null })}>
+            <motion.div 
+              className="rqGudang__modal" 
+              onClick={e => e.stopPropagation()} 
+              initial={{ scale: 0.95, opacity: 0, y: 20 }} 
+              animate={{ scale: 1, opacity: 1, y: 0 }} 
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              style={{ maxWidth: '400px', textAlign: 'center', padding: '32px 24px' }}
+            >
+              <h3 style={{ marginBottom: '16px', fontSize: '18px', color: '#1e293b' }}>Pilih Tipe Driver</h3>
+              <p style={{ color: '#64748b', fontSize: '14px', marginBottom: '24px' }}>Silakan pilih metode pengiriman untuk <b>{driverModal.requestId}</b>. Penggunaan driver eksternal akan melewati proses driver internal.</p>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <button 
+                  className="rqGudang__btn rqGudang__btn--primary" 
+                  style={{ padding: '12px' }}
+                  onClick={handleSelectDriverInternal}
+                >
+                  🚚 Gunakan Driver Internal (Menunggu Driver)
+                </button>
+                <button 
+                  className="rqGudang__btn" 
+                  style={{ padding: '12px', background: '#f8fafc', color: '#1e293b', border: '1px solid #cbd5e1' }}
+                  onClick={handleSelectDriverExternal}
+                >
+                  📦 Gunakan Driver Eksternal (Konfirmasi Langsung)
+                </button>
+                <button 
+                  className="rqGudang__btn rqGudang__btn--text" 
+                  style={{ padding: '12px', marginTop: '8px' }}
+                  onClick={() => setDriverModal({ open: false, requestId: null })}
+                >
+                  Batal
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
         {/* REQUEST DETAIL MODAL */}
         {detailModal.open && detailModal.data && (
           <div className="rqGudang__modalOverlay" onClick={() => setDetailModal({ open: false, data: null })}>
