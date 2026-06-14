@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { subscribeWarehouseStock, subscribeRequests, subscribeNotifications, getBranchUsers } from "../../../services/wmsApi";
+import { subscribeWarehouseStock, subscribeRequests, subscribeNotifications, getBranchUsers, getCompanyProfile } from "../../../services/wmsApi";
 import { useEffect, useMemo } from "react";
 import "../PageAdmin.css";
 
@@ -15,6 +15,10 @@ export default function ProfileAdmin() {
   const userEmail = sessionStorage.getItem("reastock_user_email");
   const branchUsers = getBranchUsers();
   const currentUser = branchUsers.find(u => u.email === userEmail || u.username === userEmail) || {};
+
+  const isCompanyAdmin = currentUser.branchType === "admin" || currentUser.role === "admin";
+  const companyProfile = getCompanyProfile();
+  const companyLogo = isCompanyAdmin && companyProfile ? companyProfile.logo : null;
 
   const [formData, setFormData] = useState({
     nama: currentUser.nama || sessionStorage.getItem("reastock_user_name") || "Admin",
@@ -96,7 +100,13 @@ export default function ProfileAdmin() {
       {/* HERO SECTION */}
       <section className="profile-hero-section">
         <div className="hero-main">
-          <div className="hero-avatar">{formData.nama.charAt(0).toUpperCase()}</div>
+          <div className="hero-avatar" style={companyLogo ? { padding: 0, overflow: 'hidden' } : {}}>
+            {companyLogo ? (
+              <img src={companyLogo} alt="Profile" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            ) : (
+              formData.nama.charAt(0).toUpperCase()
+            )}
+          </div>
           <div className="hero-details">
             <div className="hero-name-row">
               <h2>{formData.nama}</h2>

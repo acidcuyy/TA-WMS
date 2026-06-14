@@ -112,22 +112,15 @@ export default function AdminLayout() {
         {/* TOPBAR */}
         <header className="admin-topbar">
           <div className="admin-topbar__left">
-            <div className="admin-badge">🛡️</div>
-            <div className="admin-info">
-              <span className="admin-name">{userName}</span>
-              <span className="admin-role">Administrator</span>
-            </div>
+            <div className="date-picker">{dateStr} 📅</div>
           </div>
 
           <div className="admin-topbar__right">
             <div className="admin-topbar__controls">
-              <div className="date-picker">{dateStr} 📅</div>
               <div className="search-box">
                 <span>⌕</span>
                 <input type="text" placeholder="Search..." />
               </div>
-              <button className="filter-btn">⚙</button>
-              <button className="export-btn">📤 Export</button>
             </div>
 
             <div className="status-indicator">

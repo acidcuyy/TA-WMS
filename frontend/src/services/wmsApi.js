@@ -1,5 +1,5 @@
 // src/services/wmsApi.js
-import { dbLoad, dbUpdate, newId } from "./storageDb";
+import { dbLoad, dbUpdate, newId, getGlobalUsers, saveGlobalUsers } from "./storageDb";
 
 /* ===========================
  * Helpers
@@ -481,8 +481,16 @@ export function tokoSelesaiTerima(id, proofImage = null, confirmationData = null
         ? Number(r.confirmationData.qtyGood) 
         : (Number(item.qty) || 0);
 
+      // Cari item asli di gudang sumber untuk mengambil gambar
+      const sourceItem = db.warehouseStock.find(x => x.sku === sku && x.branchId === r.toBranchId);
+      const itemImage = item.image || (sourceItem ? sourceItem.image : null);
+
       if (existing) {
         existing.qty += qtyToAdd;
+        // Jika item di toko belum punya gambar, ambil dari gudang
+        if (!existing.image && itemImage) {
+          existing.image = itemImage;
+        }
       } else {
         db.warehouseStock.push({
           sku,
@@ -493,6 +501,7 @@ export function tokoSelesaiTerima(id, proofImage = null, confirmationData = null
           qty: qtyToAdd,
           minQty: 5,
           price: 0,
+          image: itemImage,
           branchId: sessionStorage.getItem("reastock_branch_id") || "BRC-003",
           addedAt: new Date().toISOString().slice(0, 10),
           source: "request",
@@ -916,7 +925,7 @@ export function createBranchUser(payload) {
   return dbUpdate((db) => {
     db.branchUsers = db.branchUsers || [];
     const id = newId("USR");
-    db.branchUsers.push({
+    const newUser = {
       id,
       branchId: payload.branchId,
       branchName: payload.branchName || "",
@@ -933,18 +942,29 @@ export function createBranchUser(payload) {
       statusMitra: payload.statusMitra || "",
       joinedAt: payload.joinedAt || "",
       createdAt: new Date().toISOString().slice(0, 10),
-    });
+    };
+    db.branchUsers.push(newUser);
+
+    const compId = sessionStorage.getItem("reastock_company_id") || "COMP-LEGACY";
+    const globalUsers = getGlobalUsers();
+    globalUsers[id] = { ...newUser, companyId: compId };
+    saveGlobalUsers(globalUsers);
+
     return db;
   });
 }
 
 export function registerCompanyAndAdmin(payload) {
+  const companyId = newId("COMP");
+  sessionStorage.setItem("reastock_company_id", companyId);
+
   return dbUpdate((db) => {
     db.companyProfile = payload.company;
     
     db.branchUsers = db.branchUsers || [];
-    db.branchUsers.push({
-      id: newId("USR"),
+    const userId = newId("USR");
+    const newUser = {
+      id: userId,
       branchId: "", 
       branchName: "Kantor Pusat",
       branchType: "admin",
@@ -955,7 +975,12 @@ export function registerCompanyAndAdmin(payload) {
       phone: payload.admin.phone,
       role: "admin",
       joinedAt: new Date().toISOString().slice(0, 10),
-    });
+    };
+    db.branchUsers.push(newUser);
+
+    const globalUsers = getGlobalUsers();
+    globalUsers[userId] = { ...newUser, companyId };
+    saveGlobalUsers(globalUsers);
 
     return db;
   });
@@ -964,6 +989,13 @@ export function registerCompanyAndAdmin(payload) {
 export function deleteBranchUser(id) {
   return dbUpdate((db) => {
     db.branchUsers = (db.branchUsers || []).filter((u) => u.id !== id);
+    
+    const globalUsers = getGlobalUsers();
+    if (globalUsers[id]) {
+      delete globalUsers[id];
+      saveGlobalUsers(globalUsers);
+    }
+
     return db;
   });
 }

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { getBranchUsers } from "../../services/wmsApi";
@@ -17,11 +17,22 @@ export default function Login() {
   const [isLeaving, setIsLeaving] = useState(false);
 
   // ✅ controlled inputs
-  const [email, setEmail] = useState("admin@gmail.com");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
 
   // ✅ error message (biar UX bagus)
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("reastock_saved_email");
+    const savedPassword = localStorage.getItem("reastock_saved_password");
+    if (savedEmail && savedPassword) {
+      setEmail(savedEmail);
+      setPassword(savedPassword);
+      setRememberMe(true);
+    }
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -30,26 +41,36 @@ export default function Login() {
     const eLower = email.trim().toLowerCase();
     const p = password.trim();
 
-    // ✅ mapping kredensial -> role + tujuan
-    const users = {
-      "admin@gmail.com": { pass: "admin", role: "admin", path: "/admin" },
-      "gudang@gmail.com": { pass: "gudang", role: "gudang", path: "/gudang" },
-      "toko@gmail.com": { pass: "toko", role: "toko", path: "/toko" },
-      "driver@gmail.com": { pass: "driver", role: "driver", path: "/driver" },
-    };
+    let user = null;
 
-    let user = users[eLower];
-
-    // Cek di branchUsers kalau bukan hardcoded
+    // Cek di branchUsers
     if (!user) {
-      const branchUsers = getBranchUsers();
-      const dynamicUser = branchUsers.find(
+      // Trigger migration just in case
+      getBranchUsers();
+
+      const globalUsers = JSON.parse(localStorage.getItem("reastock_global_users") || "{}");
+      const matchedUsers = Object.values(globalUsers).filter(
         (u) =>
           (u.username && u.username.toLowerCase() === eLower) ||
           (u.email && u.email.toLowerCase() === eLower)
       );
+      
+      // Prioritize the newly registered account (non-legacy) if duplicates exist
+      let dynamicUserRaw = null;
+      if (matchedUsers.length > 0) {
+        dynamicUserRaw = matchedUsers.find(u => u.companyId && u.companyId !== "COMP-LEGACY");
+        if (!dynamicUserRaw) {
+          dynamicUserRaw = matchedUsers[matchedUsers.length - 1];
+        }
+      }
 
-      if (dynamicUser && dynamicUser.password === p) {
+      if (dynamicUserRaw && dynamicUserRaw.password === p) {
+        sessionStorage.setItem("reastock_company_id", dynamicUserRaw.companyId || "COMP-LEGACY");
+
+        // Load the full user from their respective tenant DB
+        const tenantUsers = getBranchUsers();
+        const dynamicUser = tenantUsers.find(u => u.id === dynamicUserRaw.id) || dynamicUserRaw;
+
         let role = "gudang";
         if (dynamicUser.role === "admin" || dynamicUser.branchType === "admin") {
           role = "admin";
@@ -78,12 +99,20 @@ export default function Login() {
       return;
     }
 
+    if (rememberMe) {
+      localStorage.setItem("reastock_saved_email", eLower);
+      localStorage.setItem("reastock_saved_password", p);
+    } else {
+      localStorage.removeItem("reastock_saved_email");
+      localStorage.removeItem("reastock_saved_password");
+    }
+
     // ✅ simpan role untuk kebutuhan app (guard nanti / topbar, dll)
     sessionStorage.setItem("reastock_role", user.role);
     sessionStorage.setItem("reastock_user_name", user.name || (user.role === "admin" ? "Super Admin" : "Admin Cabang"));
     sessionStorage.setItem("reastock_user_email", user.email || eLower);
     sessionStorage.setItem("reastock_user_joinDate", user.joinDate || "10 Januari 2025");
-    
+
     if (user.branchId) {
       sessionStorage.setItem("reastock_branch_id", user.branchId);
       sessionStorage.setItem("reastock_branch_name", user.branchName || "");
@@ -184,7 +213,7 @@ export default function Login() {
             <SplitText
               tag="h2"
               text="Hello!"
-              className="form-title"
+              className="auth-form-title"
               delay={400}
               from={{ opacity: 0, x: 20 }}
               to={{ opacity: 1, x: 0 }}
@@ -211,7 +240,7 @@ export default function Login() {
                 <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
               </div>
               <input
-                type="email"
+                type="text"
                 placeholder="Username / Email"
                 required
                 value={email}
@@ -241,13 +270,17 @@ export default function Login() {
             </button>
 
             <div className="form-options">
-              <span className="remember-text">Remember</span>
+              <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  style={{ width: "16px", height: "16px", cursor: "pointer", accentColor: "#e67e22" }}
+                />
+                <span className="remember-text" style={{ fontSize: "14px", color: "var(--text, #1e293b)", userSelect: "none" }}>Remember me</span>
+              </label>
             </div>
           </form>
-
-          <footer className="form-footer">
-            Developed & Maintained By Soori Solutinns
-          </footer>
         </div>
       </motion.div>
     </motion.div>

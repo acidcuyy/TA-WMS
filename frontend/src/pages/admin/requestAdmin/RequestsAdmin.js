@@ -16,12 +16,50 @@ export default function RequestsAdmin() {
   const [actualTokoReqs, setActualTokoReqs] = useState([]);
   const [actualAdminReqs, setActualAdminReqs] = useState([]);
 
+  const [viewedReqStates, setViewedReqStates] = useState(() => {
+    try {
+      const saved = localStorage.getItem("wms_viewed_reqs_admin");
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    } catch {
+      return new Set();
+    }
+  });
+
   useEffect(() => {
     const unsubGudang = subscribeRestockToAdmin((data) => setActualGudangReqs(data || []));
     const unsubToko = subscribeRequests((data) => setActualTokoReqs(data || []));
     const unsubAdmin = subscribeAdminRestockToGudang((data) => setActualAdminReqs(data || []));
     return () => { unsubGudang(); unsubToko(); unsubAdmin(); };
   }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("wms_viewed_reqs_admin", JSON.stringify([...viewedReqStates]));
+    } catch {}
+  }, [viewedReqStates]);
+
+  useEffect(() => {
+    setViewedReqStates(prev => {
+      const next = new Set(prev);
+      let changed = false;
+
+      const markViewed = (reqs) => {
+        reqs.forEach(r => {
+          const key = `${r.id}_${r.status}`;
+          if (!next.has(key)) {
+            next.add(key);
+            changed = true;
+          }
+        });
+      };
+
+      if (activeTab === "Dari Gudang") markViewed(actualGudangReqs);
+      else if (activeTab === "Dari Toko ke Gudang") markViewed(actualTokoReqs);
+      else if (activeTab === "Dari Admin ke Gudang (Saya)") markViewed(actualAdminReqs);
+
+      return changed ? next : prev;
+    });
+  }, [activeTab, actualGudangReqs, actualTokoReqs, actualAdminReqs]);
 
   // Stats dynamically calculated
   const allRequests = useMemo(() => {
@@ -81,7 +119,8 @@ export default function RequestsAdmin() {
       items: qty,
       note: r.note,
       status: r.status,
-      createdBy: r.fromName
+      createdBy: r.fromName,
+      rawData: r
     };
   });
 
@@ -98,7 +137,8 @@ export default function RequestsAdmin() {
       items: qty,
       note: r.note,
       status: r.status,
-      createdBy: r.fromRole === 'toko' ? 'Admin Toko' : r.fromName
+      createdBy: r.fromRole === 'toko' ? 'Admin Toko' : r.fromName,
+      rawData: r
     };
   });
 
@@ -110,6 +150,10 @@ export default function RequestsAdmin() {
     if (s.includes("selesai")) return "rqAdmin__pill--done";
     if (s.includes("ditolak")) return "rqAdmin__pill--declined";
     return "";
+  };
+
+  const getUnreadCount = (reqs) => {
+    return reqs.filter(r => !viewedReqStates.has(`${r.id}_${r.status}`)).length;
   };
 
   return (
@@ -151,16 +195,16 @@ export default function RequestsAdmin() {
       <div className="rqAdmin__filterBar">
         <div className="rqAdmin__tabs">
           {[
-            { label: "Dari Gudang", count: 12, icon: "🏠" },
-            { label: "Dari Toko ke Gudang", count: 27, icon: "⇄" },
-            { label: "Dari Admin ke Gudang (Saya)", count: 8, icon: "🛒" },
+            { label: "Dari Gudang", count: getUnreadCount(actualGudangReqs), icon: "🏠" },
+            { label: "Dari Toko ke Gudang", count: getUnreadCount(actualTokoReqs), icon: "⇄" },
+            { label: "Dari Admin ke Gudang (Saya)", count: getUnreadCount(actualAdminReqs), icon: "🛒" },
           ].map((tab) => (
             <div
               key={tab.label}
               className={`rqAdmin__tab ${activeTab === tab.label ? 'active' : ''}`}
               onClick={() => setActiveTab(tab.label)}
             >
-              <span>{tab.icon}</span> {tab.label} <span className="rqAdmin__tabCount">{tab.count}</span>
+              <span>{tab.icon}</span> {tab.label} {tab.count > 0 && <span className="rqAdmin__tabCount">{tab.count}</span>}
             </div>
           ))}
         </div>

@@ -214,19 +214,19 @@ export default function RegistrasiEntitas() {
 
       {/* STEP INDICATOR for Gudang/Toko */}
       {(activeTab === "Gudang" || activeTab === "Toko") && (
-        <div className="step-indicator">
-          <div className={`step-item ${currentStep >= 1 ? "active" : ""} ${currentStep > 1 ? "completed" : ""}`}>
-            <div className="step-circle">
+        <div className="reg-step-indicator">
+          <div className={`reg-step-item ${currentStep >= 1 ? "active" : ""} ${currentStep > 1 ? "completed" : ""}`}>
+            <div className="reg-step-circle">
               {currentStep > 1 ? "✓" : "1"}
             </div>
-            <span className="step-label">Data {activeTab}</span>
+            <span className="reg-step-label">Data {activeTab}</span>
           </div>
-          <div className="step-line-container">
-            <div className={`step-line ${currentStep > 1 ? "filled" : ""}`} />
+          <div className="reg-step-line-container">
+            <div className={`reg-step-line ${currentStep > 1 ? "filled" : ""}`} />
           </div>
-          <div className={`step-item ${currentStep >= 2 ? "active" : ""}`}>
-            <div className="step-circle">2</div>
-            <span className="step-label">Daftarkan User</span>
+          <div className={`reg-step-item ${currentStep >= 2 ? "active" : ""}`}>
+            <div className="reg-step-circle">2</div>
+            <span className="reg-step-label">Daftarkan User</span>
           </div>
         </div>
       )}
@@ -310,12 +310,19 @@ export default function RegistrasiEntitas() {
                   </div>
                   <div className="form-group">
                     <label className="form-label">Kategori Toko</label>
-                    <select className="form-input" value={kategoriToko} onChange={(e) => setKategoriToko(e.target.value)}>
-                      <option value="Minimarket">Minimarket</option>
-                      <option value="Supermarket">Supermarket</option>
-                      <option value="Grosir">Grosir / Distributor Besar</option>
-                      <option value="Warung Kelontong">Warung Kelontong</option>
-                    </select>
+                    <input 
+                      list="kategori-toko-options" 
+                      className="form-input" 
+                      value={kategoriToko} 
+                      onChange={(e) => setKategoriToko(e.target.value)} 
+                      placeholder="Pilih atau ketik kategori..." 
+                    />
+                    <datalist id="kategori-toko-options">
+                      <option value="Minimarket" />
+                      <option value="Supermarket" />
+                      <option value="Grosir / Distributor Besar" />
+                      <option value="Warung Kelontong" />
+                    </datalist>
                   </div>
                 </>
               )}

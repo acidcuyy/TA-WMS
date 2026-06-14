@@ -1,6 +1,17 @@
 // src/services/storageDb.js
-const KEY = "reastock_db_v3";
 
+export function getDbKey() {
+  const companyId = sessionStorage.getItem("reastock_company_id");
+  return companyId ? `reastock_db_v3_${companyId}` : "reastock_db_v3";
+}
+
+export function getGlobalUsers() {
+  return safeParse(localStorage.getItem("reastock_global_users")) || {};
+}
+
+export function saveGlobalUsers(users) {
+  localStorage.setItem("reastock_global_users", JSON.stringify(users));
+}
 /**
  * Skema DB (disimpan di localStorage):
  * - requests: transaksi toko -> gudang
@@ -15,12 +26,7 @@ const seed = () => ({
   notifications: [],
 
   // Daftar Cabang (Gudang & Toko)
-  branches: [
-    { id: "BRC-001", name: "Gudang Pusat", type: "gudang", location: "Jakarta" },
-    { id: "BRC-002", name: "Gudang Barat", type: "gudang", location: "Tangerang" },
-    { id: "BRC-003", name: "Toko Utama", type: "toko", location: "Bandung" },
-    { id: "BRC-004", name: "Toko Selatan", type: "toko", location: "Depok" },
-  ],
+  branches: [],
 
   // Stok gudang
   warehouseStock: [],
@@ -71,6 +77,81 @@ function safeParse(raw) {
 }
 
 export function dbLoad() {
+  // --- MIGRATION MULTI-TENANCY ---
+  const legacyRaw = localStorage.getItem("reastock_db_v3");
+  if (legacyRaw) {
+    const legacyParsed = safeParse(legacyRaw);
+    if (legacyParsed && !legacyParsed._migrated_multi) {
+       const globalUsers = getGlobalUsers();
+       const compId = "COMP-LEGACY";
+       (legacyParsed.branchUsers || []).forEach(u => {
+         globalUsers[u.id] = { ...u, companyId: compId };
+       });
+       saveGlobalUsers(globalUsers);
+       
+       legacyParsed._migrated_multi = true;
+       localStorage.setItem(`reastock_db_v3_${compId}`, JSON.stringify(legacyParsed));
+       localStorage.setItem("reastock_db_v3", JSON.stringify(legacyParsed)); // mark legacy as migrated
+    }
+  }
+
+  // --- MIGRATION MULTI-TENANCY SPLIT: BURA & CAVABINS (v3) ---
+  const legacyMultiRaw = localStorage.getItem("reastock_db_v3_COMP-LEGACY");
+  if (legacyMultiRaw) {
+    const legacyMulti = safeParse(legacyMultiRaw);
+    if (legacyMulti && !legacyMulti._split_bura_cavabins_v3) {
+       const globalUsers = getGlobalUsers();
+       let hanantaId = null, ilhamId = null;
+       
+       Object.values(globalUsers).forEach(u => {
+         if (u.nama && u.nama.toLowerCase().includes("hananta")) {
+           u.companyId = "COMP-BURA";
+           hanantaId = u.id;
+         }
+         if (u.nama && u.nama.toLowerCase().includes("ilham")) {
+           u.companyId = "COMP-CAVABINS";
+           ilhamId = u.id;
+         }
+       });
+       saveGlobalUsers(globalUsers);
+
+       // Restore Cavabins DB from whatever it currently has (to not lose newly added stuff)
+       const currentCavaRaw = localStorage.getItem("reastock_db_v3_COMP-CAVABINS");
+       let cavaDb = currentCavaRaw ? safeParse(currentCavaRaw) : structuredClone(legacyMulti);
+       
+       // Ensure all users are kept except Hananta
+       if (!currentCavaRaw) {
+         cavaDb.branchUsers = (cavaDb.branchUsers || []).filter(u => u.id !== hanantaId);
+       }
+
+       // Recover any missing branches based on branchUsers
+       cavaDb.branches = cavaDb.branches || [];
+       (cavaDb.branchUsers || []).forEach(u => {
+         if (u.branchId && u.branchType !== "admin") {
+           const exists = cavaDb.branches.find(b => b.id === u.branchId || b.name === u.branchName);
+           if (!exists) {
+             cavaDb.branches.push({
+               id: u.branchId,
+               name: u.branchName || "Gudang Utama",
+               type: u.branchType || "gudang",
+               address: "Bandung, Jawa Barat",
+               phone: "021-000000",
+               picName: u.nama,
+               status: "Active"
+             });
+           }
+         }
+       });
+
+       cavaDb._split_bura_cavabins_v3 = true;
+       localStorage.setItem("reastock_db_v3_COMP-CAVABINS", JSON.stringify(cavaDb));
+
+       legacyMulti._split_bura_cavabins_v3 = true;
+       localStorage.setItem("reastock_db_v3_COMP-LEGACY", JSON.stringify(legacyMulti));
+    }
+  }
+
+  const KEY = getDbKey();
   const raw = localStorage.getItem(KEY);
   const s = seed();
 
@@ -96,6 +177,26 @@ export function dbLoad() {
   });
 
   if (changed) {
+    localStorage.setItem(KEY, JSON.stringify(parsed));
+  }
+
+  // --- DATA MIGRATION: Fix missing images in Toko stock ---
+  let patchedImages = false;
+  if (parsed.warehouseStock) {
+    parsed.warehouseStock.forEach(item => {
+      if (!item.image) {
+        // Find an item with the same SKU or Name that has an image
+        const sourceWithImage = parsed.warehouseStock.find(x => 
+          (x.sku === item.sku || (x.name && item.name && x.name.toLowerCase() === item.name.toLowerCase())) && x.image
+        );
+        if (sourceWithImage) {
+          item.image = sourceWithImage.image;
+          patchedImages = true;
+        }
+      }
+    });
+  }
+  if (patchedImages) {
     localStorage.setItem(KEY, JSON.stringify(parsed));
   }
 
@@ -176,10 +277,25 @@ export function dbLoad() {
     localStorage.setItem(KEY, JSON.stringify(parsed));
   }
 
+  // --- DATA MIGRATION: Clear old dummy branches ---
+  if (!parsed._clearedDummyBranches_v1) {
+    if (parsed.branches) {
+      const dummyIds = ["BRC-001", "BRC-002", "BRC-003", "BRC-004"];
+      const originalLength = parsed.branches.length;
+      parsed.branches = parsed.branches.filter(b => !dummyIds.includes(b.id));
+      if (parsed.branches.length !== originalLength) {
+        changed = true;
+      }
+    }
+    parsed._clearedDummyBranches_v1 = true;
+    localStorage.setItem(KEY, JSON.stringify(parsed));
+  }
+
   return parsed;
 }
 
 export function dbSave(nextDb) {
+  const KEY = getDbKey();
   localStorage.setItem(KEY, JSON.stringify(nextDb));
   window.dispatchEvent(new Event("reastock_db_changed"));
 }
