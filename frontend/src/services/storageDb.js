@@ -1,7 +1,28 @@
 // src/services/storageDb.js
 
 export function getDbKey() {
-  const companyId = sessionStorage.getItem("reastock_company_id");
+  let companyId = sessionStorage.getItem("reastock_company_id");
+  
+  // Auto-correct legacy sessions dynamically so they read from Cavabins instantly
+  if (companyId === "COMP-LEGACY") {
+    const globalUsers = safeParse(localStorage.getItem("reastock_global_users")) || {};
+    const email = sessionStorage.getItem("reastock_user_email");
+    if (email) {
+      const u = Object.values(globalUsers).find(user => user.email === email || user.username === email);
+      if (u && u.companyId && u.companyId !== "COMP-LEGACY") {
+        sessionStorage.setItem("reastock_company_id", u.companyId);
+        companyId = u.companyId;
+      }
+    } else {
+      // If no email in session, but role is gudang/toko, assume Cavabins
+      const role = sessionStorage.getItem("reastock_role");
+      if (role === "gudang" || role === "toko") {
+        sessionStorage.setItem("reastock_company_id", "COMP-CAVABINS");
+        companyId = "COMP-CAVABINS";
+      }
+    }
+  }
+
   return companyId ? `reastock_db_v3_${companyId}` : "reastock_db_v3";
 }
 
@@ -147,6 +168,50 @@ export function dbLoad() {
        localStorage.setItem("reastock_db_v3_COMP-CAVABINS", JSON.stringify(cavaDb));
 
        legacyMulti._split_bura_cavabins_v3 = true;
+       localStorage.setItem("reastock_db_v3_COMP-LEGACY", JSON.stringify(legacyMulti));
+    }
+    
+    // Fix: Move stuck legacy users to Cavabins and merge their data
+    if (legacyMulti && !legacyMulti._fix_cavabins_users_v4) {
+       const globalUsers = getGlobalUsers();
+       let changedUsers = false;
+       Object.values(globalUsers).forEach(u => {
+         if (u.companyId === "COMP-LEGACY" && u.nama && !u.nama.toLowerCase().includes("hananta")) {
+           u.companyId = "COMP-CAVABINS";
+           changedUsers = true;
+         }
+       });
+       if (changedUsers) {
+         saveGlobalUsers(globalUsers);
+       }
+
+       const currentCavaRaw = localStorage.getItem("reastock_db_v3_COMP-CAVABINS");
+       if (currentCavaRaw) {
+         let cavaDb = safeParse(currentCavaRaw);
+         if (cavaDb) {
+           ['restockToAdmin', 'requests', 'notifications', 'adminRestockToGudang', 'warehouseStock'].forEach(key => {
+             if (legacyMulti[key] && Array.isArray(legacyMulti[key])) {
+               cavaDb[key] = cavaDb[key] || [];
+               legacyMulti[key].forEach(item => {
+                 // For warehouseStock, check sku and branchId
+                 if (key === 'warehouseStock') {
+                   const exists = cavaDb[key].find(x => x.sku === item.sku && x.branchId === item.branchId);
+                   if (!exists) cavaDb[key].push(item);
+                   else exists.qty = Math.max(exists.qty, item.qty);
+                 } else {
+                   // For others, check id
+                   if (!cavaDb[key].find(x => x.id === item.id)) {
+                     cavaDb[key].push(item);
+                   }
+                 }
+               });
+             }
+           });
+           localStorage.setItem("reastock_db_v3_COMP-CAVABINS", JSON.stringify(cavaDb));
+         }
+       }
+
+       legacyMulti._fix_cavabins_users_v4 = true;
        localStorage.setItem("reastock_db_v3_COMP-LEGACY", JSON.stringify(legacyMulti));
     }
   }

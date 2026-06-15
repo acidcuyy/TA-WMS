@@ -15,6 +15,10 @@ export default function RequestsAdmin() {
   const [actualGudangReqs, setActualGudangReqs] = useState([]);
   const [actualTokoReqs, setActualTokoReqs] = useState([]);
   const [actualAdminReqs, setActualAdminReqs] = useState([]);
+  const [showProof, setShowProof] = useState(false);
+  const [proofData, setProofData] = useState(null);
+
+  const openProof = (r) => { setProofData(r); setShowProof(true); };
 
   const [viewedReqStates, setViewedReqStates] = useState(() => {
     try {
@@ -115,6 +119,7 @@ export default function RequestsAdmin() {
       date: r.createdAt,
       time: "-",
       source: r.fromName,
+      target: r.toName || "Admin / Pusat",
       city: "-",
       items: qty,
       note: r.note,
@@ -267,6 +272,9 @@ export default function RequestsAdmin() {
                            <button className="btn-icon" style={{color: '#ff4d4f'}} title="Tolak" onClick={() => adminDecideRestock(r.id, 'Declined')}>❌</button>
                          </>
                       )}
+                      {activeTab === "Dari Gudang" && r.status === "Selesai" && r.rawData?.proofImage && (
+                        <button className="btn-icon" style={{fontSize: '16px'}} title="Lihat Bukti Foto" onClick={() => openProof(r.rawData)}>📸</button>
+                      )}
                       <button className="btn-icon" onClick={() => setDetailModal(r)}>👁️</button>
                       <button className="btn-icon">⋮</button>
                     </div>
@@ -382,12 +390,70 @@ export default function RequestsAdmin() {
           ] : [])
         ] : []}
         itemsTitle="Daftar Kebutuhan"
-        items={detailModal ? [
-          detailModal.rawData?.confirmationData 
-            ? `${detailModal.rawData.confirmationData.qtyGood} Item (Diterima) / ${detailModal.rawData.jumlah} Item (Diminta)`
-            : `${detailModal.rawData?.jumlah || detailModal.items} Item (Kalkulasi otomatis dari sistem)`
-        ] : []}
+        items={detailModal ? (() => {
+          if (detailModal.rawData?.items && detailModal.rawData.items.length > 0) {
+            return detailModal.rawData.items.map(i => {
+              const namePart = i.name || i.code || i.sku || "Barang";
+              const notePart = i.category ? ` [${i.category}]` : '';
+              return `${namePart}${notePart} - ${i.qty} ${detailModal.rawData.satuan || i.satuan || 'pcs'}`;
+            });
+          }
+          if (detailModal.rawData?.confirmationData) {
+            return [`${detailModal.rawData.confirmationData.qtyGood} Item (Diterima) / ${detailModal.rawData.jumlah || detailModal.items} Item (Diminta)`];
+          }
+          return [`${detailModal.rawData?.jumlah || detailModal.items} Item (Kalkulasi otomatis dari sistem)`];
+        })() : []}
       />
+      {/* PROOF VIEW MODAL */}
+      <AnimatePresence>
+        {showProof && proofData && (
+          <div className="rqAdmin__overlay" onClick={() => setShowProof(false)} style={{ zIndex: 1000 }}>
+            <motion.div
+              className="rqAdmin__modal"
+              onClick={e => e.stopPropagation()}
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              style={{ maxWidth: '500px', width: '90%' }}
+            >
+              <div className="rqAdmin__modalHead" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}><span>📸</span> Bukti Foto Penerimaan</h3>
+                <button onClick={() => setShowProof(false)} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer' }}>✕</button>
+              </div>
+              <div className="rqAdmin__form" style={{ padding: '24px', background: '#f8fafc', borderRadius: '0 0 16px 16px' }}>
+                {proofData.confirmationData && (
+                  <div style={{ marginBottom: '24px', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                    <div style={{ flex: 1, minWidth: '200px', background: '#f6ffed', border: '1px solid #b7eb8f', padding: '12px 16px', borderRadius: '8px' }}>
+                      <span style={{ display: 'block', fontSize: '12px', color: '#52c41a', fontWeight: 'bold', marginBottom: '4px' }}>Diterima Baik</span>
+                      <strong style={{ fontSize: '16px' }}>{proofData.confirmationData.qtyGood} pcs</strong>
+                    </div>
+                    {Number(proofData.confirmationData.qtyBad) > 0 && (
+                      <div style={{ flex: 1, minWidth: '200px', background: '#fff2f0', border: '1px solid #ffccc7', padding: '12px 16px', borderRadius: '8px' }}>
+                        <span style={{ display: 'block', fontSize: '12px', color: '#ff4d4f', fontWeight: 'bold', marginBottom: '4px' }}>Barang Rusak / Kurang</span>
+                        <strong style={{ fontSize: '16px', color: '#cf1322' }}>{proofData.confirmationData.qtyBad} pcs</strong>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {proofData.confirmationData?.notes && (
+                  <div style={{ marginBottom: '24px', background: '#fff1f0', border: '1px solid #ffccc7', padding: '16px', borderRadius: '8px' }}>
+                    <strong style={{ color: '#cf1322', display: 'block', marginBottom: '8px' }}>Catatan Kerusakan:</strong>
+                    <p style={{ color: '#a8071a', margin: 0, fontSize: '14px', lineHeight: '1.5' }}>{proofData.confirmationData.notes}</p>
+                  </div>
+                )}
+                <div style={{ textAlign: 'center' }}>
+                  <img src={proofData.proofImage} alt="Bukti" style={{ width: '100%', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.15)', border: '4px solid white' }} />
+                </div>
+                
+                <div className="rqAdmin__modalFoot" style={{ marginTop: '24px' }}>
+                  <button className="btn-primary" style={{ width: '100%' }} onClick={() => setShowProof(false)}>Tutup Halaman</button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }

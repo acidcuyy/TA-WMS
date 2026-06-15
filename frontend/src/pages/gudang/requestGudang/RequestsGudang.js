@@ -12,6 +12,7 @@ import {
   gudangAcceptAdminRestock,
   gudangUploadProofAndFinish
 } from "../../../services/wmsApi";
+import { getGlobalUsers } from "../../../services/storageDb";
 
 const getStatusClass = (status) => {
   const s = (status || "").toLowerCase();
@@ -40,6 +41,13 @@ export default function RequestsGudang() {
   const [confirmModal, setConfirmModal] = useState({ open: false, requestId: null });
   const [detailModal, setDetailModal] = useState({ open: false, data: null });
   const [driverModal, setDriverModal] = useState({ open: false, requestId: null });
+  const [errorModal, setErrorModal] = useState({ open: false, message: "" });
+
+  const driversCount = useMemo(() => {
+    const users = getGlobalUsers();
+    const cid = sessionStorage.getItem("reastock_company_id");
+    return Object.values(users).filter(u => u.role === "driver" && u.companyId === cid).length;
+  }, []);
 
   useEffect(() => {
     const unsubReq = subscribeRequests((rows) => setAllReq(rows || []));
@@ -86,6 +94,10 @@ export default function RequestsGudang() {
   const handleDecideToko = async (id, dec) => await gudangDecideRequest(id, dec);
   
   const handleSelectDriverInternal = async () => {
+    if (driversCount === 0) {
+      setErrorModal({ open: true, message: "Silakan daftarkan akun Driver pada perusahaan Anda terlebih dahulu melalui menu Manajemen User sebelum menggunakan metode pengiriman internal." });
+      return;
+    }
     if (driverModal.requestId) {
       await gudangKirimBarang(driverModal.requestId);
       setDriverModal({ open: false, requestId: null });
@@ -323,7 +335,11 @@ export default function RequestsGudang() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <button 
                   className="rqGudang__btn rqGudang__btn--primary" 
-                  style={{ padding: '12px' }}
+                  style={{ 
+                    padding: '12px', 
+                    opacity: driversCount === 0 ? 0.5 : 1, 
+                    cursor: driversCount === 0 ? 'not-allowed' : 'pointer' 
+                  }}
                   onClick={handleSelectDriverInternal}
                 >
                   🚚 Gunakan Driver Internal (Menunggu Driver)
@@ -656,6 +672,29 @@ export default function RequestsGudang() {
                     Ya, Selesaikan
                   </button>
                 </div>
+             </motion.div>
+           </div>
+        )}
+
+        {/* ERROR NOTIFICATION MODAL */}
+        {errorModal.open && (
+           <div className="rqGudang__modalOverlay" onClick={() => setErrorModal({ open: false, message: "" })} style={{ zIndex: 1200 }}>
+             <motion.div 
+               className="rqGudang__modal" 
+               onClick={e => e.stopPropagation()} 
+               initial={{ scale: 0.9, opacity: 0, y: -20 }} 
+               animate={{ scale: 1, opacity: 1, y: 0 }} 
+               exit={{ scale: 0.9, opacity: 0, y: -20 }}
+               style={{ maxWidth: '400px', textAlign: 'center', padding: '32px 24px', borderTop: '6px solid #ff4d4f' }}
+             >
+                <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚠️</div>
+                <h3 style={{ marginBottom: '8px', color: '#1e293b' }}>Tidak Ada Driver</h3>
+                <p style={{ color: '#64748b', marginBottom: '24px', fontSize: '14px', lineHeight: 1.5 }}>
+                  {errorModal.message}
+                </p>
+                <button className="rqGudang__btn rqGudang__btn--primary" style={{ width: '100%', background: '#ff4d4f', borderColor: '#ff4d4f' }} onClick={() => setErrorModal({ open: false, message: "" })}>
+                  Mengerti
+                </button>
              </motion.div>
            </div>
         )}
