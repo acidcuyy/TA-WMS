@@ -1,5 +1,5 @@
-import { Outlet, useLocation, useNavigate, Link } from "react-router-dom";
-import { useMemo, useRef, useState, useEffect } from "react";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "../../app/ThemeProvider";
 import "./GudangLayout.css";
@@ -117,14 +117,11 @@ export default function GudangLayout() {
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
-              initial={{ opacity: 0, y: 10, scale: 0.99 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -10, scale: 0.99 }}
-              transition={{ 
-                duration: 0.35, 
-                ease: [0.22, 1, 0.36, 1] 
-              }}
-              style={{ height: "100%", width: "100%" }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", width: "100%", height: "100%" }}
             >
               <Outlet />
             </motion.div>

@@ -15,16 +15,15 @@ export default function AdminDashboard() {
   const [stock, setStock] = useState([]);
   const [requests, setRequests] = useState([]);
   const [branches, setBranches] = useState([]);
-  const [adminRequests, setAdminRequests] = useState([]);
+
   const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
     const unsub1 = subscribeWarehouseStock(data => setStock(data || []));
     const unsub2 = subscribeRequests(data => setRequests(data || []));
     const unsub3 = subscribeBranches(data => setBranches(data || []));
-    const unsub4 = subscribeAdminRestockToGudang(data => setAdminRequests(data || []));
     const unsub5 = subscribeNotifications(data => setNotifications(data || []));
-    return () => { unsub1(); unsub2(); unsub3(); unsub4(); unsub5(); };
+    return () => { unsub1(); unsub2(); unsub3(); unsub5(); };
   }, []);
 
   const totalOrders = requests.length;

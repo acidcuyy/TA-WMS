@@ -292,9 +292,11 @@ export default function RequestsGudang() {
                       ) : (
                         <div style={{ fontSize: '13px', color: '#1890ff', textAlign: 'center', width: '100%', padding: '8px', background: '#e6f7ff', borderRadius: '8px', fontWeight: 600 }}>🚚 Dikirim (Eksternal)</div>
                       )
-                    ) : r.status === "Selesai" ? (
+                    ) : (r.status === "Selesai" || r.status === "Diterima Toko") ? (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%', alignItems: 'center' }}>
-                        <div style={{ color: "#52c41a", fontSize: "13px", fontWeight: 700, textAlign: 'center', width: '100%', padding: '8px', background: '#f6ffed', borderRadius: '8px' }}>✅ Selesai Diterima</div>
+                        <div style={{ color: "#52c41a", fontSize: "13px", fontWeight: 700, textAlign: 'center', width: '100%', padding: '8px', background: '#f6ffed', borderRadius: '8px' }}>
+                          ✅ {r.status === "Diterima Toko" ? "Diterima Toko" : "Selesai Diterima"}
+                        </div>
                         {r.proofImage && (
                           <button 
                             className="rqGudang__btn rqGudang__btn--text" 
@@ -460,7 +462,7 @@ export default function RequestsGudang() {
                          </div>
                       )}
 
-                      {detailModal.data.status === 'Selesai' && detailModal.data.confirmationData && (
+                      {(detailModal.data.status === 'Selesai' || detailModal.data.status === 'Diterima Toko') && detailModal.data.confirmationData && (
                         <>
                           <div className="detailRow" style={{ marginTop: '16px' }}><span className="detailLabel">Diterima Baik</span><span className="detailValue" style={{color: '#52c41a', fontWeight: 700}}>{detailModal.data.confirmationData.qtyGood} pcs</span></div>
                           {Number(detailModal.data.confirmationData.qtyBad) > 0 && (

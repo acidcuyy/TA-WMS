@@ -1,41 +1,77 @@
 /* ── Main layout ── */
 .dtracking {
-  display: grid;
-  grid-template-columns: 1fr 400px;
-  height: calc(100vh - 70px);
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  min-height: 0;       /* krusial agar flex parent memberikan tinggi */
+  height: 100%;        /* isi seluruh driver-content */
   background: var(--bg-2);
   overflow: hidden;
+  position: relative;
+}
+
+
+/* ── Arrival Banner ── */
+.arrival-banner {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  background: linear-gradient(135deg, #52c41a, #389e0d);
+  color: white;
+  padding: 14px 32px;
+  border-radius: 50px;
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: 0 8px 32px rgba(82, 196, 26, 0.45);
+  white-space: nowrap;
 }
 
 /* ── Map container (left column) ── */
 .dtracking__map-container {
   position: relative;
-  width: 100%;
-  height: 100%;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   background: #e5e7eb;
 }
 
+
+
+/* Paksa Leaflet container mengisi penuh */
+.dtracking__map-container .leaflet-container {
+  height: 100% !important;
+  width: 100% !important;
+}
+
+
 .map-overlay {
   position: absolute;
-  top: 20px;
-  left: 20px;
-  right: 20px;
+  top: 16px;
+  left: 16px;
   z-index: 10;
   pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .map-search-bar {
   background: var(--bg);
-  padding: 12px 20px;
+  padding: 10px 18px;
   border-radius: 14px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.18);
   font-size: 13px;
   font-weight: 600;
   color: var(--text);
   border: 1px solid var(--border);
   display: inline-block;
   max-width: 100%;
+  backdrop-filter: blur(8px);
 }
 
 .map-search-bar.bar-done {
@@ -44,15 +80,87 @@
   color: #389e0d;
 }
 
+/* GPS Badge */
+.gps-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+}
+
+.gps-badge.gps-on {
+  background: #f6ffed;
+  color: #52c41a;
+  border: 1px solid #b7eb8f;
+}
+
+.gps-badge.gps-off {
+  background: var(--bg);
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+
+.gps-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: dotPulse 1.2s infinite;
+}
+
+@keyframes dotPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.35; }
+}
+
+/* Speed HUD */
+.speed-hud {
+  position: absolute;
+  bottom: 24px;
+  left: 24px;
+  z-index: 10;
+  background: rgba(0,0,0,0.72);
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
+  padding: 12px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: white;
+  min-width: 72px;
+}
+
+.speed-value {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.speed-unit {
+  font-size: 10px;
+  font-weight: 600;
+  opacity: 0.7;
+  margin-top: 2px;
+}
+
 /* ── Info panel (right column) ── */
 .dtracking__info {
-  padding: 24px;
+  width: 420px;
+  flex-shrink: 0;
+  padding: 20px 22px;
   border-left: 1px solid var(--border);
   background: var(--bg);
   overflow-y: auto;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
 }
 
 /* ── Delivery header ── */
@@ -64,7 +172,7 @@
 
 .delivery-id span {
   display: block;
-  font-size: 12px;
+  font-size: 11px;
   color: var(--muted);
   font-weight: 600;
   text-transform: uppercase;
@@ -85,32 +193,71 @@
   font-weight: 700;
 }
 
-.status-pill.shipping {
-  background: #e6f7ff;
-  color: #1890ff;
+.status-pill.shipping { background: #e6f7ff; color: #1890ff; }
+.status-pill.arrived  { background: #fff7e6; color: #fa8c16; }
+.status-pill.done     { background: #f6ffed; color: #52c41a; }
+
+/* ── ETA Card ── */
+.eta-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--bg-2);
+  border-radius: 18px;
+  padding: 16px 20px;
+  border: 1px solid var(--border);
+  transition: all 0.4s ease;
 }
 
-.status-pill.arrived {
-  background: #fff7e6;
-  color: #fa8c16;
-}
-
-.status-pill.done {
+.eta-card.eta-arrived {
   background: #f6ffed;
-  color: #52c41a;
+  border-color: #b7eb8f;
+}
+
+.eta-icon { font-size: 28px; }
+
+.eta-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.eta-label {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.eta-value {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text);
+  margin-top: 2px;
+}
+
+.eta-progress-ring { position: relative; }
+
+.ring-pct {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--text);
 }
 
 /* ── Progress bar ── */
-.progress-section {
-  /* gap from flex parent */
-}
+.progress-section { /* gap from flex parent */ }
 
 .progress-bar-bg {
   height: 10px;
   background: var(--bg-2);
   border-radius: 5px;
   overflow: hidden;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .progress-bar-fill {
@@ -132,20 +279,20 @@
 .tracking-details {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .track-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
+  padding: 10px 14px;
   background: var(--bg-2);
-  border-radius: 14px;
+  border-radius: 12px;
 }
 
 .track-label {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--muted);
   font-weight: 600;
 }
@@ -154,6 +301,70 @@
   font-size: 13px;
   color: var(--text);
   font-weight: 700;
+}
+
+.track-val.coords {
+  font-size: 10px;
+  font-family: monospace;
+}
+
+/* ── GPS Control ── */
+.gps-control {
+  background: var(--bg-2);
+  border-radius: 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+}
+
+.gps-control-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.btn-gps {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: none;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-gps--off {
+  background: var(--primary);
+  color: white;
+}
+
+.btn-gps--on {
+  background: #ff4d4f20;
+  color: #ff4d4f;
+  border: 1px solid #ff4d4f40;
+}
+
+.gps-error {
+  font-size: 11px;
+  color: #ff4d4f;
+  margin: 6px 0 0;
+}
+
+.gps-live {
+  font-size: 11px;
+  color: #52c41a;
+  font-weight: 600;
+  margin: 6px 0 0;
+  font-family: monospace;
+}
+
+.gps-hint {
+  font-size: 11px;
+  color: var(--muted);
+  margin: 6px 0 0;
+  line-height: 1.5;
 }
 
 /* ── Timeline ── */
@@ -170,7 +381,7 @@
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  opacity: 0.45;
+  opacity: 0.4;
 }
 
 .tl-step.done,
@@ -191,12 +402,8 @@
   flex-shrink: 0;
 }
 
-.tl-step.done .tl-dot {
-  background: #f6ffed;
-  border-color: #52c41a;
-}
-
-.tl-step.active .tl-dot {
+.tl-step.done .tl-dot   { background: #f6ffed; border-color: #52c41a; }
+.tl-step.active .tl-dot  {
   background: #e6f7ff;
   border-color: #1890ff;
   animation: tlPulse 1.5s infinite;
@@ -208,27 +415,13 @@
   100% { box-shadow: 0 0 0 0 rgba(24,144,255,0);    }
 }
 
-.tl-text {
-  display: flex;
-  flex-direction: column;
-  padding-top: 4px;
-}
-
-.tl-text b {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text);
-}
-
-.tl-text span {
-  font-size: 11px;
-  color: var(--muted);
-  margin-top: 2px;
-}
+.tl-text { display: flex; flex-direction: column; padding-top: 4px; }
+.tl-text b    { font-size: 13px; font-weight: 700; color: var(--text); }
+.tl-text span { font-size: 11px; color: var(--muted); margin-top: 2px; }
 
 .tl-line {
   width: 2px;
-  height: 16px;
+  height: 14px;
   margin-left: 15px;
   background: var(--border);
 }
@@ -246,7 +439,7 @@
   padding: 16px;
   border-radius: 16px;
   border: none;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
@@ -292,20 +485,18 @@
   margin: 0;
 }
 
-.footer-note.success-note {
-  color: #52c41a;
-  font-weight: 600;
-}
+.footer-note.success-note { color: #52c41a; font-weight: 600; }
 
 /* ── Empty state ── */
 .dtracking--empty {
-  grid-template-columns: 1fr;
+  flex-direction: column; /* Center everything */
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--bg);
-  height: calc(100vh - 70px);
 }
+
 
 .empty-state {
   text-align: center;
@@ -313,10 +504,7 @@
   padding: 40px;
 }
 
-.empty-icon {
-  font-size: 80px;
-  margin-bottom: 24px;
-}
+.empty-icon { font-size: 80px; margin-bottom: 24px; }
 
 .empty-state h2 {
   font-size: 24px;

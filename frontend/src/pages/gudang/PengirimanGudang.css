@@ -1,0 +1,44 @@
+/* PengirimanGudang.css — Override untuk sudut pandang Gudang */
+
+/* Gudang page height — not needed anymore since we use flex: 1 */
+/* The p-toko class already uses flex: 1 via flex column layout */
+.pg-gudang {
+  /* Inherits height from flex column chain */
+}
+
+/* Info panel read-only */
+.pg-info-readonly { flex-shrink: 0; }
+
+.pg-status-done,
+.pg-status-waiting,
+.pg-status-ongoing {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 8px 0;
+}
+
+.pg-status-done    > span,
+.pg-status-waiting > span,
+.pg-status-ongoing > span { font-size: 26px; flex-shrink: 0; }
+
+.pg-status-done    > div b { color: #52c41a; }
+.pg-status-waiting > div b { color: #fa8c16; }
+.pg-status-ongoing > div b { color: #1890ff; }
+
+.pg-status-done    > div b,
+.pg-status-waiting > div b,
+.pg-status-ongoing > div b {
+  font-size: 13px;
+  font-weight: 700;
+  display: block;
+}
+
+.pg-status-done    > div p,
+.pg-status-waiting > div p,
+.pg-status-ongoing > div p {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 4px 0 0;
+}

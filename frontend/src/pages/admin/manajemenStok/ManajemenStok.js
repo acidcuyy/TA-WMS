@@ -79,7 +79,7 @@ export default function ManajemenStok() {
     if (openForm && !form.cabangGudang && gudangBranches.length > 0) {
       setForm(prev => ({ ...prev, cabangGudang: gudangBranches[0].id }));
     }
-  }, [openForm, gudangBranches]);
+  }, [openForm, gudangBranches, form.cabangGudang]);
 
   const handleSend = (e) => {
     e.preventDefault();

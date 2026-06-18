@@ -16,7 +16,7 @@ const getBadgeClass = (status) => {
   if (s.includes("accepted")) return "badge--accepted";
   if (s.includes("mengirim") || s.includes("ship")) return "badge--ship";
   if (s.includes("siap")) return "badge--ready";
-  if (s.includes("selesai") || s.includes("done")) return "badge--done";
+  if (s.includes("selesai") || s.includes("done") || s.includes("diterima")) return "badge--done";
   if (s.includes("declined") || s.includes("ditolak")) return "badge--declined";
   if (s.includes("memproses") || s.includes("processing")) return "badge--process";
   return "";
@@ -539,8 +539,7 @@ export default function RequestToko() {
                       const priorityTag = r.priority ? `[Prioritas: ${r.priority}]` : "";
                       const status = (r.status || "").toLowerCase();
                       const canSeeTrack = status.includes("mengirim") && !r.isExternalDriver;
-                      const canFinish = status.includes("mengirim");
-                      const done = status.includes("selesai");
+                      const done = status.includes("selesai") || status.includes("diterima toko");
 
                       return (
                         <motion.tr

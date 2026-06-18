@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { getBranchUsers } from "../../services/wmsApi";
 import "./Login.css";
 
-import Button from "../../components/common/Button";
 import logo from "../../assets/images/logo.png";
 import SplitText from "../../components/animations/SplitText";
 import DotField from "../../components/animations/DotField";

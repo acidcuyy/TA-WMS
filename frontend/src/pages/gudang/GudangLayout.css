@@ -1,20 +1,23 @@
-/* GUDANG LAYOUT - PREMIUM DESIGN */
-
+/* GUDANG LAYOUT */
 .gudang-container {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;          /* ← concrete, bukan min-height */
+  overflow: hidden;
   background-color: var(--bg-2);
   font-family: 'Poppins', sans-serif;
 }
 
+
 /* TOPBAR */
 .gudang-main {
   flex: 1;
+  min-height: 0;          /* krusial */
   display: flex;
   flex-direction: column;
   height: 100vh;
   overflow: hidden;
 }
+
 
 .gudang-topbar {
   height: 70px;
@@ -154,9 +157,15 @@
 
 .gudang-content {
   flex: 1;
-  overflow-y: auto;
+  min-height: 0;          /* krusial */
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;       /* Kembalikan agar halaman lain bisa scroll */
+  overflow-x: hidden;
   background: var(--bg-2);
 }
+
+
 
 @media (max-width: 1024px) {
   .gudang-sidebar {
