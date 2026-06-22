@@ -91,7 +91,91 @@ export default function RequestsGudang() {
     { label: "Selesai", value: displayedRequests.filter(r => ["selesai", "done"].includes(r.status?.toLowerCase())).length, sub: "Bulan Ini", icon: "✅", color: "#52c41a", bg: "#f6ffed" },
   ];
 
-  const handleDecideToko = async (id, dec) => await gudangDecideRequest(id, dec);
+  const printReceipt = (r) => {
+    const printWindow = window.open('', '', 'width=800,height=600');
+    if (!printWindow) return; // Blocked by popup blocker
+    
+    const itemsHtml = (r.items || []).map(i => `
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">${i.sku || i.itemCode || '-'}</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">${i.name || 'Barang'}</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: center; font-weight: bold;">${i.qty}</td>
+      </tr>
+    `).join('');
+    
+    const totalQty = (r.items || []).reduce((s, i) => s + Number(i.qty || 0), 0);
+    const dateStr = new Date().toLocaleString('id-ID');
+
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Resi Request - ${r.id}</title>
+          <style>
+            body { font-family: 'Courier New', Courier, monospace; padding: 30px; color: #000; }
+            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px dashed #000; padding-bottom: 15px; }
+            .title { font-size: 28px; font-weight: bold; margin: 0 0 10px 0; }
+            .subtitle { font-size: 16px; margin: 0; }
+            .info { margin-bottom: 30px; font-size: 15px; }
+            .info-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 15px; }
+            th { text-align: left; padding: 10px; border-bottom: 2px solid #000; }
+            .total { text-align: right; font-weight: bold; font-size: 18px; border-top: 2px dashed #000; padding-top: 15px; }
+            .footer { text-align: center; margin-top: 50px; font-size: 13px; border-top: 1px solid #ddd; padding-top: 15px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1 class="title">REASTOCK WMS</h1>
+            <p class="subtitle">RESI PENGIRIMAN GUDANG</p>
+          </div>
+          
+          <div class="info">
+            <div class="info-row"><span><strong>ID Request:</strong></span> <span>${r.id}</span></div>
+            <div class="info-row"><span><strong>Tanggal Cetak:</strong></span> <span>${dateStr}</span></div>
+            <div class="info-row"><span><strong>Toko Tujuan:</strong></span> <span>${r.fromName || "Cabang Toko"}</span></div>
+            <div class="info-row"><span><strong>Gudang Asal:</strong></span> <span>${r.toName || sessionStorage.getItem("reastock_branch_name") || "Gudang Pusat"}</span></div>
+          </div>
+          
+          <table>
+            <thead>
+              <tr>
+                <th>Kode (SKU)</th>
+                <th>Nama Barang</th>
+                <th style="text-align: center;">Jumlah</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsHtml}
+            </tbody>
+          </table>
+          
+          <div class="total">
+            Total Qty: ${totalQty} Pcs
+          </div>
+          
+          <div class="footer">
+            Dicetak otomatis oleh sistem ReaStock.<br>
+            Harap lampirkan resi ini pada kemasan barang kiriman.
+          </div>
+          
+          <script>
+            window.onload = function() {
+              window.print();
+              setTimeout(function() { window.close(); }, 500);
+            }
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
+
+  const handleDecideToko = async (req, dec) => {
+    await gudangDecideRequest(req.id, dec);
+    if (dec === "Accepted") {
+      printReceipt(req);
+    }
+  };
   
   const handleSelectDriverInternal = async () => {
     if (driversCount === 0) {
@@ -279,8 +363,8 @@ export default function RequestsGudang() {
                   <div className="rqGudang__cardActions">
                     {["menunggu", "pending"].includes(r.status?.toLowerCase()) ? (
                       <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
-                        <button className="rqGudang__btn rqGudang__btn--primary" style={{ flex: 1 }} onClick={(e) => { e.stopPropagation(); handleDecideToko(r.id, "Accepted"); }}>Approve</button>
-                        <button className="rqGudang__btn rqGudang__btn--ghost" style={{ flex: 1 }} onClick={(e) => { e.stopPropagation(); handleDecideToko(r.id, "Declined"); }}>Decline</button>
+                        <button className="rqGudang__btn rqGudang__btn--primary" style={{ flex: 1 }} onClick={(e) => { e.stopPropagation(); handleDecideToko(r, "Accepted"); }}>Approve</button>
+                        <button className="rqGudang__btn rqGudang__btn--ghost" style={{ flex: 1 }} onClick={(e) => { e.stopPropagation(); handleDecideToko(r, "Declined"); }}>Decline</button>
                       </div>
                     ) : r.status === "Memproses" ? (
                       <button className="rqGudang__btn rqGudang__btn--primary" style={{ width: '100%' }} onClick={(e) => { e.stopPropagation(); setDriverModal({ open: true, requestId: r.id }); }}>Siapkan & Kirim</button>

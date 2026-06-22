@@ -31,7 +31,7 @@ export default function Register() {
     picPhone: "",
 
     // Step 3: Akun
-    accountEmail: "",
+    accountUsername: "",
     accountPassword: "",
     accountConfirmPassword: "",
     
@@ -129,11 +129,12 @@ export default function Register() {
       if (!formData.picPhone.trim()) stepErrors.picPhone = "No HP wajib diisi.";
     } 
     else if (currentStep === 3) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!formData.accountEmail.trim()) {
-        stepErrors.accountEmail = "Email Login wajib diisi.";
-      } else if (!emailRegex.test(formData.accountEmail)) {
-        stepErrors.accountEmail = "Format email tidak valid.";
+      if (!formData.accountUsername.trim()) {
+        stepErrors.accountUsername = "Username Login wajib diisi.";
+      } else if (formData.accountUsername.trim().length < 3) {
+        stepErrors.accountUsername = "Username minimal 3 karakter.";
+      } else if (/\s/.test(formData.accountUsername)) {
+        stepErrors.accountUsername = "Username tidak boleh mengandung spasi.";
       }
 
       if (!formData.accountPassword) {
@@ -181,7 +182,7 @@ export default function Register() {
         admin: {
           name: formData.picName,
           title: formData.picTitle,
-          email: formData.accountEmail, // use login email
+          username: formData.accountUsername, // use login username
           phone: formData.picPhone,
           password: formData.accountPassword
         }
@@ -464,16 +465,16 @@ export default function Register() {
 
                 <div className="form-grid">
                   <div className="input-group" style={{ marginBottom: "16px" }}>
-                    <label className="input-label">Email Login *</label>
+                    <label className="input-label">Username Login *</label>
                     <input
-                      type="email"
-                      name="accountEmail"
-                      placeholder="Email untuk masuk ke aplikasi"
-                      value={formData.accountEmail}
+                      type="text"
+                      name="accountUsername"
+                      placeholder="Username untuk masuk ke aplikasi"
+                      value={formData.accountUsername}
                       onChange={handleChange}
-                      className={`reg-input ${errors.accountEmail ? "input-error" : ""}`}
+                      className={`reg-input ${errors.accountUsername ? "input-error" : ""}`}
                     />
-                    {errors.accountEmail && <span className="error-text">{errors.accountEmail}</span>}
+                    {errors.accountUsername && <span className="error-text">{errors.accountUsername}</span>}
                   </div>
 
                   <div className="input-double-row">

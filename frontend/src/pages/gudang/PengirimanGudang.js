@@ -140,7 +140,10 @@ export default function PengirimanGudang() {
             <TrackingMap
               start={shipment.start}
               end={shipment.end}
+              startAddress={shipment.startAddress}
+              endAddress={shipment.endAddress}
               progress={progress}
+              gpsPosition={shipment.driver?.isLive ? shipment.driver : null}
               height="100%"
               showHistory={true}
               followDriver={!isArrived}

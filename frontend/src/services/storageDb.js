@@ -3,28 +3,24 @@
 export function getDbKey() {
   let companyId = sessionStorage.getItem("reastock_company_id");
   
-  // Auto-correct legacy sessions dynamically so they read from Cavabins instantly
-  if (companyId === "COMP-LEGACY") {
+  // Jika companyId masih COMP-LEGACY atau kosong, coba resolve dari globalUsers
+  if (!companyId || companyId === "COMP-LEGACY") {
     const globalUsers = safeParse(localStorage.getItem("reastock_global_users")) || {};
-    const email = sessionStorage.getItem("reastock_user_email");
-    if (email) {
-      const u = Object.values(globalUsers).find(user => user.email === email || user.username === email);
+    const identifier = sessionStorage.getItem("reastock_user_email");
+    if (identifier) {
+      const u = Object.values(globalUsers).find(
+        user => user.email === identifier || user.username === identifier
+      );
       if (u && u.companyId && u.companyId !== "COMP-LEGACY") {
         sessionStorage.setItem("reastock_company_id", u.companyId);
         companyId = u.companyId;
-      }
-    } else {
-      // If no email in session, but role is gudang/toko, assume Cavabins
-      const role = sessionStorage.getItem("reastock_role");
-      if (role === "gudang" || role === "toko") {
-        sessionStorage.setItem("reastock_company_id", "COMP-CAVABINS");
-        companyId = "COMP-CAVABINS";
       }
     }
   }
 
   return companyId ? `reastock_db_v3_${companyId}` : "reastock_db_v3";
 }
+
 
 export function getGlobalUsers() {
   return safeParse(localStorage.getItem("reastock_global_users")) || {};
@@ -189,17 +185,15 @@ export function dbLoad() {
        if (currentCavaRaw) {
          let cavaDb = safeParse(currentCavaRaw);
          if (cavaDb) {
-           ['restockToAdmin', 'requests', 'notifications', 'adminRestockToGudang', 'warehouseStock'].forEach(key => {
+           ['restockToAdmin', 'requests', 'notifications', 'adminRestockToGudang', 'warehouseStock', 'branches', 'branchUsers'].forEach(key => {
              if (legacyMulti[key] && Array.isArray(legacyMulti[key])) {
                cavaDb[key] = cavaDb[key] || [];
                legacyMulti[key].forEach(item => {
-                 // For warehouseStock, check sku and branchId
                  if (key === 'warehouseStock') {
                    const exists = cavaDb[key].find(x => x.sku === item.sku && x.branchId === item.branchId);
                    if (!exists) cavaDb[key].push(item);
                    else exists.qty = Math.max(exists.qty, item.qty);
                  } else {
-                   // For others, check id
                    if (!cavaDb[key].find(x => x.id === item.id)) {
                      cavaDb[key].push(item);
                    }
@@ -240,6 +234,30 @@ export function dbLoad() {
       changed = true;
     }
   });
+
+  // --- RUNTIME SYNC: Ensure branches are reconstructed from branchUsers if missing ---
+  // This runs every load (cheap & idempotent) to prevent missing branches caused by any migration issue
+  if (parsed.branchUsers && parsed.branchUsers.length > 0) {
+    parsed.branches = parsed.branches || [];
+    let branchesSynced = false;
+    parsed.branchUsers.forEach(u => {
+      if (u.branchId && u.branchType && u.branchType !== 'admin' && u.role !== 'driver') {
+        const exists = parsed.branches.find(b => b.id === u.branchId);
+        if (!exists) {
+          parsed.branches.push({
+            id: u.branchId,
+            name: u.branchName || u.branchId,
+            type: u.branchType,
+            location: u.location || '',
+          });
+          branchesSynced = true;
+        }
+      }
+    });
+    if (branchesSynced) {
+      localStorage.setItem(KEY, JSON.stringify(parsed));
+    }
+  }
 
   if (changed) {
     localStorage.setItem(KEY, JSON.stringify(parsed));

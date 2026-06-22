@@ -4,6 +4,7 @@ import {
   subscribeRequests,
   getShipment,
   driverSelesaikanPengiriman,
+  updateDriverLocation,
 } from "../../../services/wmsApi";
 import TrackingMap from "../../../components/common/TrackingMap";
 import "./DriverTracking.css";
@@ -130,6 +131,13 @@ export default function DriverTracking() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeRequest, tick]);
 
+  /* GPS Sync to Database */
+  useEffect(() => {
+    if (activeRequest && gpsActive && gpsPosition) {
+      updateDriverLocation(activeRequest.id, gpsPosition.lat, gpsPosition.lng);
+    }
+  }, [activeRequest, gpsActive, gpsPosition]);
+
   /* Progress calculation */
   const calc = (sh) => {
     if (!sh) return { progress: 0, etaMs: 0, driver: { lat: 0, lng: 0 } };
@@ -244,6 +252,8 @@ export default function DriverTracking() {
         <TrackingMap
           start={shipment.start}
           end={shipment.end}
+          startAddress={shipment.startAddress}
+          endAddress={shipment.endAddress}
           progress={progress}
           gpsPosition={gpsActive ? gpsPosition : null}
           showHistory={true}

@@ -1,7 +1,31 @@
 import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createBranchAccount, updateDriverProfile, createBranchUser, subscribeBranches } from "../../../services/wmsApi";
+
+import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+
+import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
+import markerIcon from "leaflet/dist/images/marker-icon.png";
+import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import "./RegistrasiEntitas.css";
+
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconUrl: markerIcon,
+  iconRetinaUrl: markerIcon2x,
+  shadowUrl: markerShadow,
+});
+
+function LocationPicker({ latLng, setLatLng }) {
+  useMapEvents({
+    click(e) {
+      setLatLng(e.latlng);
+    },
+  });
+  return latLng ? <Marker position={latLng} /> : null;
+}
 
 export default function RegistrasiEntitas() {
   const [activeTab, setActiveTab] = useState("Gudang");
@@ -276,8 +300,24 @@ export default function RegistrasiEntitas() {
                 />
               </div>
 
-              <div className="form-group full-width">
-                <label className="form-label">Jam Operasional (Buka - Tutup)</label>
+                <div className="form-group full-width">
+                  <label className="form-label">Tentukan Titik Peta (Opsional namun disarankan)</label>
+                  <p style={{ fontSize: "12px", color: "#64748b", marginBottom: "8px", marginTop: "-4px" }}>
+                    Geser/klik pada peta untuk menentukan lokasi persis agar Tracking GPS rute jalan raya lebih akurat.
+                  </p>
+                  <div style={{ height: "250px", width: "100%", borderRadius: "8px", overflow: "hidden", border: "1px solid #cbd5e1" }}>
+                    <MapContainer center={[latLng.lat, latLng.lng]} zoom={13} style={{ height: "100%", width: "100%" }} scrollWheelZoom={false}>
+                      <TileLayer
+                        attribution='&copy; OSM'
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      />
+                      <LocationPicker latLng={latLng} setLatLng={setLatLng} />
+                    </MapContainer>
+                  </div>
+                </div>
+
+                <div className="form-group full-width">
+                  <label className="form-label">Jam Operasional (Buka - Tutup)</label>
                 <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
                   <input type="time" className="form-input" value={jamBuka} onChange={(e) => setJamBuka(e.target.value)} />
                   <span style={{ fontWeight: 600, color: '#64748b' }}>s/d</span>

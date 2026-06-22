@@ -143,7 +143,7 @@ export default function StokToko() {
   }, []);
 
   // Gudang branches
-  const gudangBranches = useMemo(() => branches.filter(b => b.type === "gudang"), [branches]);
+  const gudangBranches = useMemo(() => branches.filter(b => (b.type || "").toLowerCase() === "gudang"), [branches]);
   useEffect(() => {
     if (gudangBranches.length > 0 && !selectedBranchId) setSelectedBranchId(gudangBranches[0].id);
   }, [gudangBranches, selectedBranchId]);

@@ -196,7 +196,10 @@ export default function PengirimanToko() {
             <TrackingMap
               start={shipment.start}
               end={shipment.end}
+              startAddress={shipment.startAddress}
+              endAddress={shipment.endAddress}
               progress={progress}
+              gpsPosition={shipment.driver?.isLive ? shipment.driver : null}
               height="100%"
               showHistory={true}
               followDriver={!isArrived}
@@ -328,10 +331,11 @@ export default function PengirimanToko() {
               </div>
             ) : (
               <>
-                {isArrived && (
-                  <div className="pt-upload-container">
+                <div className="pt-upload-container">
                     <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '12px', lineHeight: '1.4' }}>
-                      Silakan upload foto bukti barang telah diterima, lalu verifikasi kondisi barang.
+                      {isArrived 
+                        ? "Silakan upload foto bukti barang telah diterima, lalu verifikasi kondisi barang."
+                        : "Fitur penerimaan dipercepat (Testing): Anda dapat langsung menerima barang meskipun simulasi driver belum tiba."}
                     </p>
                     
                     {/* Upload Box */}
@@ -370,19 +374,18 @@ export default function PengirimanToko() {
                       </div>
                     )}
                   </div>
-                )}
                 
                 <button
-                  className={`btn-confirm ${isArrived ? "ready" : "waiting"}`}
-                  disabled={!isArrived || confirming || (Number(uploadData.qtyBad) > 0 && !uploadData.notes.trim())}
+                  className={`btn-confirm ${true ? "ready" : "waiting"}`}
+                  disabled={confirming || (Number(uploadData.qtyBad) > 0 && !uploadData.notes.trim())}
                   onClick={handleKonfirmasi}
                   style={(Number(uploadData.qtyBad) > 0 && !uploadData.notes.trim()) ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
                 >
                   {confirming
-                    ? "⏳ Memproses..."
+                    ? "⏱ Memproses..."
                     : isArrived
-                    ? "Konfirmasi Barang Diterima ✅"
-                    : `⏳ Menunggu Driver Tiba (${etaMin} mnt)`}
+                    ? "Konfirmasi Barang Diterima ✓"
+                    : `Terima Barang Lebih Awal ✓`}
                 </button>
               </>
             )}

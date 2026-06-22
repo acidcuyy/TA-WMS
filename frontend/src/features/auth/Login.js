@@ -63,8 +63,47 @@ export default function Login() {
         }
       }
 
+
       if (dynamicUserRaw && dynamicUserRaw.password === p) {
-        sessionStorage.setItem("reastock_company_id", dynamicUserRaw.companyId || "COMP-LEGACY");
+        let resolvedCompanyId = dynamicUserRaw.companyId || "COMP-LEGACY";
+
+        // --- Scan ALL localStorage reastock DBs untuk menemukan DB yang benar ---
+        // Ini memastikan isolasi multi-tenant bekerja terlepas dari history migrasi
+        const foundCompanyId = (() => {
+          try {
+            for (let i = 0; i < localStorage.length; i++) {
+              const key = localStorage.key(i);
+              if (!key || !key.startsWith("reastock_db_v3_COMP-")) continue;
+              const compId = key.replace("reastock_db_v3_", "");
+              if (compId === "COMP-LEGACY") continue;
+              const rawDb = localStorage.getItem(key);
+              if (!rawDb) continue;
+              const db = JSON.parse(rawDb);
+              // Cari user dengan username atau id yang cocok di branchUsers DB ini
+              const found = (db.branchUsers || []).find(
+                (u) =>
+                  u.id === dynamicUserRaw.id ||
+                  (u.username && u.username.toLowerCase() === eLower)
+              );
+              if (found) return compId;
+            }
+          } catch (e) {}
+          return null;
+        })();
+
+        if (foundCompanyId) {
+          resolvedCompanyId = foundCompanyId;
+          // Update globalUsers agar konsisten untuk login berikutnya
+          try {
+            const updatedGlobals = JSON.parse(localStorage.getItem("reastock_global_users") || "{}");
+            if (updatedGlobals[dynamicUserRaw.id]) {
+              updatedGlobals[dynamicUserRaw.id].companyId = resolvedCompanyId;
+              localStorage.setItem("reastock_global_users", JSON.stringify(updatedGlobals));
+            }
+          } catch (e) {}
+        }
+
+        sessionStorage.setItem("reastock_company_id", resolvedCompanyId);
 
         // Load the full user from their respective tenant DB
         const tenantUsers = getBranchUsers();
@@ -91,6 +130,7 @@ export default function Login() {
           joinDate: dynamicUser.createdAt || "10 Januari 2025",
         };
       }
+
     }
 
     if (!user || user.pass !== p) {

@@ -58,8 +58,39 @@ export function getShipment(requestId) {
 }
 
 export function getWarehouseStock() {
-  return dbLoad().warehouseStock || [];
+  const db = dbLoad();
+  const stock = db.warehouseStock || [];
+
+  // Jika ada stok di DB ini, gunakan
+  if (stock.length > 0) return stock;
+
+  // Fallback: scan semua reastock DB keys untuk menemukan warehouseStock
+  try {
+    const myBranchId = sessionStorage.getItem("reastock_branch_id");
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key || !key.startsWith("reastock_db_v3_COMP-")) continue;
+      const compId = key.replace("reastock_db_v3_", "");
+      if (compId === "COMP-LEGACY") continue;
+      const rawDb = localStorage.getItem(key);
+      if (!rawDb) continue;
+      const scanDb = JSON.parse(rawDb);
+      const scanStock = scanDb.warehouseStock || [];
+      if (scanStock.length === 0) continue;
+      // Cek apakah DB ini relevan dengan user ini (ada branchId yang cocok)
+      const isRelevant = myBranchId
+        ? (scanDb.branchUsers || []).some(u => u.branchId === myBranchId)
+        : false;
+      if (isRelevant) {
+        sessionStorage.setItem("reastock_company_id", compId);
+        return scanStock;
+      }
+    }
+  } catch (e) {}
+
+  return stock;
 }
+
 
 export function getRestockToAdmin() {
   return dbLoad().restockToAdmin || [];
@@ -70,8 +101,93 @@ export function getNotifications() {
 }
 
 export function getBranches() {
-  return dbLoad().branches || [];
+  const db = dbLoad();
+  const allBranchesMap = new Map();
+
+  // Helper untuk menambah branch ke map (mencegah duplikat, prioritaskan db.branches)
+  const addBranch = (b) => {
+    if (!allBranchesMap.has(b.id)) {
+      allBranchesMap.set(b.id, b);
+    }
+  };
+
+  // Lapisan 1: Gunakan db.branches
+  const branches = db.branches || [];
+  branches.forEach(addBranch);
+
+  // Lapisan 2: Rekonstruksi dari db.branchUsers di DB yang sama
+  const branchUsers = db.branchUsers || [];
+  branchUsers.forEach((u) => {
+    if (u.branchId && u.branchType && u.branchType !== "admin" && u.role !== "driver") {
+      addBranch({
+        id: u.branchId,
+        name: u.branchName || u.branchId,
+        type: u.branchType,
+        location: u.location || "",
+      });
+    }
+  });
+
+  // Lapisan 3: Rekonstruksi dari globalUsers berdasarkan companyId
+  const companyId = sessionStorage.getItem("reastock_company_id");
+  if (companyId) {
+    const globalUsers = getGlobalUsers();
+    Object.values(globalUsers).forEach((u) => {
+      if (
+        u.companyId === companyId &&
+        u.branchId &&
+        u.branchType &&
+        u.branchType !== "admin" &&
+        u.role !== "driver"
+      ) {
+        addBranch({
+          id: u.branchId,
+          name: u.branchName || u.branchId,
+          type: u.branchType,
+          location: u.location || "",
+        });
+      }
+    });
+  }
+
+  // Lapisan 4: Scan semua localStorage reastock DB keys (safety net terakhir)
+  try {
+    const myBranchId = sessionStorage.getItem("reastock_branch_id");
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key || !key.startsWith("reastock_db_v3_COMP-")) continue;
+      const compId = key.replace("reastock_db_v3_", "");
+      if (compId === "COMP-LEGACY") continue;
+      const rawDb = localStorage.getItem(key);
+      if (!rawDb) continue;
+      const scanDb = JSON.parse(rawDb);
+
+      const hasMyBranch = myBranchId
+        ? (scanDb.branchUsers || []).some(u => u.branchId === myBranchId)
+        : false;
+
+      if (hasMyBranch) {
+        (scanDb.branches || []).forEach(addBranch);
+        (scanDb.branchUsers || []).forEach(u => {
+          if (u.branchId && u.branchType && u.branchType !== "admin" && u.role !== "driver") {
+            addBranch({
+              id: u.branchId,
+              name: u.branchName || u.branchId,
+              type: u.branchType,
+              location: u.location || "",
+            });
+          }
+        });
+        if (allBranchesMap.size > 0 && !companyId) {
+          sessionStorage.setItem("reastock_company_id", compId);
+        }
+      }
+    }
+  } catch (e) {}
+
+  return Array.from(allBranchesMap.values());
 }
+
 
 export function markNotificationAsRead(id) {
   return dbUpdate((db) => {
@@ -417,12 +533,46 @@ export function driverUploadBuktiSiapKirim(id, driverName = "Driver 01", proofDa
     r.driverProof = proofData; // { resi: base64, foto: base64 }
     r.shippingStartedAt = new Date().toISOString();
 
+    const gudangBranch = (db.branches || []).find(b => b.id === r.toBranchId) || {};
+    const tokoBranch = (db.branches || []).find(b => b.id === r.fromBranchId) || {};
+    
+    let startAddress = gudangBranch.location || "Jakarta Pusat";
+    let endAddress = tokoBranch.location || "Jakarta Selatan";
+
+    if (r.isFromAdmin) {
+      startAddress = r.supplier || "Jakarta Utara";
+      endAddress = (db.branches || []).find(b => b.id === r.cabangGudang)?.location || "Jakarta Pusat";
+    }
+
+    // Get real coordinates from branch or fallback to default
+    let startLat = gudangBranch.lat || -6.2;
+    let startLng = gudangBranch.lng || 106.8166;
+    let endLat = tokoBranch.lat || -6.1754;
+    let endLng = tokoBranch.lng || 106.8272;
+
+    // Calculate distance using Haversine formula
+    const R = 6371; // Earth radius in km
+    const dLat = (endLat - startLat) * Math.PI / 180;
+    const dLng = (endLng - startLng) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(startLat * Math.PI / 180) * Math.cos(endLat * Math.PI / 180) *
+              Math.sin(dLng/2) * Math.sin(dLng/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const distKm = R * c;
+
+    // Estimate: 20 km/h average speed in city => 1 km = 3 minutes
+    let estimatedMinutes = Math.round(distKm * 3);
+    if (estimatedMinutes < 2) estimatedMinutes = 2; // Min 2 mins
+    if (estimatedMinutes > 180) estimatedMinutes = 180; // Max 3 hours
+
     db.shipments[id] = {
-      start: { lat: -6.2, lng: 106.8166 },
-      end: { lat: -6.1754, lng: 106.8272 },
+      startAddress,
+      endAddress,
+      start: { lat: startLat, lng: startLng },
+      end: { lat: endLat, lng: endLng },
       startedAt: Date.now(),
-      durationMs: 1000 * 60 * 18,
-      driver: { lat: -6.197, lng: 106.8177 },
+      durationMs: 1000 * 60 * estimatedMinutes,
+      driver: { lat: startLat, lng: startLng },
       driverName: driverName,
     };
 
@@ -535,6 +685,18 @@ export function tokoSelesaiTerima(id, proofImage = null, confirmationData = null
   });
 }
 
+
+  export function updateDriverLocation(id, lat, lng, progress) {
+    return dbUpdate((db) => {
+      if (db.shipments && db.shipments[id]) {
+        db.shipments[id].driver = { lat, lng, isLive: true };
+        if (progress !== undefined) {
+          db.shipments[id].driverProgress = progress;
+        }
+      }
+      return db;
+    });
+  }
 
 /**
  * Driver menyelesaikan pengiriman (setelah toko konfirmasi penerimaan)
@@ -899,9 +1061,36 @@ export function createBranchAccount(payload) {
   });
 }
 
+export function updateBranch(id, payload) {
+  return dbUpdate((db) => {
+    const branch = (db.branches || []).find((b) => b.id === id);
+    if (branch) {
+      Object.assign(branch, payload);
+    }
+    return db;
+  });
+}
+
 export function deleteBranch(id) {
   return dbUpdate((db) => {
     db.branches = (db.branches || []).filter((b) => b.id !== id);
+    
+    const globalUsers = getGlobalUsers();
+    let usersChanged = false;
+    db.branchUsers = (db.branchUsers || []).filter((u) => {
+      if (u.branchId === id) {
+        if (globalUsers[u.id]) {
+          delete globalUsers[u.id];
+          usersChanged = true;
+        }
+        return false;
+      }
+      return true;
+    });
+
+    if (usersChanged) {
+      saveGlobalUsers(globalUsers);
+    }
     return db;
   });
 }
@@ -969,9 +1158,9 @@ export function registerCompanyAndAdmin(payload) {
       branchName: "Kantor Pusat",
       branchType: "admin",
       nama: payload.admin.name,
-      username: payload.admin.email,
+      username: payload.admin.username,
       password: payload.admin.password,
-      email: payload.admin.email,
+      email: "",
       phone: payload.admin.phone,
       role: "admin",
       joinedAt: new Date().toISOString().slice(0, 10),
