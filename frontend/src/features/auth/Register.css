@@ -5,8 +5,8 @@
 .reastock-register-container {
   display: flex;
   height: 100vh;
-  width: 100vw;
-  overflow: hidden;
+  width: 100%;
+  overflow-x: hidden;
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
   background: radial-gradient(circle at top right, #fff4e6 0%, #fdebd0 100%);
   align-items: center;
@@ -979,7 +979,7 @@
   position: fixed !important;
   top: 0 !important;
   left: 0 !important;
-  width: 100vw !important;
+  width: 100% !important;
   height: 100vh !important;
   background: rgba(15, 23, 42, 0.65) !important;
   backdrop-filter: blur(8px) !important;

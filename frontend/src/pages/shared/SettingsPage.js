@@ -464,6 +464,16 @@ export default function SettingsPage({ role = "admin" }) {
           .sa-settings-grid { grid-template-columns: 1fr; }
           .sa-card-full { grid-column: span 1; }
         }
+
+        @media (max-width: 600px) {
+          .sa-settings-page { padding: 16px 20px; }
+          .sa-settings-hero { flex-direction: column; align-items: flex-start; }
+          .sa-sync-controls { grid-template-columns: 1fr; }
+          .sa-theme-grid { grid-template-columns: 1fr; }
+          .sa-card { padding: 16px; }
+          .sa-row { flex-direction: column; align-items: flex-start; gap: 12px; }
+          .sa-row .sa-switch { align-self: flex-start; }
+        }
       `}</style>
 
       <div className="sa-settings-page">

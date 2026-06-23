@@ -7,7 +7,7 @@
 .reastock-error-container {
   display: flex;
   height: 100vh;
-  width: 100vw;
+  width: 100%;
   overflow: hidden;
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
   background: radial-gradient(circle at 30% 20%, #fff4e6 0%, #fdebd0 50%, #fef9f3 100%);
