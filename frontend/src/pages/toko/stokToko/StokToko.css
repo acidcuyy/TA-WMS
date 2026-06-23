@@ -1094,3 +1094,31 @@
   }
 }
 
+
+/* RESPONSIVE AUTO-GENERATED */
+@media (max-width: 1024px) {
+  .stok-produk__main {
+    grid-template-columns: 1fr !important;
+  }
+  .stok-produk__summary {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) !important;
+  }
+  .form-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .stok-produk {
+    padding: 16px !important;
+  }
+  .stok-produk__header-top, .header-actions, .stok-filters {
+    flex-wrap: wrap;
+  }
+  [class*="-list-card"], [class*="-table-card"], .table-container {
+    overflow-x: auto;
+  }
+  table, .request-table {
+    min-width: 600px;
+  }
+}

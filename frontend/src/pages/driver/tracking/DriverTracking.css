@@ -536,3 +536,28 @@
   transform: translateY(-2px);
   box-shadow: 0 10px 24px rgba(248,108,20,0.3);
 }
+
+/* ── Mobile & Tablet Layout ── */
+@media (max-width: 1024px) {
+  .dtracking {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .dtracking__map-container {
+    flex: none;
+    height: 50vh;
+    min-height: 300px;
+    width: 100%;
+  }
+
+  .dtracking__info {
+    width: 100%;
+    flex: none;
+    height: auto;
+    border-left: none;
+    border-top: 1px solid var(--border);
+    overflow-y: visible; /* Biarkan kontainer utama yang scroll */
+    padding-bottom: 40px; /* Ruang bernapas di bawah */
+  }
+}

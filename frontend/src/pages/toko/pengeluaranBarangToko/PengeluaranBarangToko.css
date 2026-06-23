@@ -741,3 +741,31 @@
   .pengeluaran-toko__summary { grid-template-columns: repeat(2, 1fr); }
   .modal-form-grid { grid-template-columns: 1fr; }
 }
+
+/* RESPONSIVE AUTO-GENERATED */
+@media (max-width: 1024px) {
+  .pengeluaran-toko__main {
+    grid-template-columns: 1fr !important;
+  }
+  .pengeluaran-toko__summary {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) !important;
+  }
+  .form-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .pengeluaran-toko {
+    padding: 16px !important;
+  }
+  .pengeluaran-toko__header-top, .header-actions, .stok-filters {
+    flex-wrap: wrap;
+  }
+  [class*="-list-card"], [class*="-table-card"], .table-container {
+    overflow-x: auto;
+  }
+  table, .request-table {
+    min-width: 600px;
+  }
+}

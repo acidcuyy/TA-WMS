@@ -199,3 +199,35 @@
   font-weight: 600;
   cursor: pointer;
 }
+
+@media (max-width: 768px) {
+  .driver-topbar {
+    padding: 0 16px;
+    height: auto;
+    min-height: 70px;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+  
+  .topbar-left, .topbar-right {
+    gap: 12px;
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .location-selector {
+    flex: 1;
+  }
+  
+  .status-indicator {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+  
+  .status-indicator span {
+    display: none;
+  }
+}
+

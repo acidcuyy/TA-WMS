@@ -446,3 +446,38 @@
   animation: spin 1s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Mobile & Tablet Layout ── */
+@media (max-width: 1024px) {
+  .p-toko {
+    overflow-y: auto;
+  }
+
+  .p-toko__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px 16px 0;
+  }
+
+  .p-toko__grid {
+    flex-direction: column;
+    overflow-y: visible;
+    padding: 16px;
+  }
+
+  .p-toko__map-side {
+    flex: none;
+    height: 50vh;
+    min-height: 300px;
+    width: 100%;
+  }
+
+  .p-toko__info-side {
+    width: 100%;
+    flex: none;
+    height: auto;
+    overflow-y: visible;
+    padding-bottom: 40px;
+  }
+}
