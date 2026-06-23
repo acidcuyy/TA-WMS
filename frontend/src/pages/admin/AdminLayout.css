@@ -335,4 +335,20 @@
     padding-bottom: 64px; /* Space for bottom nav */
     box-sizing: border-box;
   }
+}
+
+@media (max-width: 480px) {
+  .admin-info {
+    display: none;
+  }
+  .search-box {
+    width: 100%;
+  }
+  .search-box input {
+    width: 100%;
+  }
+  .export-btn, .filter-btn {
+    flex: 1;
+    text-align: center;
+  }
 }

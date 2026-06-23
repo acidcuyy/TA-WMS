@@ -856,3 +856,131 @@ input:checked + .slider:before {
     grid-template-columns: 1fr;
   }
 }
+
+/* =========================================
+   MOBILE RESPONSIVE PROFILE PAGE FIXES
+   ========================================= */
+@media (max-width: 768px) {
+  .pageAdmin-container, .profile-page, .settings-page {
+    padding: 16px;
+  }
+  
+  .profile-header, .settings-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .header-stats {
+    width: 100%;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .mini-stat-card {
+    width: 100%;
+    min-width: unset;
+  }
+  
+  .profile-hero-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+  
+  .hero-main {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    width: 100%;
+  }
+
+  .hero-info, .hero-details {
+    width: 100%;
+  }
+
+  .hero-name-row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .hero-actions {
+    width: 100%;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .hero-actions button {
+    width: 100%;
+  }
+  
+  .profile-card .card-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start !important;
+  }
+  
+  .card-header .text-btn-sm,
+  .card-header .btn-text {
+    margin-left: 0 !important;
+    align-self: flex-start;
+    padding-left: 0;
+  }
+
+  .info-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .info-value {
+    word-break: break-word;
+  }
+  
+  .card-actions {
+    flex-direction: column;
+    width: 100%;
+    gap: 12px;
+    margin-top: 24px;
+  }
+  
+  .card-actions button {
+    width: 100%;
+  }
+  
+  .settings-row-modern {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .settings-row-modern .switch {
+    align-self: flex-end;
+  }
+  
+  .sync-controls {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .activity-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    position: relative;
+    padding: 16px;
+    background: var(--surface);
+    border-radius: 12px;
+    margin-bottom: 8px;
+    border: none;
+  }
+  
+  .activity-detail-btn {
+    align-self: flex-end;
+    margin-top: 8px;
+  }
+
+  .activity-list-modern {
+    gap: 8px;
+  }
+}

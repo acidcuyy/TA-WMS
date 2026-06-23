@@ -200,3 +200,16 @@
     box-sizing: border-box;
   }
 }
+
+@media (max-width: 480px) {
+  .store-info { 
+    display: none; 
+  }
+  .status-indicator { 
+    padding: 6px 8px; 
+    font-size: 11px; 
+  }
+  .status-indicator span { 
+    display: none; 
+  }
+}

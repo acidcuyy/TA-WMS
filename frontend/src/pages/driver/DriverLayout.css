@@ -231,3 +231,10 @@
   }
 }
 
+@media (max-width: 480px) {
+  .loc-info,
+  .user-info-text {
+    display: none;
+  }
+}
+

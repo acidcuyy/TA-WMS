@@ -25,7 +25,10 @@
   font-size: 14px;
   font-weight: 700;
   box-shadow: 0 8px 32px rgba(82, 196, 26, 0.45);
-  white-space: nowrap;
+  white-space: normal;
+  text-align: center;
+  width: max-content;
+  max-width: 90%;
 }
 
 /* ── Map container (left column) ── */
@@ -538,6 +541,7 @@
 }
 
 /* ── Mobile & Tablet Layout ── */
+/* Laptop / Desktop (<= 1024px) */
 @media (max-width: 1024px) {
   .dtracking {
     flex-direction: column;
@@ -559,5 +563,85 @@
     border-top: 1px solid var(--border);
     overflow-y: visible; /* Biarkan kontainer utama yang scroll */
     padding-bottom: 40px; /* Ruang bernapas di bawah */
+  }
+}
+
+/* Tablet (<= 768px) */
+@media (max-width: 768px) {
+  .delivery-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .eta-card {
+    padding: 12px 16px;
+    gap: 12px;
+  }
+
+  .eta-icon {
+    font-size: 24px;
+  }
+
+  .eta-value {
+    font-size: 18px;
+  }
+
+  .map-search-bar {
+    font-size: 12px;
+    padding: 8px 14px;
+  }
+
+  .tracking-details {
+    gap: 6px;
+  }
+}
+
+/* Mobile HP (<= 480px) */
+@media (max-width: 480px) {
+  .dtracking__map-container {
+    height: 40vh; 
+  }
+
+  .speed-hud {
+    bottom: 16px;
+    left: 16px;
+    padding: 8px 12px;
+    min-width: 60px;
+  }
+
+  .speed-value {
+    font-size: 24px;
+  }
+
+  .arrival-banner {
+    top: 60px;
+    font-size: 12px;
+    padding: 12px 20px;
+  }
+
+  .gps-badge {
+    padding: 4px 10px;
+    font-size: 10px;
+  }
+
+  .delivery-timeline {
+    padding: 12px;
+  }
+
+  .tl-dot {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+
+  .tl-line {
+    margin-left: 13px;
+    height: 12px;
+  }
+
+  .btn-action {
+    padding: 14px;
+    font-size: 14px;
   }
 }

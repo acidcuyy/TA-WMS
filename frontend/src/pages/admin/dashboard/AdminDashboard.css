@@ -570,3 +570,43 @@
     gap: 12px;
   }
 }
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  .stat-top {
+    gap: 8px;
+  }
+  .stat-value {
+    font-size: 15px;
+  }
+  .floating-action-btn {
+    bottom: 80px; /* ruang ekstra untuk mobile nav */
+    right: 20px;
+  }
+
+  /* Mengubah HTML table menjadi Card View */
+  .compact-table, .main-table, .compact-table tbody, .main-table tbody, .compact-table tr, .main-table tr, .compact-table td, .main-table td {
+    display: block;
+    width: 100%;
+  }
+  .compact-table thead, .main-table thead, .compact-table th, .main-table th {
+    display: none;
+  }
+  .main-table tr, .compact-table tr {
+    margin-bottom: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+  }
+  .main-table td, .compact-table td {
+    padding: 8px 0;
+    text-align: left;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .main-table td:last-child, .compact-table td:last-child {
+    border-bottom: none;
+  }
+}

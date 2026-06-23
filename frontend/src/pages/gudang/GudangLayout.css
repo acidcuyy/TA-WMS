@@ -198,3 +198,17 @@
     box-sizing: border-box;
   }
 }
+
+@media (max-width: 480px) {
+  .status-indicator span {
+    display: none; /* Hanya tampilkan titik di HP kecil */
+  }
+  .location-selector { 
+    padding: 6px 10px; 
+  }
+  .loc-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+}

@@ -428,3 +428,55 @@
   .pageGrid2{ grid-template-columns: 1fr; }
   .formGrid{ grid-template-columns: 1fr; }
 }
+
+/* HP Layout */
+@media (max-width: 520px){
+  .page {
+    padding: 16px 12px 80px; /* Ruang lebih di bawah untuk bottom bar jika ada */
+  }
+  .pageTitle {
+    font-size: 26px;
+  }
+  .sectionHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .btnRow {
+    width: 100%;
+  }
+  .btnPrimary, .btnGhost {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+    display: flex;
+  }
+  
+  /* Hilangkan header tabel, jadikan row sebagai card yang bertumpuk */
+  .tableHeaderRow {
+    display: none;
+  }
+  
+  .tableRow {
+    display: flex !important;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 12px;
+  }
+  
+  /* Paksa tabel agar tidak menggunakan grid inline style di mobile */
+  .tableCard {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+  
+  .modalCard {
+    width: 95%;
+  }
+}
