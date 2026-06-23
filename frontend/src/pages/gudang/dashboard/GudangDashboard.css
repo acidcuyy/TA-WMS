@@ -413,25 +413,6 @@
     flex-direction: column;
     grid-column: span 1;
   }
-}
-
-@media (max-width: 480px) {
-  .gdash {
-    padding: 16px;
-  }
-  .gdash__stats {
-    grid-template-columns: 1fr;
-  }
-  .gdash__actionsGrid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .gdash__head {
-    flex-direction: column;
-    gap: 12px;
-  }
-  .gdash__card {
-    padding: 16px;
-  }
 
   /* Mengubah HTML table menjadi Card View */
   .gdash__table, .gdash__table tbody, .gdash__table tr, .gdash__table td {
@@ -455,5 +436,24 @@
   }
   .gdash__table td:last-child {
     border-bottom: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .gdash {
+    padding: 16px;
+  }
+  .gdash__stats {
+    grid-template-columns: 1fr;
+  }
+  .gdash__actionsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .gdash__head {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .gdash__card {
+    padding: 16px;
   }
 }

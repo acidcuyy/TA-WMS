@@ -328,3 +328,34 @@
   .moAdmin__filterBar { flex-direction: column; align-items: stretch; }
   .moAdmin__searchWrap { max-width: none; }
 }
+
+@media (max-width: 768px) {
+  .moAdmin__head { flex-direction: column; gap: 12px; }
+  .moAdmin__stats { grid-template-columns: 1fr; }
+  .moAdmin__analytics { grid-template-columns: 1fr; }
+  
+  .moAdmin__tableWrap { margin: 0; }
+  
+  .moAdmin__table, .moAdmin__table tbody, .moAdmin__table tr, .moAdmin__table td {
+    display: block;
+    width: 100%;
+  }
+  .moAdmin__table th {
+    display: none;
+  }
+  .moAdmin__table tr {
+    margin-bottom: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+  }
+  .moAdmin__table td {
+    padding: 8px 0;
+    text-align: left;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .moAdmin__table td:last-child {
+    border-bottom: none;
+  }
+}

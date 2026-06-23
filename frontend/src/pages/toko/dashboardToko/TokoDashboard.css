@@ -489,12 +489,6 @@
     flex-direction: column;
     gap: 16px;
   }
-}
-
-@media (max-width: 480px) {
-  .toko-dashboard__summary {
-    grid-template-columns: 1fr;
-  }
 
   /* Mengubah HTML table menjadi Card View */
   .data-table, .data-table tbody, .data-table tr, .data-table td {
@@ -518,5 +512,11 @@
   }
   .data-table td:last-child {
     border-bottom: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .toko-dashboard__summary {
+    grid-template-columns: 1fr;
   }
 }

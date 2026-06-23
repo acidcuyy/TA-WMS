@@ -81,3 +81,34 @@
 .status-tag.picking { background: #fff7e6; color: #fa8c16; }
 .status-tag.packed { background: #f6ffed; color: #52c41a; }
 .status-tag.shipped { background: #f9f0ff; color: #722ed1; }
+
+@media (max-width: 1024px) {
+  .odGudang__stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .odGudang__table, .odGudang__table tbody, .odGudang__table tr, .odGudang__table td {
+    display: block;
+    width: 100%;
+  }
+  .odGudang__table thead, .odGudang__table th {
+    display: none;
+  }
+  .odGudang__table tr {
+    margin-bottom: 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+  }
+  .odGudang__table td {
+    padding: 8px 0;
+    text-align: left;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .odGudang__table td:last-child {
+    border-bottom: none;
+  }
+}

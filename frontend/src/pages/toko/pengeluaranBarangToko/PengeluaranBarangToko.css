@@ -765,7 +765,27 @@
   [class*="-list-card"], [class*="-table-card"], .table-container {
     overflow-x: auto;
   }
-  table, .request-table {
-    min-width: 600px;
+  /* Mengubah HTML table menjadi Card View */
+  .pengeluaran-table, .pengeluaran-table tbody, .pengeluaran-table tr, .pengeluaran-table td {
+    display: block;
+    width: 100%;
+  }
+  .pengeluaran-table thead, .pengeluaran-table th {
+    display: none;
+  }
+  .pengeluaran-table tr {
+    margin-bottom: 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+  }
+  .pengeluaran-table td {
+    padding: 8px 0;
+    text-align: left;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .pengeluaran-table td:last-child {
+    border-bottom: none;
   }
 }

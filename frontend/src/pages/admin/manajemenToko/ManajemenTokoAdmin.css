@@ -294,6 +294,37 @@
   .mtAdmin__grid { grid-template-columns: 1fr; }
 }
 
+@media (max-width: 768px) {
+  .mtAdmin__head { flex-direction: column; gap: 12px; }
+  .mtAdmin__stats { grid-template-columns: 1fr; }
+  .mtAdmin__grid { grid-template-columns: 1fr; }
+  
+  .mtAdmin__tableWrap { margin: 0; }
+  
+  .mtAdmin__table, .mtAdmin__table tbody, .mtAdmin__table tr, .mtAdmin__table td {
+    display: block;
+    width: 100%;
+  }
+  .mtAdmin__table th {
+    display: none;
+  }
+  .mtAdmin__table tr {
+    margin-bottom: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+  }
+  .mtAdmin__table td {
+    padding: 8px 0;
+    text-align: left;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .mtAdmin__table td:last-child {
+    border-bottom: none;
+  }
+}
+
 /* MODAL PREVIEW STYLES */
 .mtAdmin-modal-overlay {
   position: fixed;

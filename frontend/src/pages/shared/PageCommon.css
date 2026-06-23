@@ -430,7 +430,7 @@
 }
 
 /* HP Layout */
-@media (max-width: 520px){
+@media (max-width: 768px){
   .page {
     padding: 16px 12px 80px; /* Ruang lebih di bawah untuk bottom bar jika ada */
   }

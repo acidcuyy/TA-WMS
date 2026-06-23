@@ -462,7 +462,28 @@ select.input-field {
   [class*="-list-card"], [class*="-table-card"], .table-container {
     overflow-x: auto;
   }
-  table, .request-table {
-    min-width: 600px;
+  
+  /* Mengubah HTML table menjadi Card View */
+  .request-table, .request-table tbody, .request-table tr, .request-table td {
+    display: block;
+    width: 100%;
+  }
+  .request-table thead, .request-table th {
+    display: none;
+  }
+  .request-table tr {
+    margin-bottom: 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+  }
+  .request-table td {
+    padding: 8px 0;
+    text-align: left;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .request-table td:last-child {
+    border-bottom: none;
   }
 }

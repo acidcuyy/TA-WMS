@@ -520,6 +520,31 @@
   gap: 16px;
 }
 
+@media (max-width: 768px) {
+  .dhistory-modal__table, .dhistory-modal__table tbody, .dhistory-modal__table tr, .dhistory-modal__table td {
+    display: block;
+    width: 100%;
+  }
+  .dhistory-modal__table th, .dhistory-modal__table thead {
+    display: none;
+  }
+  .dhistory-modal__table tr {
+    margin-bottom: 12px;
+    background: var(--bg);
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 12px;
+    padding: 12px;
+  }
+  .dhistory-modal__table td {
+    padding: 8px 0;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color, #e2e8f0);
+  }
+  .dhistory-modal__table td:last-child {
+    border-bottom: none;
+  }
+}
+
 @media (max-width: 480px) {
   .dhistory-modal__proofs {
     grid-template-columns: 1fr;

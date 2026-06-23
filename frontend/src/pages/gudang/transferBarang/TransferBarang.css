@@ -427,3 +427,28 @@
   .trBarang__stats { grid-template-columns: repeat(3, 1fr); }
   .trBarang__mainGrid { grid-template-columns: 1fr; }
 }
+
+@media (max-width: 768px) {
+  .trBarang__table, .trBarang__table tbody, .trBarang__table tr, .trBarang__table td {
+    display: block;
+    width: 100%;
+  }
+  .trBarang__table thead, .trBarang__table th {
+    display: none;
+  }
+  .trBarang__table tr {
+    margin-bottom: 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+  }
+  .trBarang__table td {
+    padding: 8px 0;
+    text-align: left;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .trBarang__table td:last-child {
+    border-bottom: none;
+  }
+}

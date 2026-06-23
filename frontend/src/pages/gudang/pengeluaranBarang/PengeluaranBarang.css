@@ -409,6 +409,31 @@
   .pgBarang__mainGrid { grid-template-columns: 1fr; }
 }
 
+@media (max-width: 768px) {
+  .pgBarang__table, .pgBarang__table tbody, .pgBarang__table tr, .pgBarang__table td {
+    display: block;
+    width: 100%;
+  }
+  .pgBarang__table thead, .pgBarang__table th {
+    display: none;
+  }
+  .pgBarang__table tr {
+    margin-bottom: 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+  }
+  .pgBarang__table td {
+    padding: 8px 0;
+    text-align: left;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .pgBarang__table td:last-child {
+    border-bottom: none;
+  }
+}
+
 /* MODAL DETAIL */
 .pgBarang__overlay {
   position: fixed;

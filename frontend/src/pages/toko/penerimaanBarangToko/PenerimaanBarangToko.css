@@ -634,7 +634,27 @@
   [class*="-list-card"], [class*="-table-card"], .table-container {
     overflow-x: auto;
   }
-  table, .request-table {
-    min-width: 600px;
+  /* Mengubah HTML table menjadi Card View */
+  .penerimaan-table, .penerimaan-table tbody, .penerimaan-table tr, .penerimaan-table td {
+    display: block;
+    width: 100%;
+  }
+  .penerimaan-table thead, .penerimaan-table th {
+    display: none;
+  }
+  .penerimaan-table tr {
+    margin-bottom: 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+  }
+  .penerimaan-table td {
+    padding: 8px 0;
+    text-align: left;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .penerimaan-table td:last-child {
+    border-bottom: none;
   }
 }

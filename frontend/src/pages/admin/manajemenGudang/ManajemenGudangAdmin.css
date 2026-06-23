@@ -486,3 +486,34 @@
   .mgAdmin__stats { grid-template-columns: repeat(2, 1fr); }
   .mgAdmin__grid { grid-template-columns: 1fr; }
 }
+
+@media (max-width: 768px) {
+  .mgAdmin__head { flex-direction: column; gap: 12px; }
+  .mgAdmin__stats { grid-template-columns: 1fr; }
+  .mgAdmin__grid { grid-template-columns: 1fr; }
+  
+  .mgAdmin__tableWrap { margin: 0; }
+  
+  .mgAdmin__table, .mgAdmin__table tbody, .mgAdmin__table tr, .mgAdmin__table td {
+    display: block;
+    width: 100%;
+  }
+  .mgAdmin__table th {
+    display: none;
+  }
+  .mgAdmin__table tr {
+    margin-bottom: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+  }
+  .mgAdmin__table td {
+    padding: 8px 0;
+    text-align: left;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .mgAdmin__table td:last-child {
+    border-bottom: none;
+  }
+}

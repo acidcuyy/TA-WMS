@@ -369,7 +369,27 @@
   [class*="-list-card"], [class*="-table-card"], .table-container {
     overflow-x: auto;
   }
-  table, .request-table {
-    min-width: 600px;
+  /* Mengubah HTML table menjadi Card View */
+  .penyesuaian-table, .penyesuaian-table tbody, .penyesuaian-table tr, .penyesuaian-table td {
+    display: block;
+    width: 100%;
+  }
+  .penyesuaian-table thead, .penyesuaian-table th {
+    display: none;
+  }
+  .penyesuaian-table tr {
+    margin-bottom: 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+  }
+  .penyesuaian-table td {
+    padding: 8px 0;
+    text-align: left;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .penyesuaian-table td:last-child {
+    border-bottom: none;
   }
 }

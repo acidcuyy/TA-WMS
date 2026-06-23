@@ -569,24 +569,20 @@
     align-items: flex-start;
     gap: 12px;
   }
-}
 
-@media (max-width: 480px) {
-  .stats-grid {
-    grid-template-columns: 1fr;
+  /* Donut charts on mobile */
+  .donut-container {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
   }
-  .stat-top {
-    gap: 8px;
-  }
-  .stat-value {
-    font-size: 15px;
-  }
-  .floating-action-btn {
-    bottom: 80px; /* ruang ekstra untuk mobile nav */
-    right: 20px;
+  
+  .donut-legend {
+    width: auto;
+    min-width: 140px;
   }
 
-  /* Mengubah HTML table menjadi Card View */
+  /* Mengubah HTML table menjadi Card View di tablet/mobile */
   .compact-table, .main-table, .compact-table tbody, .main-table tbody, .compact-table tr, .main-table tr, .compact-table td, .main-table td {
     display: block;
     width: 100%;
@@ -608,5 +604,21 @@
   }
   .main-table td:last-child, .compact-table td:last-child {
     border-bottom: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  .stat-top {
+    gap: 8px;
+  }
+  .stat-value {
+    font-size: 15px;
+  }
+  .floating-action-btn {
+    bottom: 80px; /* ruang ekstra untuk mobile nav */
+    right: 20px;
   }
 }

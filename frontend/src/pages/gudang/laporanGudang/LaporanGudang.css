@@ -558,3 +558,40 @@
   border: none;
   cursor: pointer;
 }
+
+@media (max-width: 1024px) {
+  .laporan-gudang__summary {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .laporan-gudang__main {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .laporan-gudang__summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .laporan-table, .laporan-table tbody, .laporan-table tr, .laporan-table td {
+    display: block;
+    width: 100%;
+  }
+  .laporan-table thead, .laporan-table th {
+    display: none;
+  }
+  .laporan-table tr {
+    margin-bottom: 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+  }
+  .laporan-table td {
+    padding: 8px 0;
+    text-align: left;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .laporan-table td:last-child {
+    border-bottom: none;
+  }
+}

@@ -961,4 +961,31 @@
   .muser-branch-right {
     flex-wrap: wrap;
   }
+
+  .muser-users-table-wrap {
+    padding: 0;
+  }
+  
+  .muser-users-table, .muser-users-table tbody, .muser-users-table tr, .muser-users-table td {
+    display: block;
+    width: 100%;
+  }
+  .muser-users-table thead, .muser-users-table th {
+    display: none;
+  }
+  .muser-users-table tr {
+    margin-bottom: 12px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px;
+  }
+  .muser-users-table td {
+    padding: 8px 0;
+    text-align: left;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .muser-users-table td:last-child {
+    border-bottom: none;
+  }
 }

@@ -352,3 +352,46 @@
   color: white;
   border-color: var(--primary);
 }
+
+/* RESPONSIVE AUTO-GENERATED */
+@media (max-width: 1024px) {
+  .pesanan-penjualan__main {
+    grid-template-columns: 1fr;
+  }
+  .pesanan-penjualan__summary {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .pesanan-penjualan {
+    padding: 16px;
+  }
+  
+  /* Mengubah HTML table menjadi Card View */
+  .pesanan-table, .pesanan-table tbody, .pesanan-table tr, .pesanan-table td {
+    display: block;
+    width: 100%;
+  }
+  .pesanan-table thead, .pesanan-table th {
+    display: none;
+  }
+  .pesanan-table tr {
+    margin-bottom: 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+  }
+  .pesanan-table td {
+    padding: 8px 0;
+    text-align: left;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .pesanan-table td:last-child {
+    border-bottom: none;
+  }
+}

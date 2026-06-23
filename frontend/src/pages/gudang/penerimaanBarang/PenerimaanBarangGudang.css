@@ -208,6 +208,31 @@
   .pbGudang__mainGrid { grid-template-columns: 1fr; }
 }
 
+@media (max-width: 768px) {
+  .pbGudang__table, .pbGudang__table tbody, .pbGudang__table tr, .pbGudang__table td {
+    display: block;
+    width: 100%;
+  }
+  .pbGudang__table thead, .pbGudang__table th {
+    display: none;
+  }
+  .pbGudang__table tr {
+    margin-bottom: 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+  }
+  .pbGudang__table td {
+    padding: 8px 0;
+    text-align: left;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .pbGudang__table td:last-child {
+    border-bottom: none;
+  }
+}
+
 /* MODAL DETAIL */
 .pbGudang__overlay {
   position: fixed;
