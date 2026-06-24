@@ -102,26 +102,26 @@ function BranchDetailPanel({ branch, onSave }) {
       <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
         <div style={{ flex: '1 1 300px' }}>
           <label style={{ display: 'block', fontSize: '0.85rem', color: '#15803d', marginBottom: '6px', fontWeight: 600 }}>Alamat Lengkap</label>
-          <input className="form-input" value={alamatLengkap} onChange={e => setAlamatLengkap(e.target.value)} style={{ width: '100%', padding: '8px 12px', border: '1px solid #86efac' }} />
+          <input className="form-input" value={alamatLengkap} onChange={e => setAlamatLengkap(e.target.value.replace(/[^a-zA-Z0-9\s.,-]/g, ""))} style={{ width: '100%', padding: '8px 12px', border: '1px solid #86efac' }} />
         </div>
         <div style={{ flex: '1 1 150px' }}>
           <label style={{ display: 'block', fontSize: '0.85rem', color: '#15803d', marginBottom: '6px', fontWeight: 600 }}>Kota/Lokasi</label>
-          <input className="form-input" value={lokasi} onChange={e => setLokasi(e.target.value)} style={{ width: '100%', padding: '8px 12px', border: '1px solid #86efac' }} />
+          <input className="form-input" value={lokasi} onChange={e => setLokasi(e.target.value.replace(/[^a-zA-Z0-9\s.,-]/g, ""))} style={{ width: '100%', padding: '8px 12px', border: '1px solid #86efac' }} />
         </div>
         <div style={{ flex: '1 1 150px' }}>
           <label style={{ display: 'block', fontSize: '0.85rem', color: '#15803d', marginBottom: '6px', fontWeight: 600 }}>Jam Operasional</label>
-          <input className="form-input" value={jamOperasional} onChange={e => setJamOperasional(e.target.value)} style={{ width: '100%', padding: '8px 12px', border: '1px solid #86efac' }} />
+          <input className="form-input" value={jamOperasional} onChange={e => setJamOperasional(e.target.value.replace(/[^a-zA-Z0-9\s.,:-]/g, ""))} style={{ width: '100%', padding: '8px 12px', border: '1px solid #86efac' }} />
         </div>
         {branch.type === "gudang" && (
           <div style={{ flex: '1 1 150px' }}>
             <label style={{ display: 'block', fontSize: '0.85rem', color: '#15803d', marginBottom: '6px', fontWeight: 600 }}>Kapasitas (Unit)</label>
-            <input type="number" className="form-input" value={kapasitas} onChange={e => setKapasitas(e.target.value)} style={{ width: '100%', padding: '8px 12px', border: '1px solid #86efac' }} />
+            <input type="text" className="form-input" value={kapasitas} onChange={e => setKapasitas(e.target.value.replace(/[^0-9]/g, ""))} style={{ width: '100%', padding: '8px 12px', border: '1px solid #86efac' }} />
           </div>
         )}
         {branch.type === "toko" && (
           <div style={{ flex: '1 1 150px' }}>
             <label style={{ display: 'block', fontSize: '0.85rem', color: '#15803d', marginBottom: '6px', fontWeight: 600 }}>Pemilik</label>
-            <input className="form-input" value={pemilik} onChange={e => setPemilik(e.target.value)} style={{ width: '100%', padding: '8px 12px', border: '1px solid #86efac' }} />
+            <input className="form-input" value={pemilik} onChange={e => setPemilik(e.target.value.replace(/[^a-zA-Z\s]/g, ""))} style={{ width: '100%', padding: '8px 12px', border: '1px solid #86efac' }} />
           </div>
         )}
       </div>
@@ -573,7 +573,7 @@ export default function ManajemenUser() {
                                           type="text"
                                           placeholder="Contoh: Ahmad Fauzi"
                                           value={addNama}
-                                          onChange={(e) => setAddNama(e.target.value)}
+                                          onChange={(e) => setAddNama(e.target.value.replace(/[^a-zA-Z\s]/g, ""))}
                                         />
                                       </div>
                                       <div className="muser-add-field">
@@ -582,7 +582,7 @@ export default function ManajemenUser() {
                                           type="text"
                                           placeholder="Contoh: ahmad_01"
                                           value={addUsername}
-                                          onChange={(e) => setAddUsername(e.target.value)}
+                                          onChange={(e) => setAddUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, ""))}
                                         />
                                       </div>
                                       <div className="muser-add-field">
@@ -600,7 +600,7 @@ export default function ManajemenUser() {
                                           type="email"
                                           placeholder="Contoh: ahmad@email.com"
                                           value={addEmail}
-                                          onChange={(e) => setAddEmail(e.target.value)}
+                                          onChange={(e) => setAddEmail(e.target.value.replace(/[^a-zA-Z0-9@._-]/g, ""))}
                                         />
                                       </div>
                                       <div className="muser-add-field">
@@ -609,7 +609,7 @@ export default function ManajemenUser() {
                                           type="tel"
                                           placeholder="Contoh: 081234567890"
                                           value={addPhone}
-                                          onChange={(e) => setAddPhone(e.target.value)}
+                                          onChange={(e) => setAddPhone(e.target.value.replace(/[^0-9]/g, ""))}
                                         />
                                       </div>
                                     </div>

@@ -214,7 +214,7 @@ export default function BuatRequestGudang() {
                   <input
                     className="input-field"
                     value={kode}
-                    onChange={(e) => setKode(e.target.value)}
+                    onChange={(e) => setKode(e.target.value.replace(/[^a-zA-Z0-9-]/g, ""))}
                     placeholder="Contoh: BRG-002"
                     disabled={formLocked}
                     style={{ cursor: formLocked ? 'not-allowed' : undefined, opacity: formLocked ? 0.6 : 1 }}
@@ -228,7 +228,7 @@ export default function BuatRequestGudang() {
                   <input
                     className="input-field"
                     value={namaBarang}
-                    onChange={(e) => setNamaBarang(e.target.value)}
+                    onChange={(e) => setNamaBarang(e.target.value.replace(/[^a-zA-Z0-9\s.,&-]/g, ""))}
                     placeholder="Contoh: Susu UHT 1L"
                     disabled={formLocked}
                     style={{ cursor: formLocked ? 'not-allowed' : undefined, opacity: formLocked ? 0.6 : 1 }}
@@ -259,7 +259,7 @@ export default function BuatRequestGudang() {
                     <input
                       className="input-field"
                       value={kategoriLain}
-                      onChange={(e) => setKategoriLain(e.target.value)}
+                      onChange={(e) => setKategoriLain(e.target.value.replace(/[^a-zA-Z0-9\s.,&-]/g, ""))}
                       placeholder="Ketik jenis barang..."
                       disabled={formLocked}
                       style={{ cursor: formLocked ? 'not-allowed' : undefined, opacity: formLocked ? 0.6 : 1 }}
@@ -277,7 +277,7 @@ export default function BuatRequestGudang() {
                       style={{ flex: 2, cursor: formLocked ? 'not-allowed' : undefined, opacity: formLocked ? 0.6 : 1 }}
                       type="number"
                       value={jumlah}
-                      onChange={(e) => setJumlah(e.target.value)}
+                      onChange={(e) => setJumlah(e.target.value.replace(/[^0-9]/g, ""))}
                       placeholder="0"
                       disabled={formLocked}
                     />
@@ -301,7 +301,7 @@ export default function BuatRequestGudang() {
                   <input
                     className="input-field"
                     value={supplier}
-                    onChange={(e) => setSupplier(e.target.value)}
+                    onChange={(e) => setSupplier(e.target.value.replace(/[^a-zA-Z0-9\s.,&-]/g, ""))}
                     placeholder="Nama PT / Supplier"
                     disabled={formLocked}
                     style={{ cursor: formLocked ? 'not-allowed' : undefined, opacity: formLocked ? 0.6 : 1 }}
@@ -328,7 +328,7 @@ export default function BuatRequestGudang() {
                   <input
                     className="input-field"
                     value={catatan}
-                    onChange={(e) => setCatatan(e.target.value)}
+                    onChange={(e) => setCatatan(e.target.value.replace(/[^a-zA-Z0-9\s.,-]/g, ""))}
                     placeholder="Contoh: Butuh segera untuk stok akhir bulan"
                     disabled={formLocked}
                     style={{ cursor: formLocked ? 'not-allowed' : undefined, opacity: formLocked ? 0.6 : 1 }}
@@ -482,7 +482,7 @@ export default function BuatRequestGudang() {
                         min="0"
                         style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
                         value={uploadData.qtyGood}
-                        onChange={(e) => setUploadData({...uploadData, qtyGood: e.target.value})}
+                        onChange={(e) => setUploadData({...uploadData, qtyGood: e.target.value.replace(/[^0-9]/g, "")})}
                         placeholder={`Req: ${confirmTotal}`}
                       />
                     </div>
@@ -493,7 +493,7 @@ export default function BuatRequestGudang() {
                         min="0"
                         style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
                         value={uploadData.qtyBad}
-                        onChange={(e) => setUploadData({...uploadData, qtyBad: e.target.value})}
+                        onChange={(e) => setUploadData({...uploadData, qtyBad: e.target.value.replace(/[^0-9]/g, "")})}
                         placeholder="0"
                       />
                     </div>
@@ -504,7 +504,7 @@ export default function BuatRequestGudang() {
                       <textarea 
                         style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #fca5a5', minHeight: '80px', outlineColor: '#ef4444' }}
                         value={uploadData.notes}
-                        onChange={(e) => setUploadData({...uploadData, notes: e.target.value})}
+                        onChange={(e) => setUploadData({...uploadData, notes: e.target.value.replace(/[^a-zA-Z0-9\s.,-]/g, "")})}
                         placeholder="Jelaskan barang yang rusak..."
                       />
                     </div>

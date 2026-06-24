@@ -283,7 +283,7 @@ export default function Login() {
                 placeholder="Username / Email"
                 required
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value.replace(/[^a-zA-Z0-9@._-]/g, ""))}
                 className="auth-input"
               />
             </div>

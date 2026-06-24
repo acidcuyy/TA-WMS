@@ -356,7 +356,7 @@ export default function RequestToko() {
                   <input
                     className="input-field"
                     value={namaBarang}
-                    onChange={(e) => setNamaBarang(e.target.value)}
+                    onChange={(e) => setNamaBarang(e.target.value.replace(/[^a-zA-Z0-9\s.,&-]/g, ""))}
                     placeholder="Contoh: Susu UHT 1L"
                     disabled={formLocked}
                     style={{ cursor: formLocked ? 'not-allowed' : undefined, opacity: formLocked ? 0.6 : 1 }}
@@ -387,7 +387,7 @@ export default function RequestToko() {
                     <input
                       className="input-field"
                       value={kategoriLain}
-                      onChange={(e) => setKategoriLain(e.target.value)}
+                      onChange={(e) => setKategoriLain(e.target.value.replace(/[^a-zA-Z0-9\s.,&-]/g, ""))}
                       placeholder="Ketik jenis barang..."
                     />
                   </div>
@@ -403,7 +403,7 @@ export default function RequestToko() {
                       style={{ flex: 2 }}
                       type="number"
                       value={jumlah}
-                      onChange={(e) => setJumlah(e.target.value)}
+                      onChange={(e) => setJumlah(e.target.value.replace(/[^0-9]/g, ""))}
                       placeholder="0"
                     />
                     <select
@@ -493,7 +493,7 @@ export default function RequestToko() {
                   <input
                     className="input-field"
                     value={catatan}
-                    onChange={(e) => setCatatan(e.target.value)}
+                    onChange={(e) => setCatatan(e.target.value.replace(/[^a-zA-Z0-9\s.,-]/g, ""))}
                     placeholder="Contoh: Butuh segera untuk stok akhir bulan"
                   />
                 </div>
@@ -658,7 +658,7 @@ export default function RequestToko() {
                         min="0"
                         style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
                         value={uploadData.qtyGood}
-                        onChange={(e) => setUploadData({...uploadData, qtyGood: e.target.value})}
+                        onChange={(e) => setUploadData({...uploadData, qtyGood: e.target.value.replace(/[^0-9]/g, "")})}
                         placeholder={`Req: ${confirmTotal}`}
                       />
                     </div>
@@ -669,7 +669,7 @@ export default function RequestToko() {
                         min="0"
                         style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
                         value={uploadData.qtyBad}
-                        onChange={(e) => setUploadData({...uploadData, qtyBad: e.target.value})}
+                        onChange={(e) => setUploadData({...uploadData, qtyBad: e.target.value.replace(/[^0-9]/g, "")})}
                         placeholder="0"
                       />
                     </div>
@@ -680,7 +680,7 @@ export default function RequestToko() {
                       <textarea 
                         style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #fca5a5', minHeight: '80px', outlineColor: '#ef4444' }}
                         value={uploadData.notes}
-                        onChange={(e) => setUploadData({...uploadData, notes: e.target.value})}
+                        onChange={(e) => setUploadData({...uploadData, notes: e.target.value.replace(/[^a-zA-Z0-9\s.,-]/g, "")})}
                         placeholder="Jelaskan barang yang rusak..."
                       />
                     </div>

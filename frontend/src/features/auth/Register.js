@@ -42,9 +42,26 @@ export default function Register() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    let filteredValue = value;
+
+    if (name === "picName" || name === "picTitle") {
+      filteredValue = value.replace(/[^a-zA-Z\s]/g, "");
+    } else if (name === "companyNib" || name === "picPhone") {
+      filteredValue = value.replace(/[^0-9]/g, "");
+      if (name === "companyNib" && filteredValue.length > 13) {
+        filteredValue = filteredValue.slice(0, 13);
+      }
+    } else if (name === "companyName") {
+      filteredValue = value.replace(/[^a-zA-Z0-9\s.,&-]/g, "");
+    } else if (name === "companyAddress") {
+      filteredValue = value.replace(/[^a-zA-Z0-9\s.,-]/g, "");
+    } else if (name === "accountUsername") {
+      filteredValue = value.replace(/[^a-zA-Z0-9_]/g, "");
+    }
+
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: filteredValue,
     }));
     
     if (errors[name]) {

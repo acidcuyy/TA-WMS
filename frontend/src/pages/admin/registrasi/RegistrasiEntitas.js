@@ -274,7 +274,7 @@ export default function RegistrasiEntitas() {
                   className="form-input"
                   placeholder={`Contoh: ${activeTab === 'Gudang' ? 'Gudang Distribusi Jogja' : 'Toko Makmur Sentosa'}`}
                   value={nama}
-                  onChange={(e) => setNama(e.target.value)}
+                  onChange={(e) => setNama(e.target.value.replace(/[^a-zA-Z0-9\s.,&-]/g, ""))}
                 />
               </div>
 
@@ -285,7 +285,7 @@ export default function RegistrasiEntitas() {
                   className="form-input"
                   placeholder="Contoh: Jl. Sudirman No. 45, RT 01/RW 02, Jakarta Selatan, 12345"
                   value={alamatLengkap}
-                  onChange={(e) => setAlamatLengkap(e.target.value)}
+                  onChange={(e) => setAlamatLengkap(e.target.value.replace(/[^a-zA-Z0-9\s.,-]/g, ""))}
                 />
               </div>
 
@@ -296,7 +296,7 @@ export default function RegistrasiEntitas() {
                   className="form-input"
                   placeholder="Contoh: Yogyakarta"
                   value={lokasi}
-                  onChange={(e) => setLokasi(e.target.value)}
+                  onChange={(e) => setLokasi(e.target.value.replace(/[^a-zA-Z0-9\s.,-]/g, ""))}
                 />
               </div>
 
@@ -329,7 +329,7 @@ export default function RegistrasiEntitas() {
                 <>
                   <div className="form-group">
                     <label className="form-label">Kapasitas Maksimal (Unit)</label>
-                    <input type="number" className="form-input" placeholder="Contoh: 50000" value={kapasitas} onChange={(e) => setKapasitas(e.target.value)} />
+                    <input type="text" className="form-input" placeholder="Contoh: 50000" value={kapasitas} onChange={(e) => setKapasitas(e.target.value.replace(/[^0-9]/g, ""))} />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Tipe Gudang</label>
@@ -346,7 +346,7 @@ export default function RegistrasiEntitas() {
                 <>
                   <div className="form-group">
                     <label className="form-label">Nama Pemilik / Penanggung Jawab</label>
-                    <input type="text" className="form-input" placeholder="Contoh: Bpk. Haryanto" value={pemilik} onChange={(e) => setPemilik(e.target.value)} />
+                    <input type="text" className="form-input" placeholder="Contoh: Bpk. Haryanto" value={pemilik} onChange={(e) => setPemilik(e.target.value.replace(/[^a-zA-Z\s.,]/g, ""))} />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Kategori Toko</label>
@@ -411,7 +411,7 @@ export default function RegistrasiEntitas() {
                   className="form-input"
                   placeholder="Contoh: Ahmad Fauzi"
                   value={userName}
-                  onChange={(e) => setUserName(e.target.value)}
+                  onChange={(e) => setUserName(e.target.value.replace(/[^a-zA-Z\s]/g, ""))}
                 />
               </div>
 
@@ -422,7 +422,7 @@ export default function RegistrasiEntitas() {
                   className="form-input"
                   placeholder={`Contoh: user_${registeredBranch.type}_01`}
                   value={userUsername}
-                  onChange={(e) => setUserUsername(e.target.value)}
+                  onChange={(e) => setUserUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, ""))}
                 />
               </div>
               <div className="form-group">
@@ -442,7 +442,7 @@ export default function RegistrasiEntitas() {
                   className="form-input"
                   placeholder="Contoh: ahmad@reastock.com"
                   value={userEmail}
-                  onChange={(e) => setUserEmail(e.target.value)}
+                  onChange={(e) => setUserEmail(e.target.value.replace(/[^a-zA-Z0-9@._-]/g, ""))}
                 />
               </div>
               <div className="form-group">
@@ -452,7 +452,7 @@ export default function RegistrasiEntitas() {
                   className="form-input"
                   placeholder="Contoh: 081234567890"
                   value={userPhone}
-                  onChange={(e) => setUserPhone(e.target.value)}
+                  onChange={(e) => setUserPhone(e.target.value.replace(/[^0-9]/g, ""))}
                 />
               </div>
 
@@ -545,27 +545,27 @@ export default function RegistrasiEntitas() {
                   </div>
                   <div className="form-group">
                     <label className="form-label">Nama Lengkap Driver</label>
-                    <input type="text" className="form-input" placeholder="Contoh: Budi Santoso" value={nama} onChange={(e) => setNama(e.target.value)} />
+                    <input type="text" className="form-input" placeholder="Contoh: Budi Santoso" value={nama} onChange={(e) => setNama(e.target.value.replace(/[^a-zA-Z\s]/g, ""))} />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Nomor Handphone / WhatsApp</label>
-                    <input type="tel" className="form-input" placeholder="Contoh: 081234567890" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                    <input type="tel" className="form-input" placeholder="Contoh: 081234567890" value={phone} onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ""))} />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Email</label>
-                    <input type="email" className="form-input" placeholder="Contoh: budi@reastock.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+                    <input type="email" className="form-input" placeholder="Contoh: budi@reastock.com" value={email} onChange={(e) => setEmail(e.target.value.replace(/[^a-zA-Z0-9@._-]/g, ""))} />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Nomor SIM</label>
-                    <input type="text" className="form-input" placeholder="Contoh: 1234-5678-9012" value={nomorSim} onChange={(e) => setNomorSim(e.target.value)} />
+                    <input type="text" className="form-input" placeholder="Contoh: 1234-5678-9012" value={nomorSim} onChange={(e) => setNomorSim(e.target.value.replace(/[^0-9-]/g, ""))} />
                   </div>
                   <div className="form-group full-width">
                     <label className="form-label">Alamat Domisili</label>
-                    <input type="text" className="form-input" placeholder="Contoh: Jl. Pegangsaan Timur No. 56, Jakarta Pusat" value={alamatDomisili} onChange={(e) => setAlamatDomisili(e.target.value)} />
+                    <input type="text" className="form-input" placeholder="Contoh: Jl. Pegangsaan Timur No. 56, Jakarta Pusat" value={alamatDomisili} onChange={(e) => setAlamatDomisili(e.target.value.replace(/[^a-zA-Z0-9\s.,-]/g, ""))} />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Username Login</label>
-                    <input type="text" className="form-input" placeholder="Contoh: driver_budi" value={username} onChange={(e) => setUsername(e.target.value)} />
+                    <input type="text" className="form-input" placeholder="Contoh: driver_budi" value={username} onChange={(e) => setUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, ""))} />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Password Login</label>
@@ -579,7 +579,7 @@ export default function RegistrasiEntitas() {
                 <div className="registrasi-form-grid">
                   <div className="form-group">
                     <label className="form-label">Plat Nomor Kendaraan</label>
-                    <input type="text" className="form-input" placeholder="Contoh: B 1234 ABC" value={plat} onChange={(e) => setPlat(e.target.value)} />
+                    <input type="text" className="form-input" placeholder="Contoh: B 1234 ABC" value={plat} onChange={(e) => setPlat(e.target.value.replace(/[^a-zA-Z0-9\s]/g, ""))} />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Tipe Kendaraan</label>

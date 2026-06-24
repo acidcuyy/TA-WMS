@@ -360,17 +360,17 @@ export default function PengirimanToko() {
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '16px' }}>
                       <div>
                         <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>Diterima Baik</label>
-                        <input type="number" min="0" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px' }} value={uploadData.qtyGood} onChange={e => setUploadData({...uploadData, qtyGood: e.target.value})} />
+                        <input type="text" min="0" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px' }} value={uploadData.qtyGood} onChange={e => setUploadData({...uploadData, qtyGood: e.target.value.replace(/[^0-9]/g, "")})} />
                       </div>
                       <div>
                         <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>Rusak/Kurang</label>
-                        <input type="number" min="0" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px' }} value={uploadData.qtyBad} onChange={e => setUploadData({...uploadData, qtyBad: e.target.value})} placeholder="0" />
+                        <input type="text" min="0" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px' }} value={uploadData.qtyBad} onChange={e => setUploadData({...uploadData, qtyBad: e.target.value.replace(/[^0-9]/g, "")})} placeholder="0" />
                       </div>
                     </div>
                     {Number(uploadData.qtyBad) > 0 && (
                       <div style={{ marginBottom: '16px', animation: 'fadeIn 0.3s ease-in-out' }}>
                         <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#ef4444', marginBottom: '6px' }}>Catatan Kerusakan</label>
-                        <textarea style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #fca5a5', minHeight: '60px', outlineColor: '#ef4444', fontSize: '13px' }} value={uploadData.notes} onChange={e => setUploadData({...uploadData, notes: e.target.value})} placeholder="Jelaskan barang yang rusak..." />
+                        <textarea style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #fca5a5', minHeight: '60px', outlineColor: '#ef4444', fontSize: '13px' }} value={uploadData.notes} onChange={e => setUploadData({...uploadData, notes: e.target.value.replace(/[^a-zA-Z0-9\s.,-]/g, "")})} placeholder="Jelaskan barang yang rusak..." />
                       </div>
                     )}
                   </div>

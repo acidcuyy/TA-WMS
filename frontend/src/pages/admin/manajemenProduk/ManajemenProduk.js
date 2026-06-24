@@ -369,7 +369,7 @@ export default function ManajemenProduk() {
                 <input
                   type="number"
                   value={editQty}
-                  onChange={(e) => setEditQty(Number(e.target.value))}
+                  onChange={(e) => setEditQty(Number(e.target.value.replace(/[^0-9]/g, "")))}
                   style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1px solid #cbd5e1", outline: "none", boxSizing: "border-box" }}
                 />
               </div>

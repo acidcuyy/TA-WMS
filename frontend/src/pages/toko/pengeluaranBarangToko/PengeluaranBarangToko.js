@@ -111,7 +111,7 @@ function TambahPengeluaranModal({ isOpen, onClose, inventory }) {
                 <input
                   placeholder="cth: Pelanggan, Nama Toko, dll."
                   value={tujuan}
-                  onChange={e => setTujuan(e.target.value)}
+                  onChange={e => setTujuan(e.target.value.replace(/[^a-zA-Z0-9\s.,-]/g, ""))}
                 />
               </div>
               <div className="modal-field">
@@ -119,7 +119,7 @@ function TambahPengeluaranModal({ isOpen, onClose, inventory }) {
                 <input
                   placeholder="Nama karyawan/PIC"
                   value={penanggungJawab}
-                  onChange={e => setPenanggungJawab(e.target.value)}
+                  onChange={e => setPenanggungJawab(e.target.value.replace(/[^a-zA-Z\s]/g, ""))}
                 />
               </div>
               <div className="modal-field">
@@ -128,7 +128,7 @@ function TambahPengeluaranModal({ isOpen, onClose, inventory }) {
                   type="password"
                   placeholder="Masukkan 6 digit PIN (123456)"
                   value={pin}
-                  onChange={e => setPin(e.target.value)}
+                  onChange={e => setPin(e.target.value.replace(/[^0-9]/g, ""))}
                   maxLength={6}
                 />
               </div>
@@ -137,7 +137,7 @@ function TambahPengeluaranModal({ isOpen, onClose, inventory }) {
                 <input
                   placeholder="Catatan tambahan..."
                   value={catatan}
-                  onChange={e => setCatatan(e.target.value)}
+                  onChange={e => setCatatan(e.target.value.replace(/[^a-zA-Z0-9\s.,-]/g, ""))}
                 />
               </div>
             </div>
@@ -172,7 +172,7 @@ function TambahPengeluaranModal({ isOpen, onClose, inventory }) {
                             min={1}
                             max={item.qty}
                             value={sel.outQty}
-                            onChange={e => setQty(item.sku, e.target.value)}
+                            onChange={e => setQty(item.sku, e.target.value.replace(/[^0-9]/g, ""))}
                           />
                           <span>{item.unit}</span>
                         </div>

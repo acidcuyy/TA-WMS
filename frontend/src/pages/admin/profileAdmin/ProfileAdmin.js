@@ -31,7 +31,17 @@ export default function ProfileAdmin() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    let filteredValue = value;
+
+    if (name === "nama") {
+      filteredValue = value.replace(/[^a-zA-Z\s]/g, "");
+    } else if (name === "phone") {
+      filteredValue = value.replace(/[^0-9]/g, "");
+    } else if (name === "email") {
+      filteredValue = value.replace(/[^a-zA-Z0-9@._-]/g, "");
+    }
+
+    setFormData(prev => ({ ...prev, [name]: filteredValue }));
   };
 
   const handleSaveProfile = (e) => {

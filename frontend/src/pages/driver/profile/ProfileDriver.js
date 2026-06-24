@@ -107,7 +107,7 @@ export default function ProfileDriver() {
                   <input 
                     className="mgAdmin__inputField" 
                     value={formData.name}
-                    onChange={e => setFormData({ ...formData, name: e.target.value })}
+                    onChange={e => setFormData({ ...formData, name: e.target.value.replace(/[^a-zA-Z\s]/g, "") })}
                   />
                 </div>
                 <div className="mgAdmin__formGroup">
@@ -115,7 +115,7 @@ export default function ProfileDriver() {
                   <input 
                     className="mgAdmin__inputField" 
                     value={formData.email}
-                    onChange={e => setFormData({ ...formData, email: e.target.value })}
+                    onChange={e => setFormData({ ...formData, email: e.target.value.replace(/[^a-zA-Z0-9@._-]/g, "") })}
                   />
                 </div>
                 <div className="mgAdmin__formGroup">
@@ -123,7 +123,7 @@ export default function ProfileDriver() {
                   <input 
                     className="mgAdmin__inputField" 
                     value={formData.phone}
-                    onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                    onChange={e => setFormData({ ...formData, phone: e.target.value.replace(/[^0-9]/g, "") })}
                   />
                 </div>
                 <div className="mgAdmin__formGroup">
@@ -131,7 +131,7 @@ export default function ProfileDriver() {
                   <input 
                     className="mgAdmin__inputField" 
                     value={formData.vehicle}
-                    onChange={e => setFormData({ ...formData, vehicle: e.target.value })}
+                    onChange={e => setFormData({ ...formData, vehicle: e.target.value.replace(/[^a-zA-Z0-9\s-]/g, "") })}
                   />
                 </div>
               </div>
