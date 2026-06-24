@@ -1,0 +1,66 @@
+/* ── Offline Banner ── */
+.offline-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  animation: offline-drop 0.3s ease;
+  /* Safe area untuk notch iOS */
+  padding-top: calc(10px + env(safe-area-inset-top));
+}
+
+@keyframes offline-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.offline-banner--offline {
+  background: #7f1d1d;
+  color: #fca5a5;
+  border-bottom: 1px solid #991b1b;
+}
+
+.offline-banner--online {
+  background: #14532d;
+  color: #86efac;
+  border-bottom: 1px solid #166534;
+}
+
+.offline-banner__dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.offline-banner--offline .offline-banner__dot {
+  background: #ef4444;
+  box-shadow: 0 0 6px #ef4444;
+  animation: pulse-red 1.2s infinite;
+}
+
+.offline-banner--online .offline-banner__dot {
+  background: #22c55e;
+  box-shadow: 0 0 6px #22c55e;
+}
+
+@keyframes pulse-red {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
