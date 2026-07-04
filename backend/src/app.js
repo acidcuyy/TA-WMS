@@ -1,38 +1,78 @@
 import express from "express";
 import cors from "cors";
-import productRoutes from "./routes/product.routes.js";
-import authRoutes from "./routes/auth.routes.js";
-import stockRoutes from "./routes/stock.routes.js";
-import dashboardRoutes from "./routes/dashboard.routes.js";
-import orderRoutes from "./routes/order.routes.js";
-import warehouseRoutes from "./routes/warehouse.routes.js";
-import storeRoutes from "./routes/store.routes.js";
-import reportRoutes from "./routes/report.routes.js";
-import profileRoutes from "./routes/profile.routes.js";
-import settingsRoutes from "./routes/settings.routes.js";
-import gudangRoutes from "./routes/gudang.routes.js";
-import tokoRoutes from "./routes/toko.routes.js";
+import helmet from "helmet";
+import morgan from "morgan";
+import { env } from "./config/env.js";
+import logger from "./config/logger.js";
+import { sendError } from "./utils/response.js";
+import userRoute from "./modules/users/user.routes.js";
+import authRoute from "./modules/auth/auth.routes.js";
+
+import { success } from "zod";
 
 const app = express();
 
-app.use(cors());
-app.use(express.json());
+// Security Middleware
+app.use(helmet());
+app.use(
+  cors({
+    origin: env.CLIENT_URL || "http://localhost:5137",
+    credentials: true,
+  }),
+);
 
-app.get("/", (req, res) => {
-  res.send("Backend WMS jalan 🚀");
+// Body Parser
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// HTTP Request Logger
+app.use(
+  morgan(env.NODE_ENV === "production" ? "combined" : "dev", {
+    stream: {
+      write: (message) => logger.http(message.trim()),
+    },
+  }),
+);
+
+app.use("/api/users", userRoute);
+app.use("/api/auth", authRoute);
+
+// Health Check
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Server is running",
+    environment: env.NODE_ENV,
+    timestamp: new Date().toISOString(),
+  });
 });
 
-app.use("/api/products", productRoutes);
-app.use("/api/auth", authRoutes);
-app.use("/api/stocks", stockRoutes);
-app.use("/api/dashboard", dashboardRoutes);
-app.use("/api/orders", orderRoutes);
-app.use("/api/warehouse", warehouseRoutes);
-app.use("/api/stores", storeRoutes);
-app.use("/api/reports", reportRoutes);
-app.use("/api/profile", profileRoutes);
-app.use("/api/settings", settingsRoutes);
-app.use("/api/gudang", gudangRoutes);
-app.use("/api/toko", tokoRoutes);
+// API Routes
+// Nanti ditambahin satu per satu kalo setiap modul selesai
+
+// 404 Handler
+app.use((req, res) => {
+  sendError(res, `Route ${req.method} ${req.originalUrl} tidak ditemukan`, 404);
+});
+
+// Global Error Handling
+app.use((err, req, res, next) => {
+  logger.error(err.message, { stack: err.stack });
+
+  // Prisma Error Handing
+  if (err.code === "P2002") {
+    return sendError(res, "Data sudah ada, tidak boleh duplikat", 409);
+  }
+
+  if (err.code === "P2025") {
+    return sendError(res, "Data tidak ditemukan", 404);
+  }
+
+  const statusCode = err.statusCode || 500;
+  const message =
+    env.NODE_ENV === "production" ? "Terjadi kesalahan server" : err.message;
+
+  return sendError(res, message, statusCode);
+});
 
 export default app;
