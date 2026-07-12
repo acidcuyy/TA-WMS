@@ -27,6 +27,7 @@ export default function ErrorPage({ code, title, message }) {
   );
 
   const technicalDetail = error?.stack || (error?.message ? `${error.name}: ${error.message}` : "");
+  const DEBUG_MODE = false;
 
   const handleGoBack = () => {
     navigate(-1);
@@ -122,7 +123,7 @@ export default function ErrorPage({ code, title, message }) {
           </div>
 
           {/* Technical Details Accordion */}
-          {technicalDetail && (
+          {DEBUG_MODE && technicalDetail && (
             <div className="error-details-accordion">
               <button 
                 className="accordion-trigger" 

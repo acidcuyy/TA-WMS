@@ -25,6 +25,7 @@ export default function StokGudang() {
     qty: 0,
     image: ""
   });
+  const [addProductError, setAddProductError] = useState("");
   
   const [toastMessage, setToastMessage] = useState("");
   const showToast = (msg) => {
@@ -366,10 +367,14 @@ export default function StokGudang() {
                   <input 
                     type="text" 
                     value={newProduct.sku} 
-                    onChange={(e) => setNewProduct({...newProduct, sku: e.target.value})} 
+                    onChange={(e) => {
+                      setAddProductError("");
+                      setNewProduct({...newProduct, sku: e.target.value});
+                    }} 
                     placeholder="Contoh: LED-012"
                     style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none', boxSizing: 'border-box' }} 
                   />
+                  {addProductError && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{addProductError}</div>}
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '6px', color: '#1e293b' }}>Kategori</label>
@@ -482,7 +487,10 @@ export default function StokGudang() {
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
                 <button 
-                  onClick={() => setAddModal(false)}
+                  onClick={() => {
+                    setAddProductError("");
+                    setAddModal(false);
+                  }}
                   style={{ padding: '10px 16px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#fff', cursor: 'pointer', color: '#64748b', fontWeight: '600' }}
                 >Batal</button>
                 <button 
@@ -494,11 +502,18 @@ export default function StokGudang() {
                       type: typeToSave,
                       qty: newProduct.qty || 0,
                       image: newProduct.image || null,
-                      branchId: currentBranchId
+                      branchId: currentBranchId,
+                      isNewProduct: true
+                    })
+                    .then(() => {
+                      showToast(`Produk ${newProduct.name || "Baru"} berhasil ditambahkan!`);
+                      setAddModal(false);
+                      setNewProduct({ name: "", sku: "", cat: "General", customCat: "", qty: 0, image: "" });
+                      setAddProductError("");
+                    })
+                    .catch(err => {
+                      setAddProductError(err.message || "Gagal menambahkan produk");
                     });
-                    showToast(`Produk ${newProduct.name || "Baru"} berhasil ditambahkan!`);
-                    setAddModal(false);
-                    setNewProduct({ name: "", sku: "", cat: "General", customCat: "", qty: 0, image: "" });
                   }}
                   style={{ padding: '10px 16px', borderRadius: '8px', border: 'none', background: 'var(--primary)', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}
                 >Tambah Produk</button>

@@ -254,7 +254,7 @@ export default function ManajemenUser() {
     if (!targetBranch) return;
 
     transferBranchUser(transferUser.id, targetBranch.id, targetBranch.name, targetBranch.type);
-    showToast(`User "${transferUser.nama}" dipindahkan ke ${targetBranch.name}!`);
+    showToast(`User "${transferUser.name}" dipindahkan ke ${targetBranch.name}!`);
     setTransferUser(null);
     setTransferTargetBranch("");
   };
@@ -521,7 +521,7 @@ export default function ManajemenUser() {
                                         <tr key={u.id}>
                                           <td>{i + 1}</td>
                                           <td>
-                                            <strong>{u.nama}</strong>
+                                            <strong>{u.name}</strong>
                                           </td>
                                           <td>
                                             <code>{u.username}</code>
@@ -547,7 +547,7 @@ export default function ManajemenUser() {
                                                 title="Hapus user"
                                                 onClick={(e) => {
                                                   e.stopPropagation();
-                                                  handleDeleteUser(u.id, u.nama);
+                                                  handleDeleteUser(u.id, u.name);
                                                 }}
                                               >
                                                 🗑️
@@ -741,7 +741,7 @@ export default function ManajemenUser() {
                       <div className="muser-driver-footer">
                         <button 
                           className="muser-btn-delete-driver" 
-                          onClick={() => handleDeleteUser(driver.id, driver.nama)}
+                          onClick={() => handleDeleteUser(driver.id, driver.name)}
                         >
                           <span>🗑️</span> Hapus Driver
                         </button>
@@ -774,17 +774,17 @@ export default function ManajemenUser() {
                 <div className="muser-transfer-icon">🔀</div>
                 <h3>Pindahkan User</h3>
                 <p>
-                  Pindahkan <strong>{transferUser.nama}</strong> dari{" "}
+                  Pindahkan <strong>{transferUser.name}</strong> dari{" "}
                   <strong>{transferUser.branchName}</strong> ke cabang lain.
                 </p>
               </div>
 
               <div className="muser-transfer-user-info">
                 <div className="muser-transfer-user-avatar">
-                  {(transferUser.nama || "U")[0].toUpperCase()}
+                  {(transferUser.name || "U")[0].toUpperCase()}
                 </div>
                 <div>
-                  <div className="muser-transfer-user-name">{transferUser.nama}</div>
+                  <div className="muser-transfer-user-name">{transferUser.name}</div>
                   <div className="muser-transfer-user-username">@{transferUser.username}</div>
                 </div>
               </div>

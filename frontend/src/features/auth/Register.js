@@ -200,6 +200,7 @@ export default function Register() {
           name: formData.picName,
           title: formData.picTitle,
           username: formData.accountUsername, // use login username
+          email: formData.picEmail, // use PIC email
           phone: formData.picPhone,
           password: formData.accountPassword
         }

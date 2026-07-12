@@ -18,12 +18,32 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 });
 
-function LocationPicker({ latLng, setLatLng }) {
-  useMapEvents({
-    click(e) {
+function LocationPicker({ latLng, setLatLng, setAlamatLengkap }) {
+  const map = useMapEvents({
+    async click(e) {
       setLatLng(e.latlng);
+      if (setAlamatLengkap) {
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${e.latlng.lat}&lon=${e.latlng.lng}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.display_name) {
+              setAlamatLengkap(data.display_name);
+            }
+          }
+        } catch (err) {
+          console.error("Reverse geocoding error:", err);
+        }
+      }
     },
   });
+
+  React.useEffect(() => {
+    if (latLng && map) {
+      map.setView([latLng.lat, latLng.lng], map.getZoom());
+    }
+  }, [latLng, map]);
+
   return latLng ? <Marker position={latLng} /> : null;
 }
 
@@ -31,7 +51,9 @@ export default function RegistrasiEntitas() {
   const [activeTab, setActiveTab] = useState("Gudang");
   const [toastMsg, setToastMsg] = useState("");
   const [userFormError, setUserFormError] = useState("");   // error di step 2 user form
+  const [userEmailError, setUserEmailError] = useState(""); // email error di step 2
   const [driverFormError, setDriverFormError] = useState(""); // error di driver form
+  const [driverEmailError, setDriverEmailError] = useState(""); // email error di driver
   const [branchFormError, setBranchFormError] = useState(""); // error di step 1 branch form
 
   // Multi-step state (for Gudang & Toko)
@@ -45,12 +67,46 @@ export default function RegistrasiEntitas() {
     return subscribeBranches(setBranches);
   }, []);
 
+
+
   const tabs = ["Gudang", "Toko", "Driver"];
 
   // Form States — Branch
   const [nama, setNama] = useState("");
   const [lokasi, setLokasi] = useState("");
   const [alamatLengkap, setAlamatLengkap] = useState("");
+  const [addressSuggestions, setAddressSuggestions] = useState([]);
+  const [isSearchingAddress, setIsSearchingAddress] = useState(false);
+  const [showAddressDropdown, setShowAddressDropdown] = useState(false);
+
+  // Debounce logic for Address Search
+  React.useEffect(() => {
+    if (alamatLengkap.length < 4) {
+      setAddressSuggestions([]);
+      return;
+    }
+    
+    // Only search if user is actively typing (dropdown is open)
+    if (!showAddressDropdown) return;
+
+    setIsSearchingAddress(true);
+    const delayDebounceFn = setTimeout(async () => {
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(alamatLengkap)}&format=json&addressdetails=1&limit=5&countrycodes=id`);
+        if (!res.ok) throw new Error("Failed to fetch address");
+        const data = await res.json();
+        setAddressSuggestions(data || []);
+      } catch (err) {
+        console.error("Geocoding error:", err);
+        setAddressSuggestions([]);
+      } finally {
+        setIsSearchingAddress(false);
+      }
+    }, 800);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [alamatLengkap, showAddressDropdown]);
+
   const [jamBuka, setJamBuka] = useState("08:00");
   const [jamTutup, setJamTutup] = useState("17:00");
   const [pemilik, setPemilik] = useState("");
@@ -72,7 +128,7 @@ export default function RegistrasiEntitas() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [plat, setPlat] = useState("");
-  const [tipeKendaraan, setTipeKendaraan] = useState("Truck Hino");
+  const [tipeKendaraan, setTipeKendaraan] = useState("");
   const [nomorSim, setNomorSim] = useState("");
   const [alamatDomisili, setAlamatDomisili] = useState("");
   const [statusMitra, setStatusMitra] = useState("In-House");
@@ -92,6 +148,8 @@ export default function RegistrasiEntitas() {
     setNama("");
     setLokasi("");
     setAlamatLengkap("");
+    setAddressSuggestions([]);
+    setShowAddressDropdown(false);
     setPemilik("");
     setKapasitas("");
     setMarkerPos(null);
@@ -103,6 +161,8 @@ export default function RegistrasiEntitas() {
     setUserPassword("");
     setUserEmail("");
     setUserPhone("");
+    setUserFormError("");
+    setUserEmailError("");
   };
 
   const resetAllForms = () => {
@@ -116,6 +176,9 @@ export default function RegistrasiEntitas() {
     setPlat("");
     setNomorSim("");
     setAlamatDomisili("");
+    setStatusMitra("In-House");
+    setDriverFormError("");
+    setDriverEmailError("");
     setCurrentStep(1);
     setRegisteredBranch(null);
     setRegisteredUsers([]);
@@ -196,7 +259,11 @@ export default function RegistrasiEntitas() {
       showToast(`User "${userName}" berhasil ditambahkan ke ${registeredBranch.name}!`);
       resetUserForm();
     } catch (err) {
-      setUserFormError(err.message || "Gagal menambahkan user. Coba lagi.");
+      if (err.message && err.message.toLowerCase().includes("email sudah digunakan")) {
+        setUserEmailError(err.message);
+      } else {
+        setUserFormError(err.message || "Gagal menambahkan user. Coba lagi.");
+      }
     }
   };
 
@@ -237,7 +304,11 @@ export default function RegistrasiEntitas() {
       resetAllForms();
       setDriverBranchId("");
     } catch (err) {
-      setDriverFormError(err.message || "Gagal mendaftarkan driver. Coba lagi.");
+      if (err.message && err.message.toLowerCase().includes("email sudah digunakan")) {
+        setDriverEmailError(err.message);
+      } else {
+        setDriverFormError(err.message || "Gagal mendaftarkan driver. Coba lagi.");
+      }
     }
   };
 
@@ -307,15 +378,56 @@ export default function RegistrasiEntitas() {
                 />
               </div>
 
-              <div className="form-group full-width">
+              <div className="form-group full-width" style={{ position: "relative" }}>
                 <label className="form-label">Alamat Detail / Jalan Lengkap</label>
                 <input
                   type="text"
                   className="form-input"
                   placeholder="Contoh: Jl. Sudirman No. 45, RT 01/RW 02, Jakarta Selatan, 12345"
                   value={alamatLengkap}
-                  onChange={(e) => setAlamatLengkap(e.target.value.replace(/[^a-zA-Z0-9\s.,-]/g, ""))}
+                  onChange={(e) => {
+                    setAlamatLengkap(e.target.value); // Removed replace constraint for searching
+                    setShowAddressDropdown(true);
+                  }}
+                  onBlur={() => {
+                    setTimeout(() => setShowAddressDropdown(false), 200); // delay to allow click on suggestion
+                  }}
+                  onFocus={() => {
+                    if (alamatLengkap.length > 3) setShowAddressDropdown(true);
+                  }}
                 />
+                
+                <AnimatePresence>
+                  {showAddressDropdown && alamatLengkap.length > 3 && (
+                    <motion.div
+                      className="autocomplete-dropdown"
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -5 }}
+                      transition={{ duration: 0.15 }}
+                    >
+                      {isSearchingAddress ? (
+                        <div className="autocomplete-searching">Mencari alamat...</div>
+                      ) : addressSuggestions.length > 0 ? (
+                        addressSuggestions.map((sug, idx) => (
+                          <div
+                            key={idx}
+                            className="autocomplete-item"
+                            onClick={() => {
+                              setAlamatLengkap(sug.display_name);
+                              setLatLng({ lat: parseFloat(sug.lat), lng: parseFloat(sug.lon) });
+                              setShowAddressDropdown(false);
+                            }}
+                          >
+                            {sug.display_name}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="autocomplete-searching">Tidak ditemukan hasil.</div>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
               <div className="form-group">
@@ -340,7 +452,7 @@ export default function RegistrasiEntitas() {
                         attribution='&copy; OSM'
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                       />
-                      <LocationPicker latLng={latLng} setLatLng={setLatLng} />
+                      <LocationPicker latLng={latLng} setLatLng={setLatLng} setAlamatLengkap={setAlamatLengkap} />
                     </MapContainer>
                   </div>
                 </div>
@@ -471,8 +583,12 @@ export default function RegistrasiEntitas() {
                   className="form-input"
                   placeholder="Contoh: ahmad@reastock.com"
                   value={userEmail}
-                  onChange={(e) => setUserEmail(e.target.value.replace(/[^a-zA-Z0-9@._-]/g, ""))}
+                  onChange={(e) => {
+                    setUserEmailError("");
+                    setUserEmail(e.target.value.replace(/[^a-zA-Z0-9@._-]/g, ""));
+                  }}
                 />
+                {userEmailError && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{userEmailError}</div>}
               </div>
               <div className="form-group">
                 <label className="form-label">Nomor Telepon / WhatsApp</label>
@@ -533,7 +649,7 @@ export default function RegistrasiEntitas() {
                       {registeredUsers.map((u, i) => (
                         <tr key={u.id}>
                           <td>{i + 1}</td>
-                          <td><strong>{u.nama}</strong></td>
+                          <td><strong>{u.name}</strong></td>
                           <td><code>{u.username}</code></td>
                           <td>{u.email || "-"}</td>
                           <td>{u.phone || "-"}</td>
@@ -602,7 +718,11 @@ export default function RegistrasiEntitas() {
                   </div>
                   <div className="form-group">
                     <label className="form-label">Email</label>
-                    <input type="email" className="form-input" placeholder="Contoh: budi@reastock.com" value={email} onChange={(e) => setEmail(e.target.value.replace(/[^a-zA-Z0-9@._-]/g, ""))} />
+                    <input type="email" className="form-input" placeholder="Contoh: budi@reastock.com" value={email} onChange={(e) => {
+                      setDriverEmailError("");
+                      setEmail(e.target.value.replace(/[^a-zA-Z0-9@._-]/g, ""));
+                    }} />
+                    {driverEmailError && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{driverEmailError}</div>}
                   </div>
                   <div className="form-group">
                     <label className="form-label">Nomor SIM</label>
@@ -632,12 +752,7 @@ export default function RegistrasiEntitas() {
                   </div>
                   <div className="form-group">
                     <label className="form-label">Tipe Kendaraan</label>
-                    <select className="form-input" value={tipeKendaraan} onChange={(e) => setTipeKendaraan(e.target.value)}>
-                      <option value="Truck Hino">Truck Box Hino (Besar)</option>
-                      <option value="Engkel Box">Engkel Box (Sedang)</option>
-                      <option value="Grandmax Blindvan">Blindvan (Kecil)</option>
-                      <option value="Pick Up">Mobil Pick Up</option>
-                    </select>
+                    <input type="text" className="form-input" placeholder="Contoh: Truck Box Hino (Besar)" value={tipeKendaraan} onChange={(e) => setTipeKendaraan(e.target.value.replace(/[^a-zA-Z0-9\s.,-]/g, ""))} />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Status Mitra / Kepemilikan</label>
