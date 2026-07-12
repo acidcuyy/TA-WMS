@@ -32,6 +32,7 @@ export const registerCompanySchema = z.object({
     name: z.string().min(1),
     title: z.string().optional(),
     username: z.string().min(3),
+    email: z.string().email().optional().or(z.literal("")),
     phone: z.string().optional(),
     password: z.string().min(6),
   }),

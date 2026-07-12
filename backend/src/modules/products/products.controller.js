@@ -40,7 +40,7 @@ class ProductsController {
       if (existingProduct) {
         return res.status(400).json({
           success: false,
-          message: `Product with SKU ${sku} already exists`,
+          message: `Kode barang / SKU '${sku}' sudah terdaftar`,
         });
       }
 

@@ -70,6 +70,7 @@ class AuthService {
         data: {
           username: admin.username,
           name: admin.name,
+          email: admin.email && admin.email.trim() !== "" ? admin.email : undefined,
           title: admin.title,
           phone: admin.phone,
           password: hashedPassword,
@@ -81,6 +82,7 @@ class AuthService {
           id: true,
           username: true,
           name: true,
+          email: true,
           title: true,
           phone: true,
           role: true,

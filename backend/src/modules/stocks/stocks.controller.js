@@ -88,6 +88,13 @@ class StocksController {
       let product = await prisma.product.findFirst({
         where: { sku, companyId }
       });
+      if (product && req.body.isNewProduct) {
+        return res.status(400).json({
+          success: false,
+          message: `Kode barang / SKU '${sku}' sudah terdaftar pada produk '${product.name}'`,
+        });
+      }
+
       if (!product) {
         const { name, type, image } = req.body;
         if (!name || !type) {

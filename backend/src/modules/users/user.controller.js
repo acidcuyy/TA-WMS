@@ -39,6 +39,19 @@ class UserController {
         });
       }
 
+      // Check if email already exists
+      if (validatedData.email && validatedData.email.trim() !== "") {
+        const existingEmail = await prisma.user.findUnique({
+          where: { email: validatedData.email }
+        });
+        if (existingEmail) {
+          return res.status(400).json({
+            success: false,
+            message: "Email sudah digunakan",
+          });
+        }
+      }
+
       // Hash password
       validatedData.password = await bcrypt.hash(validatedData.password, 10);
 
