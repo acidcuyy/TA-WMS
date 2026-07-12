@@ -2,6 +2,7 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "../../app/ThemeProvider";
+import { sendHeartbeat } from "../../services/wmsApi";
 import Sidebar from "../../components/layout/Sidebar";
 import NotificationSystem from "../../components/layout/NotificationSystem";
 import logoSideDark from "../../assets/images/LogoSide_dark.png";
@@ -20,6 +21,14 @@ export default function DriverLayout() {
       name: sessionStorage.getItem("reastock_user_name") || "Driver",
       role: "Driver Ekspedisi",
     });
+
+    // Send heartbeat immediately and then every 5 minutes
+    sendHeartbeat();
+    const intervalId = setInterval(() => {
+      sendHeartbeat();
+    }, 5 * 60 * 1000);
+
+    return () => clearInterval(intervalId);
   }, []);
 
   const currentLogo = theme === "dark" ? logoSideDark : logoSideDefault;

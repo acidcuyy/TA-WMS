@@ -176,6 +176,7 @@ export default function ManajemenUser() {
   const [addPassword, setAddPassword] = useState("");
   const [addEmail, setAddEmail] = useState("");
   const [addPhone, setAddPhone] = useState("");
+  const [addUserError, setAddUserError] = useState(""); // inline error for add-user form
 
   // Transfer modal state
   const [transferUser, setTransferUser] = useState(null); // user object or null
@@ -211,6 +212,7 @@ export default function ManajemenUser() {
     setAddPassword("");
     setAddEmail("");
     setAddPhone("");
+    setAddUserError("");
   };
 
   const handleDeleteUser = (userId, userName) => {
@@ -219,24 +221,31 @@ export default function ManajemenUser() {
     showToast(`User "${userName}" telah dihapus.`);
   };
 
-  const handleAddUserInline = (e, branch) => {
+  const handleAddUserInline = async (e, branch) => {
     e.preventDefault();
-    if (!addNama || !addUsername || !addPassword) return alert("Mohon lengkapi Nama, Username, dan Password.");
+    if (!addNama || !addUsername || !addPassword) {
+      setAddUserError("Mohon lengkapi Nama, Username, dan Password.");
+      return;
+    }
 
-    createBranchUser({
-      branchId: branch.id,
-      branchName: branch.name,
-      branchType: branch.type,
-      nama: addNama,
-      username: addUsername,
-      password: addPassword,
-      email: addEmail,
-      phone: addPhone,
-    });
+    setAddUserError("");
+    try {
+      await createBranchUser({
+        branchId: branch.id,
+        name: addNama,
+        username: addUsername,
+        password: addPassword,
+        email: addEmail,
+        phone: addPhone,
+        role: branch.type === "gudang" ? "GUDANG" : "TOKO",
+      });
 
-    showToast(`User "${addNama}" berhasil ditambahkan ke ${branch.name}!`);
-    resetAddForm();
-    setShowAddForm(null);
+      showToast(`User "${addNama}" berhasil ditambahkan ke ${branch.name}!`);
+      resetAddForm();
+      setShowAddForm(null);
+    } catch (err) {
+      setAddUserError(err.message || "Gagal menambahkan user. Coba lagi.");
+    }
   };
 
   const handleTransferUser = () => {
@@ -272,9 +281,9 @@ export default function ManajemenUser() {
     (b) => b.type === activeTab.toLowerCase()
   );
 
-  // Get users for a specific branch
+  // Get users for a specific branch (exclude drivers)
   const getUsersForBranch = (branchId) =>
-    branchUsers.filter((u) => u.branchId === branchId && u.role !== "driver");
+    branchUsers.filter((u) => u.branchId === branchId && u.role?.toUpperCase() !== "DRIVER");
 
   // Get available branches for transfer (exclude current branch)
   const getTransferTargets = (currentBranchId) =>
@@ -299,7 +308,7 @@ export default function ManajemenUser() {
   const gudangCount = branches.filter((b) => b.type === "gudang").length;
   const tokoCount = branches.filter((b) => b.type === "toko").length;
   const totalUsers = branchUsers.length;
-  const drivers = branchUsers.filter(u => u.role === "driver");
+  const drivers = branchUsers.filter(u => u.role?.toUpperCase() === "DRIVER");
 
   return (
     <div className="muser-page">
@@ -445,9 +454,7 @@ export default function ManajemenUser() {
                             </div>
                           </div>
                           <div className="muser-branch-right">
-                            <span className="muser-branch-badge">
-                              {branch.id}
-                            </span>
+
                             <span className="muser-branch-users-count">
                               👥 {users.length} user
                             </span>
@@ -614,6 +621,24 @@ export default function ManajemenUser() {
                                       </div>
                                     </div>
                                     <div className="muser-add-form-actions">
+                                      {addUserError && (
+                                        <div style={{
+                                          width: "100%",
+                                          background: "rgba(239,68,68,0.12)",
+                                          border: "1px solid rgba(239,68,68,0.5)",
+                                          borderRadius: 8,
+                                          padding: "10px 14px",
+                                          color: "#fca5a5",
+                                          fontSize: 13,
+                                          display: "flex",
+                                          alignItems: "center",
+                                          gap: 8,
+                                          marginBottom: 8,
+                                        }}>
+                                          <span>⚠️</span>
+                                          <span>{addUserError}</span>
+                                        </div>
+                                      )}
                                       <button
                                         type="button"
                                         className="muser-add-cancel"
@@ -668,16 +693,31 @@ export default function ManajemenUser() {
                     <div key={driver.id} className="muser-driver-card" style={{ maxWidth: "100%", margin: 0 }}>
                       <div className="muser-driver-header">
                         <div className="muser-driver-avatar">
-                          {(driver.nama || "D")[0].toUpperCase()}
+                          {(driver.name || "D")[0].toUpperCase()}
                         </div>
                         <div className="muser-driver-info">
-                          <span className="muser-driver-name">{driver.nama}</span>
-                          <span className="muser-driver-role">Driver - {driver.branchName}</span>
+                          <span className="muser-driver-name">{driver.name}</span>
+                          <span className="muser-driver-role">Driver - {driver.branch?.name || "-"}</span>
                         </div>
-                        <div className={`muser-driver-status ${driver.status === "online" ? "online" : "offline"}`}>
-                          <span className="muser-driver-status-dot" />
-                          {driver.status || "Offline"}
-                        </div>
+                        {(() => {
+                          const now = new Date();
+                          const lastLogin = driver.lastLoginAt ? new Date(driver.lastLoginAt) : null;
+                          const diff = lastLogin ? now - lastLogin : null;
+                          const isOnline = diff !== null && Math.abs(diff) < 15 * 60 * 1000;
+                          
+                          let diffText = "";
+                          if (diff !== null) {
+                            const mins = Math.floor(Math.abs(diff) / 60000);
+                            diffText = `(${mins}m ago)`;
+                          }
+                          
+                          return (
+                            <div className={`muser-driver-status ${isOnline ? "online" : "offline"}`}>
+                              <span className="muser-driver-status-dot" />
+                              {isOnline ? `Online ${diffText}` : `Offline ${diffText}`}
+                            </div>
+                          );
+                        })()}
                       </div>
 
                       <div className="muser-driver-details">

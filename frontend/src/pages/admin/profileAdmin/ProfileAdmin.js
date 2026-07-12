@@ -13,21 +13,48 @@ export default function ProfileAdmin() {
   // Edit Profile Modal State
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const userEmail = sessionStorage.getItem("reastock_user_email");
-  const branchUsers = getBranchUsers();
-  const currentUser = branchUsers.find(u => u.email === userEmail || u.username === userEmail) || {};
-
-  const isCompanyAdmin = currentUser.branchType === "admin" || currentUser.role === "admin";
-  const companyProfile = getCompanyProfile();
-  const companyLogo = isCompanyAdmin && companyProfile ? companyProfile.logo : null;
+  const [currentUser, setCurrentUser] = useState({});
+  const [isCompanyAdmin, setIsCompanyAdmin] = useState(true);
+  const [companyLogo, setCompanyLogo] = useState(null);
 
   const [formData, setFormData] = useState({
-    nama: currentUser.nama || sessionStorage.getItem("reastock_user_name") || "Admin",
-    email: currentUser.email || userEmail || "admin@gmail.com",
-    phone: currentUser.phone || "081234567890",
+    nama: sessionStorage.getItem("reastock_user_name") || "Admin",
+    email: userEmail || "admin@gmail.com",
+    phone: "081234567890",
     oldPassword: "",
     newPassword: "",
     confirmPassword: ""
   });
+
+  useEffect(() => {
+    async function loadProfile() {
+      try {
+        const branchUsers = await getBranchUsers();
+        const foundUser = branchUsers.find(u => u.email === userEmail || u.username === userEmail) || {};
+        setCurrentUser(foundUser);
+
+        const isAdm = foundUser.role === "ADMIN" || foundUser.role === "SUPER_ADMIN" || foundUser.branchType === "admin";
+        setIsCompanyAdmin(isAdm);
+
+        if (isAdm) {
+          const comp = await getCompanyProfile();
+          if (comp) {
+            setCompanyLogo(comp.logo);
+          }
+        }
+
+        setFormData(prev => ({
+          ...prev,
+          nama: foundUser.name || prev.nama,
+          email: foundUser.email || prev.email,
+          phone: foundUser.phone || prev.phone,
+        }));
+      } catch (e) {
+        console.error("Error loading profile data:", e);
+      }
+    }
+    loadProfile();
+  }, [userEmail]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;

@@ -13,7 +13,7 @@ export const sendSuccess = (res, message, data = null, statusCode = 200) => {
 };
 
 // jika response gagal karena masalah pada sisi server
-export const sendError = (res, message, data = null, statusCode = 500, errors=null) => {
+export const sendError = (res, message, statusCode = 500, data = null, errors = null) => {
     const response = {
         success: false,
         message,
@@ -21,6 +21,10 @@ export const sendError = (res, message, data = null, statusCode = 500, errors=nu
 
     if (errors != null) {
         response.errors = errors;
+    }
+
+    if (data != null) {
+        response.data = data;
     }
 
     return res.status(statusCode).json(response);

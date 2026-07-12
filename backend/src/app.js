@@ -7,6 +7,14 @@ import logger from "./config/logger.js";
 import { sendError } from "./utils/response.js";
 import userRoute from "./modules/users/user.routes.js";
 import authRoute from "./modules/auth/auth.routes.js";
+import branchesRoute from "./modules/branches/branches.routes.js";
+import productsRoute from "./modules/products/products.routes.js";
+import stocksRoute from "./modules/stocks/stocks.routes.js";
+import requestsRoute from "./modules/requests/requests.routes.js";
+import restockAdminRoute from "./modules/restocks/restock-admin.routes.js";
+import adminRestockRoute from "./modules/restocks/admin-restock.routes.js";
+import shipmentsRoute from "./modules/shipments/shipments.routes.js";
+import reportsRoute from "./modules/reports/reports.routes.js";
 
 import { success } from "zod";
 
@@ -16,14 +24,19 @@ const app = express();
 app.use(helmet());
 app.use(
   cors({
-    origin: env.CLIENT_URL || "http://localhost:5137",
+    origin: (origin, callback) => {
+      if (!origin || origin.startsWith("http://localhost:") || origin.startsWith("http://127.0.0.1:") || origin === env.CLIENT_URL) {
+        return callback(null, true);
+      }
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   }),
 );
 
 // Body Parser
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 // HTTP Request Logger
 app.use(
@@ -36,6 +49,14 @@ app.use(
 
 app.use("/api/users", userRoute);
 app.use("/api/auth", authRoute);
+app.use("/api/branches", branchesRoute);
+app.use("/api/products", productsRoute);
+app.use("/api/stocks", stocksRoute);
+app.use("/api/requests", requestsRoute);
+app.use("/api/restock-admin", restockAdminRoute);
+app.use("/api/admin-restock", adminRestockRoute);
+app.use("/api/driver", shipmentsRoute);
+app.use("/api", reportsRoute);
 
 // Health Check
 app.get("/api/health", (req, res) => {

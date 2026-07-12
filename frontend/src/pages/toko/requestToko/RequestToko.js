@@ -139,7 +139,9 @@ export default function RequestToko() {
     if (!targetGudang) return;
     const branch = branches.find(b => b.id === targetGudang);
 
+    const currentBranchId = sessionStorage.getItem("reastock_branch_id") || "BRC-003";
     await createTokoRequest({
+      fromBranchId: currentBranchId,
       fromName: sessionStorage.getItem("reastock_branch_name") || "Toko", // Cabang toko yang sedang login
       toBranchId: targetGudang,
       toBranchName: branch?.name || "Gudang",

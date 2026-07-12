@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { useReastockDb } from "../../services/useReastockDb";
-import { completeShipmentByToko, getShipment } from "../../services/wmsApi";
+import { completeShipmentByToko, subscribeShipment, subscribeRequests } from "../../services/wmsApi";
 import TrackingMap from "../../components/common/TrackingMap";
 import "./PengirimanToko.css";
 
@@ -39,27 +38,41 @@ function sendBrowserNotif(title, body) {
 export default function PengirimanToko() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const db = useReastockDb();
 
-  // Move shipment to here as well since it doesn't hurt. But actually shipment depends on tick!
-  // Wait, I will just move req up.
-  const req = useMemo(() => db.requests.find((r) => r.id === id), [db.requests, id]);
+  const [req, setReq] = useState(null);
+  useEffect(() => {
+    const unsub = subscribeRequests((rows) => {
+      setReq((rows || []).find((r) => r.id === id) || null);
+    });
+    return () => unsub();
+  }, [id]);
   const [tick, setTick] = useState(0);
-  const shipment = useMemo(() => (id ? getShipment(id) : null), [id]);
+  const [shipment, setShipment] = useState(null);
+
+  useEffect(() => {
+    if (!id) {
+      setShipment(null);
+      return;
+    }
+    const unsub = subscribeShipment(id, (data) => {
+      setShipment(data);
+    });
+    return () => unsub();
+  }, [id]);
 
   const [showArrivalBanner, setShowArrivalBanner] = useState(false);
 
   // Upload proof states
   const [selectedFile, setSelectedFile] = useState(null);
-  const [uploadData, setUploadData] = useState({ qtyGood: '', qtyBad: '', notes: '' });
+  const [uploadData, setUploadData] = useState({ qtyGood: '', qtyBad: '', notes: '', initialized: false });
 
   // Load qtyGood initially
   useEffect(() => {
-    if (req && req.items && uploadData.qtyGood === '') {
+    if (req && req.items && !uploadData.initialized) {
       const total = req.items.reduce((s, i) => s + Number(i.qty), 0);
-      setUploadData(prev => ({ ...prev, qtyGood: total }));
+      setUploadData(prev => ({ ...prev, qtyGood: total, initialized: true }));
     }
-  }, [req, uploadData.qtyGood]);
+  }, [req, uploadData.initialized]);
 
   const compressImage = (file, callback) => {
     const reader = new FileReader();
@@ -199,7 +212,7 @@ export default function PengirimanToko() {
               startAddress={shipment.startAddress}
               endAddress={shipment.endAddress}
               progress={progress}
-              gpsPosition={shipment.driver?.isLive ? shipment.driver : null}
+              gpsPosition={null}
               height="100%"
               showHistory={true}
               followDriver={!isArrived}

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   subscribeRequests,
-  getShipment,
+  subscribeShipment,
   driverSelesaikanPengiriman,
   updateDriverLocation,
 } from "../../../services/wmsApi";
@@ -125,11 +125,18 @@ export default function DriverTracking() {
     [requests, profile.name]
   );
 
-  const shipment = useMemo(() => {
-    if (!activeRequest) return null;
-    return getShipment(activeRequest.id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeRequest, tick]);
+  const [shipment, setShipment] = useState(null);
+
+  useEffect(() => {
+    if (!activeRequest) {
+      setShipment(null);
+      return;
+    }
+    const unsub = subscribeShipment(activeRequest.id, (data) => {
+      setShipment(data);
+    });
+    return () => unsub();
+  }, [activeRequest]);
 
   /* GPS Sync to Database */
   useEffect(() => {
@@ -255,7 +262,7 @@ export default function DriverTracking() {
           startAddress={shipment.startAddress}
           endAddress={shipment.endAddress}
           progress={progress}
-          gpsPosition={gpsActive ? gpsPosition : null}
+          gpsPosition={null}
           showHistory={true}
           followDriver={!isDiterimaToko}
         />

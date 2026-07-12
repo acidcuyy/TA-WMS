@@ -16,6 +16,7 @@ export default function NotificationSystem({ role }) {
   const [lastNotif, setLastNotif] = useState(null);
   const dropdownRef = useRef(null);
   const isFirstRender = useRef(true);
+  const lastShownNotifId = useRef(null);
 
   useEffect(() => {
     const unsub = subscribeNotifications((all) => {
@@ -27,11 +28,16 @@ export default function NotificationSystem({ role }) {
       setNotifications(filtered);
 
       // Show toast for new unread notification
-      if (!isFirstRender.current && filtered.length > 0) {
+      if (isFirstRender.current) {
+        if (filtered.length > 0) {
+          lastShownNotifId.current = filtered[0].id;
+        }
+      } else if (filtered.length > 0) {
         const newest = filtered[0];
-        if (!newest.isRead) {
+        if (!newest.isRead && newest.id !== lastShownNotifId.current) {
           setLastNotif(newest);
           setShowToast(true);
+          lastShownNotifId.current = newest.id;
           setTimeout(() => setShowToast(false), 5000);
         }
       }

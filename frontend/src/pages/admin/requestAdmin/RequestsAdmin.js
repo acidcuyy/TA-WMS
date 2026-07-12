@@ -5,10 +5,17 @@ import DetailModal from "../../../components/common/DetailModal";
 import DateRangePicker from "../../../components/common/DateRangePicker";
 import "../PageAdmin.css";
 import "./RequestsAdmin.css";
-import { subscribeRestockToAdmin, subscribeRequests, adminDecideRestock, subscribeAdminRestockToGudang } from "../../../services/wmsApi";
+import { subscribeRestockToAdmin, subscribeRequests, adminDecideRestock, subscribeAdminRestockToGudang, getCompanyProfile } from "../../../services/wmsApi";
 
 export default function RequestsAdmin() {
   const [activeTab, setActiveTab] = useState("Dari Toko ke Gudang");
+  const [companyName, setCompanyName] = useState("");
+
+  useEffect(() => {
+    getCompanyProfile().then(profile => {
+      if (profile) setCompanyName(profile.name);
+    }).catch(console.error);
+  }, []);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [formLocked, setFormLocked] = useState(false);
   const [detailModal, setDetailModal] = useState(null);
@@ -17,6 +24,12 @@ export default function RequestsAdmin() {
   const [actualAdminReqs, setActualAdminReqs] = useState([]);
   const [showProof, setShowProof] = useState(false);
   const [proofData, setProofData] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab]);
 
   const openProof = (r) => { setProofData(r); setShowProof(true); };
 
@@ -171,13 +184,13 @@ export default function RequestsAdmin() {
             Kelola semua permintaan stok dalam sistem dari gudang, toko, dan admin ke gudang.
           </p>
         </div>
-        <div className="rqAdmin__headRight">
+        <div className="rqAdmin__headRight" style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end' }}>
           <span className="mtAdmin__badge mtAdmin__badge--live">
             <span className="mtAdmin__dot" />
             Live Monitoring
           </span>
-          <div className="stokAdm__heroBadge">
-            <span className="user-icon">👤</span> Admin / Owner <span className="chevron">⌄</span>
+          <div className="stokAdm__heroBadge" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 12px' }}>
+            <span className="user-icon">👤</span> <span style={{ fontWeight: 600 }}>{companyName || "Admin / Owner"}</span>
           </div>
         </div>
       </header>
@@ -214,11 +227,7 @@ export default function RequestsAdmin() {
           ))}
         </div>
 
-        {activeTab === "Dari Admin ke Gudang (Saya)" && (
-          <button className="btn-add-request" onClick={() => setIsAddModalOpen(true)}>
-            <span>+</span> Tambahkan Permintaan
-          </button>
-        )}
+
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginBottom: '16px', alignItems: 'center' }}>
@@ -244,19 +253,23 @@ export default function RequestsAdmin() {
               </tr>
             </thead>
             <tbody>
-              {(activeTab === "Dari Gudang" ? gudangToAdmin : activeTab === "Dari Toko ke Gudang" ? tokoToGudang : adminToGudang).map((r) => (
+              {(() => {
+                const data = activeTab === "Dari Gudang" ? gudangToAdmin : activeTab === "Dari Toko ke Gudang" ? tokoToGudang : adminToGudang;
+                const startIdx = (currentPage - 1) * itemsPerPage;
+                return data.slice(startIdx, startIdx + itemsPerPage);
+              })().map((r) => (
                 <tr key={r.id}>
                   <td className="rqAdmin__mono">{r.id}</td>
                   <td>
                     <p style={{ fontWeight: 600 }}>{r.date}</p>
-                    <p style={{ fontSize: '11px', color: '#888' }}>{r.time}</p>
+                    {r.time && r.time !== "-" && <p style={{ fontSize: '11px', color: '#888' }}>{r.time}</p>}
                   </td>
                   <td>
                     <p style={{ fontWeight: 700 }}>{r.source || r.target}</p>
-                    <p style={{ fontSize: '11px', color: '#888' }}>{r.city}</p>
+                    {r.city && r.city !== "-" && <p style={{ fontSize: '11px', color: '#888' }}>{r.city}</p>}
                   </td>
                   {activeTab === "Dari Toko ke Gudang" && <td>{r.target}</td>}
-                  <td style={{ fontWeight: 600 }}>{r.items} item</td>
+                  <td style={{ fontWeight: 600 }}>{typeof r.items === 'number' || !isNaN(Number(r.items)) ? `${r.items} item` : r.items}</td>
                   <td style={{ color: '#666', maxWidth: '200px' }}>{r.note}</td>
                   <td>
                     <span className={`rqAdmin__pill ${getPillClass(r.status)}`}>
@@ -272,9 +285,12 @@ export default function RequestsAdmin() {
                            <button className="btn-icon" style={{color: '#ff4d4f'}} title="Tolak" onClick={() => adminDecideRestock(r.id, 'Declined')}>❌</button>
                          </>
                       )}
-                      {activeTab === "Dari Gudang" && r.status === "Selesai" && r.rawData?.proofImage && (
+                      {r.status === "Selesai" && (
+                        (activeTab === "Dari Gudang" && r.rawData?.proofImage) ||
+                        (activeTab === "Dari Admin ke Gudang (Saya)" && (r.rawData?.proofCheckBarang || r.rawData?.proofResiDriver || r.rawData?.proofPemasukanBarang))
+                      ) ? (
                         <button className="btn-icon" style={{fontSize: '16px'}} title="Lihat Bukti Foto" onClick={() => openProof(r.rawData)}>📸</button>
-                      )}
+                      ) : null}
                       <button className="btn-icon" onClick={() => setDetailModal(r)}>👁️</button>
                       <button className="btn-icon">⋮</button>
                     </div>
@@ -284,31 +300,46 @@ export default function RequestsAdmin() {
             </tbody>
           </table>
         </div>
-        <footer style={{ padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: '12px', color: '#888' }}>Menampilkan 1 - 5 dari 8 data</span>
-          <div className="pagination">
-            <select className="mpAdmin__select" style={{ padding: '4px 8px' }}><option>10 / halaman</option></select>
-            <div className="page-controls">
-              <button disabled>⟨</button>
-              <button className="active">1</button>
-              <button>2</button>
-              <button>⟩</button>
-            </div>
-          </div>
-        </footer>
+        {(() => {
+          const dataLength = (activeTab === "Dari Gudang" ? gudangToAdmin : activeTab === "Dari Toko ke Gudang" ? tokoToGudang : adminToGudang).length;
+          const totalPages = Math.ceil(dataLength / itemsPerPage) || 1;
+          const startIdx = (currentPage - 1) * itemsPerPage;
+          const endIdx = Math.min(startIdx + itemsPerPage, dataLength);
+          return (
+            <footer style={{ padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '12px', color: '#888' }}>
+                Menampilkan {dataLength === 0 ? 0 : startIdx + 1} - {endIdx} dari {dataLength} data
+              </span>
+              <div className="pagination">
+                <select 
+                  className="mpAdmin__select" 
+                  style={{ padding: '4px 8px' }} 
+                  value={itemsPerPage} 
+                  onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+                >
+                  <option value={5}>5 / halaman</option>
+                  <option value={10}>10 / halaman</option>
+                  <option value={20}>20 / halaman</option>
+                </select>
+                <div className="page-controls">
+                  <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => Math.max(1, p - 1))}>⟨</button>
+                  {[...Array(totalPages)].map((_, i) => (
+                    <button 
+                      key={i} 
+                      className={currentPage === i + 1 ? "active" : ""} 
+                      onClick={() => setCurrentPage(i + 1)}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                  <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}>⟩</button>
+                </div>
+              </div>
+            </footer>
+          );
+        })()}
       </div>
 
-      {/* INFO FOOTER */}
-      <div className="rqAdmin__infoBox">
-        <div className="rqAdmin__infoIcon">ℹ️</div>
-        <div className="rqAdmin__infoContent">
-          <h4>Tentang Request</h4>
-          <p>
-            Request adalah permintaan kebutuhan stok yang akan diproses oleh gudang. Anda dapat memantau status permintaan pada masing-masing tab di atas.
-          </p>
-        </div>
-        <button className="btn-learn">Pelajari Alur Request →</button>
-      </div>
 
       {/* ADD MODAL */}
       <AnimatePresence>
@@ -442,7 +473,29 @@ export default function RequestsAdmin() {
                   </div>
                 )}
                 <div style={{ textAlign: 'center' }}>
-                  <img src={proofData.proofImage} alt="Bukti" style={{ width: '100%', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.15)', border: '4px solid white' }} />
+                  {proofData.proofImage ? (
+                    <img src={proofData.proofImage} alt="Bukti" style={{ width: '100%', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.15)', border: '4px solid white' }} />
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', textAlign: 'left' }}>
+                      {[
+                        { label: "Bukti Check Barang", data: proofData.proofCheckBarang },
+                        { label: "Bukti Resi & Driver", data: proofData.proofResiDriver },
+                        { label: "Bukti Pemasukan Barang", data: proofData.proofPemasukanBarang },
+                      ].map((sec, idx) => {
+                        let imgs = [];
+                        try { imgs = JSON.parse(sec.data || "[]"); } catch(e){}
+                        if (imgs.length === 0) return null;
+                        return (
+                          <div key={idx}>
+                            <h4 style={{marginBottom: '8px'}}>{sec.label}</h4>
+                            <div style={{display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px'}}>
+                              {imgs.map((src, i) => <img key={i} src={src} style={{height: '150px', borderRadius: '8px', border: '1px solid #ddd'}} alt="proof"/>)}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
                 </div>
                 
                 <div className="rqAdmin__modalFoot" style={{ marginTop: '24px' }}>

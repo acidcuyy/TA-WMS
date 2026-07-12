@@ -18,21 +18,38 @@ export default function AdminLayout() {
   const { theme } = useTheme();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [period, setPeriod] = useState("Mingguan");
+  const [isCompanyAdmin, setIsCompanyAdmin] = useState(true);
+  const [companyLogo, setCompanyLogo] = useState(null);
 
   const userEmail = sessionStorage.getItem("reastock_user_email") || "";
-  const branchUsers = getBranchUsers();
-  const isCompanyAdmin = branchUsers.some(u => 
-    (u.email === userEmail || u.username === userEmail) && u.branchType === "admin"
-  );
-
-  const companyProfile = getCompanyProfile();
-  const companyLogo = isCompanyAdmin && companyProfile ? companyProfile.logo : null;
   const userName = sessionStorage.getItem("reastock_user_name") || "Admin";
+
+  useEffect(() => {
+    async function fetchAdminData() {
+      try {
+        const branchUsers = await getBranchUsers();
+        const matched = branchUsers.some(u => 
+          (u.email === userEmail || u.username === userEmail) && (u.role === "ADMIN" || u.role === "SUPER_ADMIN" || u.branchType === "admin")
+        );
+        setIsCompanyAdmin(matched);
+        if (matched) {
+          const companyProfile = await getCompanyProfile();
+          if (companyProfile) {
+            setCompanyLogo(companyProfile.logo);
+          }
+        }
+      } catch (e) {
+        console.error("Error loading admin data:", e);
+      }
+    }
+    fetchAdminData();
+  }, [userEmail]);
 
   const currentLogo = theme === "dark" ? logoSideDark : logoSideDefault;
 
   const handleLogout = () => {
     sessionStorage.removeItem("reastock_role");
+    sessionStorage.removeItem("reastock_token");
     navigate("/login");
   };
 

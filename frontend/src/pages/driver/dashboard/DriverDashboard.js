@@ -397,7 +397,7 @@ export default function DriverDashboard() {
           <div className="ddash__stats">
             {[
               { label: "Total Selesai", val: historyTasks.length, icon: "🚚", color: "#1890ff" },
-              { label: "Rating Driver", val: "4.9 ⭐", icon: "⭐", color: "#faad14" },
+
               { label: "Status Kerja", val: isBusy ? "Sibuk" : "Standby", icon: "⏱", color: isBusy ? "#fa8c16" : "#52c41a" },
             ].map((s, i) => (
               <Card key={i} className="mini-stat">

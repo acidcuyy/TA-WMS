@@ -1,6 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useTheme } from "../../app/ThemeProvider";
+import { getCompanyProfile, updateCompanySettings } from "../../services/wmsApi";
 
 /**
  * SettingsPage - Komponen bersama untuk pengaturan akun.
@@ -17,7 +18,6 @@ export default function SettingsPage({ role = "admin" }) {
   const [syncInterval, setSyncInterval] = useState("5");
   const [syncStatus, setSyncStatus] = useState("Connected");
   const [tempTheme, setTempTheme] = useState(theme);
-  const [compact, setCompact] = useState(false);
 
   // Initialize notification items based on role
   useEffect(() => {
@@ -42,6 +42,14 @@ export default function SettingsPage({ role = "admin" }) {
     }
     setNotifItems(initialItems);
     setTempTheme(theme);
+
+    // Fetch actual settings from backend
+    getCompanyProfile().then(profile => {
+      if (profile) {
+        setAutoSync(profile.autoSync ?? true);
+        setSyncInterval(profile.syncInterval ? profile.syncInterval.toString() : "5");
+      }
+    });
   }, [role, theme]);
 
   const handleToggleNotif = (id) => {
@@ -50,9 +58,16 @@ export default function SettingsPage({ role = "admin" }) {
     ));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     // Apply the theme to global state only on save
     setTheme(tempTheme);
+    
+    // Save settings to backend
+    await updateCompanySettings({
+      autoSync: autoSync,
+      syncInterval: parseInt(syncInterval, 10)
+    });
+
     setSaved(true);
     setTimeout(() => setSaved(false), 1200);
   };
@@ -454,11 +469,6 @@ export default function SettingsPage({ role = "admin" }) {
           border: 2px solid var(--bg);
         }
 
-        .sa-compact-row {
-          margin-top: 32px;
-          padding-top: 24px;
-          border-top: 1px solid var(--border);
-        }
 
         @media (max-width: 1024px) {
           .sa-settings-grid { grid-template-columns: 1fr; }
@@ -559,7 +569,7 @@ export default function SettingsPage({ role = "admin" }) {
                 <div className="sa-sync-controls">
                   <div className="sa-field">
                     <label className="sa-field-label">Interval Sync</label>
-                    <span className="sa-field-subtext">berapa menit sekali (dummy)</span>
+                    <span className="sa-field-subtext">berapa menit sekali</span>
                     <div className="sa-select-wrapper">
                       <select className="sa-select" value={syncInterval} onChange={(e) => setSyncInterval(e.target.value)} disabled={!autoSync}>
                         <option value="1">1 menit</option>
@@ -572,10 +582,10 @@ export default function SettingsPage({ role = "admin" }) {
 
                   <div className="sa-field">
                     <label className="sa-field-label">Status</label>
-                    <span className="sa-field-subtext">contoh status koneksi realtime</span>
+                    <span className="sa-field-subtext">status koneksi realtime</span>
                     <div className="sa-status-box">
                       <span className="sa-status-dot"></span>
-                      <span>{syncStatus} (dummy)</span>
+                      <span>{syncStatus}</span>
                     </div>
                   </div>
                 </div>
@@ -621,17 +631,6 @@ export default function SettingsPage({ role = "admin" }) {
                       </div>
                     ))}
                   </div>
-                </div>
-
-                <div className="sa-row sa-compact-row">
-                  <div className="sa-row-info">
-                    <h4>Compact Mode</h4>
-                    <p>Tampilan lebih rapat untuk layar kecil.</p>
-                  </div>
-                  <label className="sa-switch">
-                    <input type="checkbox" checked={compact} onChange={(e) => setCompact(e.target.checked)} />
-                    <span className="sa-slider"></span>
-                  </label>
                 </div>
               </div>
             </motion.div>

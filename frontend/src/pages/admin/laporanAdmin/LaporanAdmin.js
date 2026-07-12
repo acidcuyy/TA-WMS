@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { subscribeRequests, subscribeRestockToAdmin, getWarehouseStock } from "../../../services/wmsApi";
+import { subscribeRequests, subscribeRestockToAdmin, subscribeAdminRestockToGudang, getWarehouseStock } from "../../../services/wmsApi";
 import "./LaporanAdmin.css";
 
 export default function LaporanAdmin() {
   const [requests, setRequests] = useState([]);
   const [restocks, setRestocks] = useState([]);
+  const [adminRestocks, setAdminRestocks] = useState([]);
   const [filter, setFilter] = useState("Semua");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -20,24 +21,27 @@ export default function LaporanAdmin() {
   useEffect(() => {
     const unsubReq = subscribeRequests((data) => setRequests(data || []));
     const unsubRes = subscribeRestockToAdmin((data) => setRestocks(data || []));
+    const unsubAdminRes = subscribeAdminRestockToGudang((data) => setAdminRestocks(data || []));
     return () => {
       unsubReq();
       unsubRes();
+      unsubAdminRes();
     };
   }, []);
 
   // Map completed requests to reports format
-  const allReports = [...requests, ...restocks]
+  const allReports = [...requests, ...restocks, ...adminRestocks]
     .filter(r => r.status === "Selesai")
     .map(r => {
       // Determine source based on fromName or fromId
+      const isAdmin = r.id.startsWith("ARST");
       const isGudang = r.fromName && r.fromName.toLowerCase().includes("gudang");
       return {
         id: r.id,
-        source: isGudang ? "Gudang" : "Toko",
-        sourceName: r.fromName || "Unknown",
+        source: isAdmin ? "Admin" : isGudang ? "Gudang" : "Toko",
+        sourceName: isAdmin ? "Admin Pusat" : (r.fromName || "Unknown"),
         type: r.type || "Penyelesaian Request",
-        date: (r.updatedAt || r.createdAt || "").split("T")[0] || "-", // simplified date
+        date: (r.updatedAt || r.completedAt || r.createdAt || "").split("T")[0] || "-", // simplified date
         author: "Sistem (Otomatis)",
         format: "Data Sistem",
         original: r
@@ -79,7 +83,7 @@ export default function LaporanAdmin() {
       </header>
 
       <div className="la-filters">
-        {["Semua", "Gudang", "Toko"].map(f => (
+        {["Semua", "Admin", "Gudang", "Toko"].map(f => (
           <button 
             key={f} 
             className={`la-filter-btn ${filter === f ? "active" : ""}`}
@@ -220,7 +224,15 @@ export default function LaporanAdmin() {
                             <td style={{ textAlign: "right" }}>{item.qty || item.jumlah || 0} Unit</td>
                           </tr>
                         ))}
-                        {(!rep.original?.items || rep.original?.items.length === 0) && (
+                        {(!rep.original?.items || rep.original?.items.length === 0) && rep.original?.kodeBarang && (
+                          <tr>
+                            <td>1</td>
+                            <td>{rep.original.kodeBarang}</td>
+                            <td>{rep.original.namaBarang}</td>
+                            <td style={{ textAlign: "right" }}>{rep.original.jumlah} {rep.original.satuan}</td>
+                          </tr>
+                        )}
+                        {(!rep.original?.items || rep.original?.items.length === 0) && !rep.original?.kodeBarang && (
                           <tr>
                             <td colSpan="4" style={{ textAlign: "center", color: "#666" }}>
                               Tidak ada rincian barang.
@@ -229,6 +241,48 @@ export default function LaporanAdmin() {
                         )}
                       </tbody>
                     </table>
+
+                    {/* CONFIRMATION DATA */}
+                    {(rep.original?.confirmationData || rep.original?.qtyGood != null) && (
+                      <div style={{ marginTop: "20px", padding: "12px", border: "1px dashed #d9d9d9", background: "#fafafa" }}>
+                        <h4 style={{ margin: "0 0 8px 0", fontSize: "14px" }}>Catatan & Konfirmasi Penerimaan</h4>
+                        <div style={{ display: "flex", gap: "24px", fontSize: "13px" }}>
+                          <div><strong>Diterima Baik:</strong> {rep.original?.confirmationData?.qtyGood ?? rep.original?.qtyGood ?? "-"}</div>
+                          <div style={{ color: "red" }}><strong>Rusak / Kurang:</strong> {rep.original?.confirmationData?.qtyBad ?? rep.original?.qtyBad ?? "0"}</div>
+                        </div>
+                        <div style={{ marginTop: "8px", fontSize: "13px" }}>
+                          <strong>Catatan:</strong> {rep.original?.confirmationData?.notes || rep.original?.confirmationNotes || "-"}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* PROOF PHOTOS */}
+                    <div style={{ marginTop: "20px" }}>
+                      <h4 style={{ margin: "0 0 8px 0", fontSize: "14px" }}>Bukti Foto</h4>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "12px" }}>
+                        {rep.original?.proofImage && (
+                          <div style={{ width: "200px" }}>
+                            <img src={rep.original.proofImage} alt="Bukti" style={{ width: "100%", border: "1px solid #ddd" }} />
+                          </div>
+                        )}
+                        {["proofCheckBarang", "proofResiDriver", "proofPemasukanBarang"].map(key => {
+                          if (!rep.original?.[key]) return null;
+                          let imgs = [];
+                          try { imgs = JSON.parse(rep.original[key] || "[]"); } catch(e){}
+                          if (imgs.length === 0) return null;
+                          return (
+                            <div key={key} style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                              {imgs.map((src, i) => (
+                                <div key={i} style={{ width: "150px" }}>
+                                  <img src={src} alt={key} style={{ width: "100%", border: "1px solid #ddd" }} />
+                                  <div style={{ fontSize: "10px", textAlign: "center", color: "#888", padding: "4px" }}>{key}</div>
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
 
                     <div className="la-doc-footer">
                       <div className="la-doc-sign">

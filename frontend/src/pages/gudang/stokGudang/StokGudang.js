@@ -493,7 +493,8 @@ export default function StokGudang() {
                       sku: newProduct.sku || `SKU-${Math.floor(Math.random() * 1000)}`,
                       type: typeToSave,
                       qty: newProduct.qty || 0,
-                      image: newProduct.image || null
+                      image: newProduct.image || null,
+                      branchId: currentBranchId
                     });
                     showToast(`Produk ${newProduct.name || "Baru"} berhasil ditambahkan!`);
                     setAddModal(false);

@@ -153,13 +153,7 @@ export default function DriverHistory() {
             <span className="dhistory__stat-label">Bulan Ini</span>
           </div>
         </div>
-        <div className="dhistory__stat-card">
-          <div className="dhistory__stat-icon">⭐</div>
-          <div className="dhistory__stat-info">
-            <span className="dhistory__stat-value">{stats.rating}</span>
-            <span className="dhistory__stat-label">Rating Driver</span>
-          </div>
-        </div>
+
       </div>
 
       {/* Toolbar (Filters) */}

@@ -104,12 +104,12 @@ export default function ManajemenToko() {
     );
 
     return shippingReqs.map(r => {
-      const sh = getShipment(r.id);
+      const sh = r.shipment;
       let progressPercent = 0;
       let eta = "—";
 
       if (sh) {
-        const elapsed = Date.now() - sh.startedAt;
+        const elapsed = Date.now() - Number(sh.startedAt);
         const progress = Math.max(0, Math.min(1, elapsed / sh.durationMs));
         progressPercent = Math.round(progress * 100);
         eta = progressPercent >= 100 ? "Tiba di tujuan" : `${Math.ceil((sh.durationMs - elapsed) / 60000)} menit`;
@@ -153,9 +153,9 @@ export default function ManajemenToko() {
         trackingText = "Barang sedang dipickup driver";
       } else if (r.status === "Mengirim") {
         statusLabel = "Dalam perjalanan";
-        const sh = getShipment(r.id);
+        const sh = r.shipment;
         if (sh) {
-          const elapsed = Date.now() - sh.startedAt;
+          const elapsed = Date.now() - Number(sh.startedAt);
           const progress = Math.max(0, Math.min(100, Math.round((elapsed / sh.durationMs) * 100)));
           if (progress >= 100) {
             trackingText = "Tiba di tujuan - menunggu konfirmasi";
@@ -271,86 +271,9 @@ export default function ManajemenToko() {
             <p className="mtAdmin__statHint">Request restock yang aktif</p>
           </div>
         </Card>
-        <Card className="mtAdmin__statCard">
-          <div className="mtAdmin__statIcon" style={{ background: '#fff8f3', color: '#e4915a' }}>💰</div>
-          <div className="mtAdmin__statContent">
-            <p className="mtAdmin__statLabel">Estimasi Omzet</p>
-            <h3 className="mtAdmin__statValue">Rp{summary.estimasiOmzet.toLocaleString('id-ID')}</h3>
-            <p className="mtAdmin__statHint">Omzet hari ini</p>
-          </div>
-        </Card>
       </div>
 
-      {/* GRID SECTION */}
-      <div className="mtAdmin__grid">
-        {/* LAPORAN HARIAN */}
-        <section className="mtAdmin__card">
-          <div className="mtAdmin__cardHead">
-            <h3>Laporan Harian Toko</h3>
-            <button className="btn-upload"><span>📤</span> Upload Laporan</button>
-          </div>
-          <div className="mtAdmin__reportList">
-            <AnimatePresence>
-              {displayReports.map((r, i) => (
-                <motion.div
-                  key={r.id}
-                  className="mtAdmin__reportRow"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                >
-                  <div className="mtAdmin__reportDateBox">
-                    <span className="mtAdmin__reportDateDay">{r.date}</span>
-                    <span className="mtAdmin__reportDateMonth">{r.month}</span>
-                  </div>
-                  <div className="mtAdmin__reportMain">
-                    <p className="mtAdmin__reportTitle"><b>{r.tokoName}</b> • {r.type}</p>
-                    <p className="mtAdmin__reportDesc">{r.desc}</p>
-                  </div>
-                  <div className="mtAdmin__reportActions">
-                    <span className={`mtAdmin__pill ${r.status === 'Tersedia' ? 'mtAdmin__pill--success' : 'mtAdmin__pill--warning'}`}>{r.status}</span>
-                    <button
-                      className="mtAdmin__miniBtn"
-                      onClick={() => r.status === 'Tersedia' ? setSelectedReport(r) : alert("File belum diupload")}
-                      style={{ opacity: r.status === 'Tersedia' ? 1 : 0.5 }}
-                    >
-                      Preview
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
-          <button className="btn-lihat-semua-link" onClick={() => navigate('/admin/laporan')}>Lihat semua laporan</button>
-        </section>
 
-        {/* SHIPMENTS */}
-        <section className="mtAdmin__card">
-          <div className="mtAdmin__cardHead">
-            <h3>Pengiriman dalam perjalanan ke Toko</h3>
-            <span className="mtAdmin__badge">🔄 Auto-update</span>
-          </div>
-          <div className="mtAdmin__shipList">
-            {shipments.map((s, i) => (
-              <div key={i} className="mtAdmin__shipRow">
-                <div className="mtAdmin__shipTop">
-                  <div>
-                    <div className="mtAdmin__shipLabel"><b>{s.id}</b> → {s.to}</div>
-                    <div className="mtAdmin__shipMeta">Dikirim: 02 Feb 2026, 10:30 • ETA: {s.eta}</div>
-                    <div className="mtAdmin__shipRoute">{s.route}</div>
-                  </div>
-                  <span className={`mtAdmin__pill ${s.status === 'Terkirim' ? 'mtAdmin__pill--success' : 'mtAdmin__pill--pending'}`}>{s.status}</span>
-                </div>
-                <div className="mtAdmin__progressContainer">
-                  <div className="mtAdmin__progressFill" style={{ width: `${s.progress}%` }}></div>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', fontSize: '12px', fontWeight: '800' }}>{s.progress}%</div>
-              </div>
-            ))}
-          </div>
-          <button className="btn-lihat-semua-link" onClick={() => navigate('/admin/requests')}>Lihat semua pengiriman</button>
-        </section>
-      </div>
 
       {/* TABLES SECTION */}
       <div className="mtAdmin__grid">

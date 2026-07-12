@@ -33,141 +33,63 @@ export default function Login() {
     }
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
     const eLower = email.trim().toLowerCase();
     const p = password.trim();
 
-    let user = null;
+    try {
+      const { login } = await import("../../services/wmsApi");
+      const data = await login(eLower, p);
 
-    // Cek di branchUsers
-    if (!user) {
-      // Trigger migration just in case
-      getBranchUsers();
+      // Save credentials in sessionStorage
+      sessionStorage.setItem("reastock_token", data.token);
 
-      const globalUsers = JSON.parse(localStorage.getItem("reastock_global_users") || "{}");
-      const matchedUsers = Object.values(globalUsers).filter(
-        (u) =>
-          (u.username && u.username.toLowerCase() === eLower) ||
-          (u.email && u.email.toLowerCase() === eLower)
-      );
-      
-      // Prioritize the newly registered account (non-legacy) if duplicates exist
-      let dynamicUserRaw = null;
-      if (matchedUsers.length > 0) {
-        dynamicUserRaw = matchedUsers.find(u => u.companyId && u.companyId !== "COMP-LEGACY");
-        if (!dynamicUserRaw) {
-          dynamicUserRaw = matchedUsers[matchedUsers.length - 1];
-        }
+      const user = data.user;
+      let resolvedRole = "gudang";
+      if (user.role.toUpperCase() === "ADMIN" || user.role.toUpperCase() === "SUPER_ADMIN") {
+        resolvedRole = "admin";
+      } else if (user.role.toUpperCase() === "DRIVER") {
+        resolvedRole = "driver";
+      } else if (user.branchType === "toko" || user.role.toUpperCase() === "TOKO") {
+        resolvedRole = "toko";
       }
 
+      sessionStorage.setItem("reastock_role", resolvedRole);
+      sessionStorage.setItem("reastock_user_name", user.name || "User");
+      sessionStorage.setItem("reastock_user_email", user.email || user.username);
+      sessionStorage.setItem("reastock_user_joinDate", user.joinedAt || "10 Januari 2025");
+      sessionStorage.setItem("reastock_company_id", user.companyId || "");
 
-      if (dynamicUserRaw && dynamicUserRaw.password === p) {
-        let resolvedCompanyId = dynamicUserRaw.companyId || "COMP-LEGACY";
-
-        // --- Scan ALL localStorage reastock DBs untuk menemukan DB yang benar ---
-        // Ini memastikan isolasi multi-tenant bekerja terlepas dari history migrasi
-        const foundCompanyId = (() => {
-          try {
-            for (let i = 0; i < localStorage.length; i++) {
-              const key = localStorage.key(i);
-              if (!key || !key.startsWith("reastock_db_v3_COMP-")) continue;
-              const compId = key.replace("reastock_db_v3_", "");
-              if (compId === "COMP-LEGACY") continue;
-              const rawDb = localStorage.getItem(key);
-              if (!rawDb) continue;
-              const db = JSON.parse(rawDb);
-              // Cari user dengan username atau id yang cocok di branchUsers DB ini
-              const found = (db.branchUsers || []).find(
-                (u) =>
-                  u.id === dynamicUserRaw.id ||
-                  (u.username && u.username.toLowerCase() === eLower)
-              );
-              if (found) return compId;
-            }
-          } catch (e) {}
-          return null;
-        })();
-
-        if (foundCompanyId) {
-          resolvedCompanyId = foundCompanyId;
-          // Update globalUsers agar konsisten untuk login berikutnya
-          try {
-            const updatedGlobals = JSON.parse(localStorage.getItem("reastock_global_users") || "{}");
-            if (updatedGlobals[dynamicUserRaw.id]) {
-              updatedGlobals[dynamicUserRaw.id].companyId = resolvedCompanyId;
-              localStorage.setItem("reastock_global_users", JSON.stringify(updatedGlobals));
-            }
-          } catch (e) {}
-        }
-
-        sessionStorage.setItem("reastock_company_id", resolvedCompanyId);
-
-        // Load the full user from their respective tenant DB
-        const tenantUsers = getBranchUsers();
-        const dynamicUser = tenantUsers.find(u => u.id === dynamicUserRaw.id) || dynamicUserRaw;
-
-        let role = "gudang";
-        if (dynamicUser.role === "admin" || dynamicUser.branchType === "admin") {
-          role = "admin";
-        } else if (dynamicUser.role === "driver") {
-          role = "driver";
-        } else if (dynamicUser.branchType === "toko") {
-          role = "toko";
-        }
-
-        const path = `/${role}`;
-        user = {
-          pass: dynamicUser.password,
-          role: role,
-          path: path,
-          branchId: dynamicUser.branchId,
-          branchName: dynamicUser.branchName,
-          name: dynamicUser.nama || "User",
-          email: dynamicUser.email || dynamicUser.username,
-          joinDate: dynamicUser.createdAt || "10 Januari 2025",
-        };
+      if (user.branchId) {
+        sessionStorage.setItem("reastock_branch_id", user.branchId);
+        sessionStorage.setItem("reastock_branch_name", user.branchName || "");
+      } else {
+        sessionStorage.removeItem("reastock_branch_id");
+        sessionStorage.removeItem("reastock_branch_name");
       }
 
+      if (rememberMe) {
+        localStorage.setItem("reastock_saved_email", eLower);
+        localStorage.setItem("reastock_saved_password", p);
+      } else {
+        localStorage.removeItem("reastock_saved_email");
+        localStorage.removeItem("reastock_saved_password");
+      }
+
+      // ✅ redirect (smooth transition)
+      setIsLeaving(true);
+      setTimeout(() => {
+        nav(`/${resolvedRole}`);
+      }, 420);
+
+    } catch (err) {
+      setError(err.message || "Username/Email atau password salah.");
     }
-
-    if (!user || user.pass !== p) {
-      setError("Username/Email atau password salah.");
-      return;
-    }
-
-    if (rememberMe) {
-      localStorage.setItem("reastock_saved_email", eLower);
-      localStorage.setItem("reastock_saved_password", p);
-    } else {
-      localStorage.removeItem("reastock_saved_email");
-      localStorage.removeItem("reastock_saved_password");
-    }
-
-    // ✅ simpan role untuk kebutuhan app (guard nanti / topbar, dll)
-    sessionStorage.setItem("reastock_role", user.role);
-    sessionStorage.setItem("reastock_user_name", user.name || (user.role === "admin" ? "Super Admin" : "Admin Cabang"));
-    sessionStorage.setItem("reastock_user_email", user.email || eLower);
-    sessionStorage.setItem("reastock_user_joinDate", user.joinDate || "10 Januari 2025");
-
-    if (user.branchId) {
-      sessionStorage.setItem("reastock_branch_id", user.branchId);
-      sessionStorage.setItem("reastock_branch_name", user.branchName || "");
-    } else {
-      sessionStorage.removeItem("reastock_branch_id");
-      sessionStorage.removeItem("reastock_branch_name");
-    }
-
-    // trigger fade-out
-    setIsLeaving(true);
-
-    // pindah setelah animasi selesai (durasi kamu 0.42s)
-    setTimeout(() => {
-      nav(user.path);
-    }, 420);
   };
+
 
   return (
     <motion.div

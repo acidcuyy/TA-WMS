@@ -1,7 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { useReastockDb } from "../../services/useReastockDb";
+import {
+  completeShipment,
+  subscribeRequests,
+  subscribeShipment
+} from "../../services/wmsApi";
 import TrackingMap from "../../components/common/TrackingMap";
 import "../toko/PengirimanToko.css";
 import "./PengirimanGudang.css";
@@ -39,7 +43,6 @@ function sendBrowserNotif(title, body) {
 export default function PengirimanGudang() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const db = useReastockDb();
 
   const [tick, setTick] = useState(0);
   const [showArrivalBanner, setShowArrivalBanner] = useState(false);
@@ -51,14 +54,25 @@ export default function PengirimanGudang() {
     return () => clearInterval(t);
   }, []);
 
-  const req = useMemo(
-    () => (db.requests || []).find((r) => r.id === id),
-    [db.requests, id]
-  );
-  const shipment = useMemo(
-    () => db.shipments?.[id] || null,
-    [db.shipments, id]
-  );
+  const [req, setReq] = useState(null);
+  useEffect(() => {
+    const unsub = subscribeRequests((rows) => {
+      setReq((rows || []).find((r) => r.id === id) || null);
+    });
+    return () => unsub();
+  }, [id]);
+
+  const [shipment, setShipment] = useState(null);
+  useEffect(() => {
+    if (!id) {
+      setShipment(null);
+      return;
+    }
+    const unsub = subscribeShipment(id, (data) => {
+      setShipment(data);
+    });
+    return () => unsub();
+  }, [id]);
 
   const calc = (sh) => {
     if (!sh) return { progress: 0, etaMs: 0, driver: { lat: 0, lng: 0 } };
@@ -143,7 +157,7 @@ export default function PengirimanGudang() {
               startAddress={shipment.startAddress}
               endAddress={shipment.endAddress}
               progress={progress}
-              gpsPosition={shipment.driver?.isLive ? shipment.driver : null}
+              gpsPosition={null}
               height="100%"
               showHistory={true}
               followDriver={!isArrived}

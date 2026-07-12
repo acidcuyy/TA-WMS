@@ -30,12 +30,16 @@ function LocationPicker({ latLng, setLatLng }) {
 export default function RegistrasiEntitas() {
   const [activeTab, setActiveTab] = useState("Gudang");
   const [toastMsg, setToastMsg] = useState("");
+  const [userFormError, setUserFormError] = useState("");   // error di step 2 user form
+  const [driverFormError, setDriverFormError] = useState(""); // error di driver form
+  const [branchFormError, setBranchFormError] = useState(""); // error di step 1 branch form
 
   // Multi-step state (for Gudang & Toko)
   const [currentStep, setCurrentStep] = useState(1);
   const [registeredBranch, setRegisteredBranch] = useState(null); // { id, name, type }
   const [registeredUsers, setRegisteredUsers] = useState([]);
   const [branches, setBranches] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   React.useEffect(() => {
     return subscribeBranches(setBranches);
@@ -62,6 +66,7 @@ export default function RegistrasiEntitas() {
   const [userPhone, setUserPhone] = useState("");
 
   // Data Driver (single step)
+  const [driverNama, setDriverNama] = useState("");  // dedicated — tidak share dg branch form
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
@@ -103,6 +108,7 @@ export default function RegistrasiEntitas() {
   const resetAllForms = () => {
     resetBranchForm();
     resetUserForm();
+    setDriverNama("");
     setUsername("");
     setPassword("");
     setEmail("");
@@ -115,66 +121,83 @@ export default function RegistrasiEntitas() {
     setRegisteredUsers([]);
   };
 
-  // Step 1: Submit branch
   const handleSubmitBranch = async (e) => {
     e.preventDefault();
     if (!nama || !lokasi || !alamatLengkap) return alert("Mohon lengkapi Nama, Lokasi, dan Alamat Lengkap.");
+    if (isSubmitting) return;
 
-    const payload = {
-      name: nama,
-      type: activeTab.toLowerCase(),
-      location: lokasi,
-      alamatLengkap,
-      jamOperasional: `${jamBuka} - ${jamTutup}`,
-      pemilik: activeTab === "Toko" ? pemilik : undefined,
-      kapasitas: activeTab === "Gudang" ? kapasitas : undefined,
-      tipeGudang: activeTab === "Gudang" ? tipeGudang : undefined,
-      kategoriToko: activeTab === "Toko" ? kategoriToko : undefined,
-      lat: latLng.lat,
-      lng: latLng.lng,
-    };
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        name: nama,
+        type: activeTab.toLowerCase(),
+        location: lokasi,
+        alamatLengkap,
+        jamOperasional: `${jamBuka} - ${jamTutup}`,
+        pemilik: activeTab === "Toko" ? pemilik : undefined,
+        kapasitas: activeTab === "Gudang" ? kapasitas : undefined,
+        tipeGudang: activeTab === "Gudang" ? tipeGudang : undefined,
+        kategoriToko: activeTab === "Toko" ? kategoriToko : undefined,
+        lat: latLng.lat,
+        lng: latLng.lng,
+      };
 
-    const result = await createBranchAccount(payload);
+      const result = await createBranchAccount(payload);
 
-    // Find the newly created branch from result
-    const branches = result.branches || [];
-    const newBranch = branches[branches.length - 1];
+      if (!result?.id) {
+        setBranchFormError("Gagal mendapatkan ID cabang. Silakan coba lagi.");
+        return;
+      }
 
-    setRegisteredBranch({
-      id: newBranch?.id || "BRC-NEW",
-      name: nama,
-      type: activeTab.toLowerCase(),
-    });
+      // Backend returns the newly created branch object directly
+      setRegisteredBranch({
+        id: result.id,
+        name: result.name || nama,
+        type: activeTab.toLowerCase(),
+      });
 
-    showToast(`${activeTab} "${nama}" berhasil didaftarkan! Lanjutkan daftarkan user.`);
-    setCurrentStep(2);
+      setBranchFormError("");
+      showToast(`${activeTab} "${nama}" berhasil didaftarkan! Lanjutkan daftarkan user.`);
+      setCurrentStep(2);
+    } catch (err) {
+      setBranchFormError(err.message || "Gagal mendaftarkan cabang. Coba lagi.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Step 2: Add user to branch
-  const handleAddUser = (e) => {
+  const handleAddUser = async (e) => {
     e.preventDefault();
-    if (!userUsername || !userPassword || !userName) return alert("Mohon lengkapi Nama, Username, dan Password user.");
+    if (!userUsername || !userPassword || !userName) {
+      setUserFormError("Mohon lengkapi Nama, Username, dan Password user.");
+      return;
+    }
 
+    setUserFormError("");
     const userPayload = {
       branchId: registeredBranch.id,
-      branchName: registeredBranch.name,
-      branchType: registeredBranch.type,
-      nama: userName,
+      name: userName,
       username: userUsername,
       password: userPassword,
       email: userEmail,
       phone: userPhone,
+      role: registeredBranch.type === "gudang" ? "GUDANG" : "TOKO",
     };
 
-    createBranchUser(userPayload);
+    try {
+      await createBranchUser(userPayload);
 
-    setRegisteredUsers((prev) => [
-      ...prev,
-      { ...userPayload, id: `USR-${Date.now()}` },
-    ]);
+      setRegisteredUsers((prev) => [
+        ...prev,
+        { ...userPayload, id: `USR-${Date.now()}` },
+      ]);
 
-    showToast(`User "${userName}" berhasil ditambahkan ke ${registeredBranch.name}!`);
-    resetUserForm();
+      showToast(`User "${userName}" berhasil ditambahkan ke ${registeredBranch.name}!`);
+      resetUserForm();
+    } catch (err) {
+      setUserFormError(err.message || "Gagal menambahkan user. Coba lagi.");
+    }
   };
 
   // Step 2: Finish registration
@@ -185,15 +208,17 @@ export default function RegistrasiEntitas() {
 
   const handleSubmitDriver = async (e) => {
     e.preventDefault();
-    if (!nama || !plat || !phone || !nomorSim || !username || !password || !driverBranchId) return alert("Mohon lengkapi data Driver beserta Cabang Gudang.");
+    if (!driverNama || !plat || !phone || !nomorSim || !username || !password || !driverBranchId) {
+      setDriverFormError("Mohon lengkapi semua data Driver beserta Cabang Gudang.");
+      return;
+    }
 
+    setDriverFormError("");
     const gudang = branches.find(b => b.id === driverBranchId);
 
     const payload = {
       branchId: driverBranchId,
-      branchName: gudang ? gudang.name : "",
-      branchType: "gudang",
-      nama: nama,
+      name: driverNama,
       username,
       password,
       email: email,
@@ -202,14 +227,18 @@ export default function RegistrasiEntitas() {
       alamatDomisili,
       statusMitra,
       vehicle: `${tipeKendaraan} (${plat})`,
-      role: "driver",
+      role: "DRIVER",
       joinedAt: new Date().toISOString()
     };
 
-    createBranchUser(payload);
-    showToast(`Driver "${nama}" berhasil didaftarkan ke ${payload.branchName}!`);
-    resetAllForms();
-    setDriverBranchId("");
+    try {
+      await createBranchUser(payload);
+      showToast(`Driver "${driverNama}" berhasil didaftarkan ke ${gudang?.name || "gudang"}!`);
+      resetAllForms();
+      setDriverBranchId("");
+    } catch (err) {
+      setDriverFormError(err.message || "Gagal mendaftarkan driver. Coba lagi.");
+    }
   };
 
   return (
@@ -368,8 +397,8 @@ export default function RegistrasiEntitas() {
               )}
 
               <div className="form-group full-width">
-                <button type="submit" className="btn-next-step">
-                  Lanjut — Daftarkan User <span className="btn-arrow">→</span>
+                <button type="submit" className="btn-next-step" disabled={isSubmitting}>
+                  {isSubmitting ? "Memproses..." : <>Lanjut — Daftarkan User <span className="btn-arrow">→</span></>}
                 </button>
               </div>
             </form>
@@ -455,6 +484,26 @@ export default function RegistrasiEntitas() {
                   onChange={(e) => setUserPhone(e.target.value.replace(/[^0-9]/g, ""))}
                 />
               </div>
+
+              {/* Inline error banner */}
+              {userFormError && (
+                <div className="form-group full-width">
+                  <div style={{
+                    background: "rgba(239,68,68,0.12)",
+                    border: "1px solid rgba(239,68,68,0.5)",
+                    borderRadius: 10,
+                    padding: "12px 16px",
+                    color: "#fca5a5",
+                    fontSize: 14,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                  }}>
+                    <span style={{ fontSize: 18 }}>⚠️</span>
+                    <span>{userFormError}</span>
+                  </div>
+                </div>
+              )}
 
               <div className="form-group full-width">
                 <button type="submit" className="btn-add-user">
@@ -545,7 +594,7 @@ export default function RegistrasiEntitas() {
                   </div>
                   <div className="form-group">
                     <label className="form-label">Nama Lengkap Driver</label>
-                    <input type="text" className="form-input" placeholder="Contoh: Budi Santoso" value={nama} onChange={(e) => setNama(e.target.value.replace(/[^a-zA-Z\s]/g, ""))} />
+                    <input type="text" className="form-input" placeholder="Contoh: Budi Santoso" value={driverNama} onChange={(e) => setDriverNama(e.target.value.replace(/[^a-zA-Z\s]/g, ""))} />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Nomor Handphone / WhatsApp</label>
@@ -599,6 +648,26 @@ export default function RegistrasiEntitas() {
                   </div>
                 </div>
               </div>
+
+              {/* Inline error banner */}
+              {driverFormError && (
+                <div className="form-group full-width">
+                  <div style={{
+                    background: "rgba(239,68,68,0.12)",
+                    border: "1px solid rgba(239,68,68,0.5)",
+                    borderRadius: 10,
+                    padding: "12px 16px",
+                    color: "#fca5a5",
+                    fontSize: 14,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                  }}>
+                    <span style={{ fontSize: 18 }}>⚠️</span>
+                    <span>{driverFormError}</span>
+                  </div>
+                </div>
+              )}
 
               <div className="form-group full-width">
                 <button type="submit" className="btn-submit-reg">

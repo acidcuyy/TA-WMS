@@ -1,8 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prisma"
@@ -12,21 +10,297 @@ datasource db {
   provider = "postgresql"
 }
 
-enum Role { 
+enum Role {
   ADMIN
   SUPER_ADMIN
   TOKO
   DRIVER
-  GUDANG 
-} 
-
-model User {
-  id       Int      @id @default(autoincrement())
-  email    String   @unique
-  name     String
-  password String
-  age      Int?
-  role     Role   @default(GUDANG)
+  GUDANG
 }
 
+model User {
+  id             String    @id @default(uuid())
+  email          String?   @unique
+  username       String    @unique
+  password       String
+  name           String
+  phone          String?
+  role           Role      @default(GUDANG)
+  companyId      String?   // Multi-tenancy identifier
+  branchId       String?   // References Branch.id
+  title          String?   // PIC title
+  vehicle        String?   // Driver vehicle
+  nomorSim       String?   // Driver license
+  alamatDomisili String?
+  statusMitra    String?   // Driver partnership status
+  joinedAt       String?   // Date YYYY-MM-DD
+  lastLoginAt    DateTime? // Untuk tracking status online/offline
+  createdAt      DateTime  @default(now())
 
+  // Relations
+  branch         Branch?   @relation(fields: [branchId], references: [id], onDelete: SetNull)
+}
+
+model CompanyProfile {
+  id        String   @id @default(uuid())
+  name      String
+  industry  String?
+  nib       String?
+  address   String?
+  logo      String?
+  document  String?
+  autoSync      Boolean  @default(true)
+  syncInterval  Int      @default(5)
+  createdAt DateTime @default(now())
+}
+
+model Branch {
+  id         String   @id @default(uuid())
+  name       String
+  type       String   // "gudang" | "toko"
+  location       String?  // Address
+  alamatLengkap  String?
+  jamOperasional String?
+  kapasitas      String?
+  tipeGudang     String?
+  kategoriToko   String?
+  pemilik        String?
+  phone          String?
+  picName    String?
+  status     String   @default("Active")
+  lat        Float?
+  lng        Float?
+  companyId  String?  // Multi-tenancy
+  createdAt  DateTime @default(now())
+
+  // Relations
+  users                  User[]
+  warehouseStocks        WarehouseStock[]
+  tokoRequestsFrom       TokoRequest[]           @relation("RequestsFromBranch")
+  tokoRequestsTo         TokoRequest[]           @relation("RequestsToBranch")
+  restockToAdminRequests RestockToAdminRequest[]
+  adminRestockRequests   AdminRestockRequest[]
+  tokoReports            TokoReport[]
+  tokoOutflows           TokoOutflow[]
+}
+
+model Product {
+  sku       String   @id
+  name      String
+  category  String
+  unit      String   @default("pcs")
+  price     Float    @default(0)
+  image     String?  // URL/base64
+  companyId String?
+  createdAt DateTime @default(now())
+
+  // Relations
+  warehouseStocks        WarehouseStock[]
+  tokoRequestItems       TokoRequestItem[]
+  restockToAdminItems    RestockToAdminItem[]
+}
+
+model WarehouseStock {
+  id        String   @id @default(uuid())
+  sku       String
+  qty       Int      @default(0)
+  minQty    Int      @default(0)
+  branchId  String
+  addedAt   DateTime @default(now())
+
+  // Relations
+  product   Product  @relation(fields: [sku], references: [sku], onDelete: Cascade)
+  branch    Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+
+  @@unique([sku, branchId])
+}
+
+model TokoRequest {
+  id                 String            @id // REQ-XXX
+  fromBranchId       String
+  fromName           String
+  toBranchId         String
+  toName             String
+  createdAt          String            // YYYY-MM-DD
+  satuan             String            @default("pcs")
+  note               String?
+  decision           String?           // "Accepted" | "Declined"
+  status             String            // "Menunggu", "Memproses", "Siap Dikirim", "Pickup", "Mengirim", "Diterima Toko", "Selesai", "Declined"
+  driverName         String?
+  acceptedAt         String?           // ISO Timestamp
+  shippingStartedAt  String?           // ISO Timestamp
+  receivedAt         String?           // ISO Timestamp
+  completedAt        String?           // ISO Timestamp
+  isExternalDriver   Boolean           @default(false)
+  
+  // Proofs
+  driverProofResi    String?
+  driverProofFoto    String?
+  receivedProofFoto  String?
+  
+  // Confirmation
+  qtyGood            Int?
+  qtyBad             Int?
+  confirmationNotes  String?
+
+  // Relations
+  fromBranch         Branch            @relation("RequestsFromBranch", fields: [fromBranchId], references: [id])
+  toBranch           Branch            @relation("RequestsToBranch", fields: [toBranchId], references: [id])
+  items              TokoRequestItem[]
+  shipment           Shipment?
+}
+
+model TokoRequestItem {
+  id        String      @id @default(uuid())
+  requestId String
+  sku       String
+  name      String
+  qty       Int
+  price     Float       @default(0)
+
+  // Relations
+  request   TokoRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  product   Product     @relation(fields: [sku], references: [sku])
+}
+
+model RestockToAdminRequest {
+  id                 String               @id // RST-XXX
+  fromBranchId       String
+  fromName           String
+  toRole             String               @default("admin")
+  toName             String               @default("Admin")
+  createdAt          String               // YYYY-MM-DD
+  satuan             String               @default("pcs")
+  note               String?
+  supplier           String?
+  decision           String?              // "Accepted" | "Declined"
+  status             String               @default("Menunggu") // "Menunggu" | "Diproses" | "Selesai" | "Ditolak"
+  proofImage         String?              // base64 / URL
+  qtyGood            Int?
+  qtyBad             Int?
+  confirmationNotes  String?
+
+  // Relations
+  branch             Branch               @relation(fields: [fromBranchId], references: [id])
+  items              RestockToAdminItem[]
+}
+
+model RestockToAdminItem {
+  id        String                @id @default(uuid())
+  requestId String
+  sku       String
+  name      String
+  qty       Int
+
+  // Relations
+  request   RestockToAdminRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  product   Product               @relation(fields: [sku], references: [sku])
+}
+
+model AdminRestockRequest {
+  id                  String   @id // ARST-XXX
+  createdAt           String   // YYYY-MM-DD
+  cabangGudangId      String
+  cabangGudangNama    String
+  kodeBarang          String
+  namaBarang          String
+  jenisBarang         String
+  jumlah              Int
+  satuan              String   @default("pcs")
+  supplier            String?
+  prioritas           String   @default("Normal")
+  catatan             String?
+  status              String   @default("Pending") // "Pending" | "Diproses" | "Selesai"
+  completedAt         String?  // YYYY-MM-DD
+  
+  // Proofs
+  proofCheckBarang    String?
+  proofResiDriver     String?
+  proofPemasukanBarang String?
+  
+  // Confirmation
+  qtyGood             Int?
+  qtyBad              Int?
+  confirmationNotes   String?
+
+  // Relations
+  branch              Branch   @relation(fields: [cabangGudangId], references: [id])
+}
+
+model Shipment {
+  id             String      @id @default(uuid())
+  requestId      String      @unique
+  startAddress   String
+  endAddress     String
+  startLat       Float
+  startLng       Float
+  endLat         Float
+  endLng         Float
+  startedAt      BigInt
+  durationMs     Int
+  driverLat      Float
+  driverLng      Float
+  driverIsLive   Boolean     @default(false)
+  driverName     String
+  driverProgress Float       @default(0)
+
+  // Relations
+  request        TokoRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+}
+
+model TokoReport {
+  id          String   @id // RPT-XXX or RPT-GDG-XXX
+  tokoId      String
+  tokoName    String
+  type        String   // "Laporan Harian" | "Laporan Mingguan" | "Laporan Bulanan"
+  period      String
+  date        String   // YYYY-MM-DD
+  format      String   // "PDF" | "Excel"
+  fileData    String?  // base64 / URL file
+  status      String   @default("Tersedia")
+  author      String
+  branchType  String   @default("toko") // "toko" | "gudang"
+
+  // Relations
+  branch      Branch   @relation(fields: [tokoId], references: [id])
+}
+
+model TokoOutflow {
+  id        String            @id // OUT-XXX
+  tokoId    String
+  tokoName  String
+  totalQty  Int
+  tujuan    String
+  jenis     String
+  catatan   String?
+  status    String            @default("Selesai")
+  createdAt DateTime          @default(now())
+
+  // Relations
+  branch    Branch            @relation(fields: [tokoId], references: [id])
+  items     TokoOutflowItem[]
+}
+
+model TokoOutflowItem {
+  id        String      @id @default(uuid())
+  outflowId String
+  sku       String
+  name      String
+  qty       Int
+
+  // Relations
+  outflow   TokoOutflow @relation(fields: [outflowId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id          String   @id // NTF-XXX
+  type        String
+  title       String
+  message     String
+  time        String   // HH:MM
+  isRead      Boolean  @default(false)
+  targetRoles String   // serialized comma-separated string, e.g. "admin,gudang"
+  link        String?
+  companyId   String?
+  createdAt   DateTime @default(now())
+}

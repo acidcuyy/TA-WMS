@@ -61,6 +61,7 @@ function TambahPengeluaranModal({ isOpen, onClose, inventory }) {
 
     setSaving(true);
     createTokoOutflow({
+      tokoId: sessionStorage.getItem("reastock_branch_id") || "BRC-003",
       items: selectedItems.map(x => ({ sku: x.sku, name: x.name, qty: x.outQty, unit: x.unit })),
       tujuan,
       jenis,

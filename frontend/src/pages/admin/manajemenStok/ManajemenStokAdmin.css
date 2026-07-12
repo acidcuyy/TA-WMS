@@ -458,6 +458,8 @@
   color: var(--text);
   outline: none;
   transition: all 0.2s;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .stokAdm__field input:focus,

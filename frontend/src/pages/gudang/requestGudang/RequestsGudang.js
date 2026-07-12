@@ -10,9 +10,9 @@ import {
   subscribeRequests,
   subscribeAdminRestockToGudang,
   gudangAcceptAdminRestock,
-  gudangUploadProofAndFinish
+  gudangUploadProofAndFinish,
+  subscribeBranchUsers
 } from "../../../services/wmsApi";
-import { getGlobalUsers } from "../../../services/storageDb";
 
 const getStatusClass = (status) => {
   const s = (status || "").toLowerCase();
@@ -43,16 +43,22 @@ export default function RequestsGudang() {
   const [driverModal, setDriverModal] = useState({ open: false, requestId: null });
   const [errorModal, setErrorModal] = useState({ open: false, message: "" });
 
-  const driversCount = useMemo(() => {
-    const users = getGlobalUsers();
-    const cid = sessionStorage.getItem("reastock_company_id");
-    return Object.values(users).filter(u => u.role === "driver" && u.companyId === cid).length;
-  }, []);
+  const [driversCount, setDriversCount] = useState(0);
 
   useEffect(() => {
     const unsubReq = subscribeRequests((rows) => setAllReq(rows || []));
     const unsubAdminReq = subscribeAdminRestockToGudang((rows) => setAdminRestock(rows || []));
-    return () => { unsubReq?.(); unsubAdminReq?.(); };
+    
+    // Subscribe to users to get drivers count for this company
+    const unsubUsers = subscribeBranchUsers?.((users) => {
+      if (!users) return;
+      console.log("Users fetched:", users);
+      const count = users.filter(u => String(u.role).toLowerCase() === "driver").length;
+      console.log("Driver count:", count);
+      setDriversCount(count);
+    });
+
+    return () => { unsubReq?.(); unsubAdminReq?.(); unsubUsers?.(); };
   }, []);
   
   const openProof = (img) => {
@@ -70,7 +76,7 @@ export default function RequestsGudang() {
     
     // Convert admin restock to uniform structure for display
     const mappedAdminRestock = adminRestock
-      .filter((r) => r.cabangGudang === currentBranchId || (!r.cabangGudang && currentBranchId === "BRC-001"))
+      .filter((r) => r.cabangGudangId === currentBranchId || (!r.cabangGudangId && currentBranchId === "BRC-001"))
       .map(r => ({
         ...r,
         isFromAdmin: true,
@@ -344,7 +350,17 @@ export default function RequestsGudang() {
                     ) : r.status === "Diproses" ? (
                       <button className="rqGudang__btn rqGudang__btn--action" style={{ width: '100%' }} onClick={(e) => { e.stopPropagation(); openUploadModal(r); }}>📸 Upload Bukti</button>
                     ) : r.status === "Selesai" ? (
-                       <div style={{ color: "#52c41a", fontSize: "13px", fontWeight: 700, textAlign: 'center', width: '100%', padding: '8px', background: '#f6ffed', borderRadius: '8px' }}>✅ Selesai Diterima</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%', alignItems: 'center' }}>
+                        <div style={{ color: "#52c41a", fontSize: "13px", fontWeight: 700, textAlign: 'center', width: '100%', padding: '8px', background: '#f6ffed', borderRadius: '8px' }}>✅ Selesai Diterima</div>
+                        {(r.proofCheckBarang || r.proofResiDriver || r.proofPemasukanBarang) && (
+                          <button 
+                            className="rqGudang__btn rqGudang__btn--text" 
+                            onClick={(e) => { e.stopPropagation(); openProof(r); }}
+                          >
+                            Lihat Bukti Foto
+                          </button>
+                        )}
+                      </div>
                     ) : null}
                   </div>
                 </>
@@ -583,7 +599,29 @@ export default function RequestsGudang() {
             >
               <div className="rqGudang__modalHead"><h3>Bukti Penerimaan</h3><button onClick={() => setProofOpen(false)}>✕</button></div>
               <div className="rqGudang__modalBody" style={{ textAlign: 'center', padding: '24px' }}>
-                <img src={proofImg} alt="Bukti" style={{ width: '100%', borderRadius: '12px' }} />
+                {typeof proofImg === "string" ? (
+                  <img src={proofImg} alt="Bukti" style={{ width: '100%', borderRadius: '12px' }} />
+                ) : proofImg ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', textAlign: 'left' }}>
+                    {[
+                      { label: "Bukti Check Barang", data: proofImg.proofCheckBarang },
+                      { label: "Bukti Resi & Driver", data: proofImg.proofResiDriver },
+                      { label: "Bukti Pemasukan Barang", data: proofImg.proofPemasukanBarang },
+                    ].map((sec, idx) => {
+                      let imgs = [];
+                      try { imgs = JSON.parse(sec.data || "[]"); } catch(e){}
+                      if (imgs.length === 0) return null;
+                      return (
+                        <div key={idx}>
+                          <h4 style={{marginBottom: '8px'}}>{sec.label}</h4>
+                          <div style={{display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px'}}>
+                            {imgs.map((src, i) => <img key={i} src={src} style={{height: '150px', borderRadius: '8px', border: '1px solid #ddd'}} alt="proof"/>)}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                ) : null}
               </div>
               <div className="rqGudang__modalFooter">
                 <button className="rqGudang__btn rqGudang__btn--primary" style={{ width: '100%' }} onClick={() => setProofOpen(false)}>Tutup</button>

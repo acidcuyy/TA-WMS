@@ -194,7 +194,7 @@ export default function ManajemenStok() {
           </div>
         </section>
 
-        <aside className="stokAdm__panel">
+        <aside className="stokAdm__panel" style={{ display: 'flex', flexDirection: 'column' }}>
           <div className="stokAdm__panelHead">
             <div>
               <h2>Aksi</h2>
@@ -202,18 +202,14 @@ export default function ManajemenStok() {
             </div>
           </div>
 
-          <div className="stokAdm__actionButtons">
-            <button className="stokAdm__primaryBtn" onClick={() => setOpenForm(true)}>
+          <div className="stokAdm__actionButtons" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <button 
+              className="stokAdm__primaryBtn" 
+              style={{ width: '100%', padding: '24px 16px', fontSize: '18px', fontWeight: 'bold' }}
+              onClick={() => setOpenForm(true)}
+            >
               + Tambah Stok Gudang
             </button>
-            <button className="stokAdm__ghostBtn" disabled>
-              <span className="icon">📤</span> Import (Coming Soon)
-            </button>
-          </div>
-
-          <div className="stokAdm__note">
-            <span className="info-icon">ℹ️</span>
-            <p>Admin dapat meminta penambahan stok ke gudang. Gudang akan memproses dan mengunggah bukti penerimaan.</p>
           </div>
         </aside>
       </div>
@@ -388,7 +384,7 @@ export default function ManajemenStok() {
                       placeholder="Contoh: Tolong cek fisik barang dengan teliti..." 
                       rows={2} 
                       className="stokAdm__textarea"
-                      style={{ padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg-2)', resize: 'vertical', width: '100%', fontFamily: 'inherit', fontSize: '14px' }}
+                      style={{ padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg-2)', resize: 'vertical', width: '100%', boxSizing: 'border-box', fontFamily: 'inherit', fontSize: '14px' }}
                       value={form.catatan} 
                       onChange={(e) => setForm({...form, catatan: e.target.value})} 
                     />
