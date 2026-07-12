@@ -2,6 +2,8 @@ import { useMemo, useRef } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { TransitionGroup, CSSTransition } from "react-transition-group";
 import "./RouteTransitions.css";
+import PWAInstallBanner from "./components/common/PWAInstallBanner";
+import OfflineBanner from "./components/common/OfflineBanner";
 
 export default function App() {
   const location = useLocation();
@@ -24,19 +26,26 @@ export default function App() {
   const nodeRef = getNodeRef(location.pathname);
 
   return (
-    <div className="routeShell">
-      <TransitionGroup component={null}>
-        <CSSTransition
-          key={location.pathname}
-          nodeRef={nodeRef}
-          classNames="routeSlide"
-          timeout={950}
-        >
-          <div ref={nodeRef} className={`routePage routePage--${routeName}`}>
-            <Outlet />
-          </div>
-        </CSSTransition>
-      </TransitionGroup>
-    </div>
+    <>
+      {/* ── PWA Banners ── */}
+      <OfflineBanner />
+      <PWAInstallBanner />
+
+      <div className="routeShell">
+        <TransitionGroup component={null}>
+          <CSSTransition
+            key={location.pathname}
+            nodeRef={nodeRef}
+            classNames="routeSlide"
+            timeout={950}
+          >
+            <div ref={nodeRef} className={`routePage routePage--${routeName}`}>
+              <Outlet />
+            </div>
+          </CSSTransition>
+        </TransitionGroup>
+      </div>
+    </>
   );
 }
+
