@@ -157,7 +157,7 @@
   border-radius: 20px;
   padding: 32px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
-  border: 1px solid rgba(0,0,0,0.02);
+  border: 1px solid rgba(0, 0, 0, 0.02);
 }
 
 .registrasi-form-grid {
@@ -546,13 +546,20 @@ select.form-input {
   transform: translate(-50%, -100%);
   font-size: 32px;
   pointer-events: none;
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
   animation: bounce 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 @keyframes bounce {
-  0% { transform: translate(-50%, -200%); opacity: 0; }
-  100% { transform: translate(-50%, -100%); opacity: 1; }
+  0% {
+    transform: translate(-50%, -200%);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translate(-50%, -100%);
+    opacity: 1;
+  }
 }
 
 .map-overlay-text {
