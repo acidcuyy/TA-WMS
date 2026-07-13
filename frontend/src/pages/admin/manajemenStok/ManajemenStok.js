@@ -39,11 +39,27 @@ export default function ManajemenStok() {
 
   const gudangBranches = useMemo(() => branches.filter(b => b.type === "gudang"), [branches]);
 
+  const uniqueItems = useMemo(() => {
+    const map = new Map();
+    allStock.forEach(item => {
+      if (!map.has(item.sku)) {
+        map.set(item.sku, { 
+          kodeBarang: item.sku, 
+          namaBarang: item.name, 
+          kategori: item.category || "Elektronik", 
+          satuan: item.unit || "pcs" 
+        });
+      }
+    });
+    return Array.from(map.values());
+  }, [allStock]);
+
   const [openForm, setOpenForm] = useState(false);
   const [sentBanner, setSentBanner] = useState("");
   const [toast, setToast] = useState("");
 
   const [form, setForm] = useState({
+    jenisPenambahan: "lama",
     cabangGudang: "",
     kodeBarang: "",
     namaBarang: "",
@@ -60,6 +76,7 @@ export default function ManajemenStok() {
 
   const resetForm = () => {
     setForm({
+      jenisPenambahan: "lama",
       cabangGudang: gudangBranches.length > 0 ? gudangBranches[0].id : "",
       kodeBarang: "",
       namaBarang: "",
@@ -324,38 +341,83 @@ export default function ManajemenStok() {
                       {gudangBranches.length === 0 && <option value="">Tidak ada data gudang</option>}
                     </select>
                   </div>
-                  
-                  <div className="stokAdm__field">
-                    <span>Kode Barang</span>
-                    <input placeholder="contoh: BRG-021" value={form.kodeBarang} onChange={(e) => setForm({...form, kodeBarang: e.target.value})} />
-                  </div>
-                  <div className="stokAdm__field">
-                    <span>Nama Barang</span>
-                    <input placeholder="contoh: Pipa 1/2 inch" value={form.namaBarang} onChange={(e) => setForm({...form, namaBarang: e.target.value})} />
-                  </div>
-                  
-                  <div className="stokAdm__field">
-                    <span>Jenis Barang</span>
-                    <select value={form.kategori} onChange={(e) => setForm({...form, kategori: e.target.value})}>
-                      <option>Elektronik</option>
-                      <option>Plumbing</option>
-                      <option>Peralatan</option>
-                      <option>Material Bangunan</option>
-                      <option value="Lainnya">Pilihan Lain (Ketik sendiri)</option>
+                  <div className="stokAdm__field" style={{ gridColumn: "1 / -1" }}>
+                    <span>Jenis Penambahan</span>
+                    <select 
+                      value={form.jenisPenambahan} 
+                      onChange={(e) => setForm({...form, jenisPenambahan: e.target.value, kodeBarang: "", namaBarang: "", kategori: "Elektronik", satuan: "pcs"})}
+                    >
+                      <option value="lama">Barang Lama (Sudah Terdata)</option>
+                      <option value="baru">Barang Baru</option>
                     </select>
                   </div>
-                  {form.kategori === "Lainnya" && (
-                    <div className="stokAdm__field">
-                      <span>Sebutkan Jenis Barang</span>
-                      <input placeholder="Ketik jenis barang..." value={form.kategoriLain} onChange={(e) => setForm({...form, kategoriLain: e.target.value})} />
+
+                  {form.jenisPenambahan === "lama" ? (
+                    <div className="stokAdm__field" style={{ gridColumn: "1 / -1" }}>
+                      <span>Pilih Barang Terdata</span>
+                      <select 
+                        value={form.kodeBarang} 
+                        onChange={(e) => {
+                          const item = uniqueItems.find(i => i.kodeBarang === e.target.value);
+                          if (item) {
+                            setForm({
+                              ...form,
+                              kodeBarang: item.kodeBarang,
+                              namaBarang: item.namaBarang,
+                              kategori: item.kategori,
+                              satuan: item.satuan,
+                            });
+                          } else {
+                            setForm({...form, kodeBarang: ""});
+                          }
+                        }}
+                      >
+                        <option value="">-- Pilih Barang --</option>
+                        {uniqueItems.map(item => (
+                          <option key={item.kodeBarang} value={item.kodeBarang}>
+                            {item.kodeBarang} - {item.namaBarang} ({item.kategori})
+                          </option>
+                        ))}
+                        {uniqueItems.length === 0 && <option value="" disabled>Tidak ada barang terdata, silakan pilih Barang Baru</option>}
+                      </select>
                     </div>
+                  ) : (
+                    <>
+                      <div className="stokAdm__field">
+                        <span>Kode Barang</span>
+                        <input placeholder="contoh: BRG-021" value={form.kodeBarang} onChange={(e) => setForm({...form, kodeBarang: e.target.value})} />
+                      </div>
+                      <div className="stokAdm__field">
+                        <span>Nama Barang</span>
+                        <input placeholder="contoh: Pipa 1/2 inch" value={form.namaBarang} onChange={(e) => setForm({...form, namaBarang: e.target.value})} />
+                      </div>
+                      <div className="stokAdm__field">
+                        <span>Jenis Barang</span>
+                        <select value={form.kategori} onChange={(e) => setForm({...form, kategori: e.target.value})}>
+                          <option>Elektronik</option>
+                          <option>Plumbing</option>
+                          <option>Peralatan</option>
+                          <option>Material Bangunan</option>
+                          <option value="Lainnya">Pilihan Lain (Ketik sendiri)</option>
+                        </select>
+                      </div>
+                      {form.kategori === "Lainnya" && (
+                        <div className="stokAdm__field">
+                          <span>Sebutkan Jenis Barang</span>
+                          <input placeholder="Ketik jenis barang..." value={form.kategoriLain} onChange={(e) => setForm({...form, kategoriLain: e.target.value})} />
+                        </div>
+                      )}
+                    </>
                   )}
                   
-                  <div className="stokAdm__field" style={{ gridColumn: form.kategori === "Lainnya" ? "1 / -1" : "auto" }}>
+                  <div className="stokAdm__field" style={{ gridColumn: form.kategori === "Lainnya" && form.jenisPenambahan === "baru" ? "1 / -1" : "auto" }}>
                     <span>Jumlah & Satuan</span>
                     <div style={{ display: "flex", gap: "8px" }}>
                       <input type="number" placeholder="50" style={{ flex: 2 }} value={form.jumlah} onChange={(e) => setForm({...form, jumlah: e.target.value})} />
-                      <select style={{ flex: 1 }} value={form.satuan} onChange={(e) => setForm({...form, satuan: e.target.value})}>
+                      <select style={{ flex: 1 }} value={form.satuan} onChange={(e) => setForm({...form, satuan: e.target.value})} disabled={form.jenisPenambahan === "lama"}>
+                        {form.jenisPenambahan === "lama" && !["pcs", "box", "roll", "kg", "sak"].includes(form.satuan?.toLowerCase()) && (
+                          <option value={form.satuan}>{form.satuan}</option>
+                        )}
                         <option value="pcs">Pcs</option>
                         <option value="box">Box</option>
                         <option value="roll">Roll</option>

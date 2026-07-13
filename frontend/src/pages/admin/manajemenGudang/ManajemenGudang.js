@@ -175,7 +175,7 @@ export default function ManajemenGudang() {
       {/* MODAL LIHAT BUKTI */}
       <AnimatePresence>
         {showProof && (
-          <div className="mgAdmin__modalOverlay" onClick={() => setShowProof(false)}>
+          <div className="mgAdmin__modalOverlay" onClick={() => setShowProof(false)} style={{ zIndex: 10000 }}>
             <motion.div 
               className="mgAdmin__modal" 
               onClick={e => e.stopPropagation()}

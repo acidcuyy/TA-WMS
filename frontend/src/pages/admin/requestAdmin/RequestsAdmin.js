@@ -285,9 +285,12 @@ export default function RequestsAdmin() {
                            <button className="btn-icon" style={{color: '#ff4d4f'}} title="Tolak" onClick={() => adminDecideRestock(r.id, 'Declined')}>❌</button>
                          </>
                       )}
-                      {r.status === "Selesai" && (
-                        (activeTab === "Dari Gudang" && r.rawData?.proofImage) ||
-                        (activeTab === "Dari Admin ke Gudang (Saya)" && (r.rawData?.proofCheckBarang || r.rawData?.proofResiDriver || r.rawData?.proofPemasukanBarang))
+                      { (
+                        r.rawData?.proofImage || 
+                        r.rawData?.driverProof || 
+                        r.rawData?.proofCheckBarang || 
+                        r.rawData?.proofResiDriver || 
+                        r.rawData?.proofPemasukanBarang
                       ) ? (
                         <button className="btn-icon" style={{fontSize: '16px'}} title="Lihat Bukti Foto" onClick={() => openProof(r.rawData)}>📸</button>
                       ) : null}
@@ -438,7 +441,7 @@ export default function RequestsAdmin() {
       {/* PROOF VIEW MODAL */}
       <AnimatePresence>
         {showProof && proofData && (
-          <div className="rqAdmin__overlay" onClick={() => setShowProof(false)} style={{ zIndex: 1000 }}>
+          <div className="rqAdmin__overlay" onClick={() => setShowProof(false)} style={{ zIndex: 10000 }}>
             <motion.div
               className="rqAdmin__modal"
               onClick={e => e.stopPropagation()}
@@ -473,29 +476,42 @@ export default function RequestsAdmin() {
                   </div>
                 )}
                 <div style={{ textAlign: 'center' }}>
-                  {proofData.proofImage ? (
-                    <img src={proofData.proofImage} alt="Bukti" style={{ width: '100%', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.15)', border: '4px solid white' }} />
-                  ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', textAlign: 'left' }}>
-                      {[
-                        { label: "Bukti Check Barang", data: proofData.proofCheckBarang },
-                        { label: "Bukti Resi & Driver", data: proofData.proofResiDriver },
-                        { label: "Bukti Pemasukan Barang", data: proofData.proofPemasukanBarang },
-                      ].map((sec, idx) => {
-                        let imgs = [];
-                        try { imgs = JSON.parse(sec.data || "[]"); } catch(e){}
-                        if (imgs.length === 0) return null;
-                        return (
-                          <div key={idx}>
-                            <h4 style={{marginBottom: '8px'}}>{sec.label}</h4>
-                            <div style={{display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px'}}>
-                              {imgs.map((src, i) => <img key={i} src={src} style={{height: '150px', borderRadius: '8px', border: '1px solid #ddd'}} alt="proof"/>)}
-                            </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', textAlign: 'left' }}>
+                    {[
+                      { label: "Bukti Check Barang", data: proofData.proofCheckBarang },
+                      { label: "Bukti Resi & Driver", data: proofData.proofResiDriver },
+                      { label: "Bukti Pemasukan Barang", data: proofData.proofPemasukanBarang },
+                    ].map((sec, idx) => {
+                      let imgs = [];
+                      try { imgs = JSON.parse(sec.data || "[]"); } catch(e){}
+                      if (imgs.length === 0) return null;
+                      return (
+                        <div key={idx}>
+                          <h4 style={{marginBottom: '8px'}}>{sec.label}</h4>
+                          <div style={{display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px'}}>
+                            {imgs.map((src, i) => <img key={i} src={src} style={{height: '150px', borderRadius: '8px', border: '1px solid #ddd'}} alt="proof"/>)}
                           </div>
-                        )
-                      })}
-                    </div>
-                  )}
+                        </div>
+                      )
+                    })}
+
+                    {proofData.driverProof && (
+                      <div>
+                        <h4 style={{marginBottom: '8px'}}>Bukti Pengiriman Driver</h4>
+                        <div style={{display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px'}}>
+                          {proofData.driverProof.foto && <img src={proofData.driverProof.foto} style={{height: '150px', borderRadius: '8px', border: '1px solid #ddd'}} alt="Foto Driver" title="Foto Bukti Barang di Kendaraan" />}
+                          {proofData.driverProof.resi && <img src={proofData.driverProof.resi} style={{height: '150px', borderRadius: '8px', border: '1px solid #ddd'}} alt="Foto Resi" title="Foto Resi Pengiriman" />}
+                        </div>
+                      </div>
+                    )}
+
+                    {proofData.proofImage && (
+                      <div>
+                        <h4 style={{marginBottom: '8px'}}>Bukti Penerimaan</h4>
+                        <img src={proofData.proofImage} alt="Bukti Terima" style={{ width: '100%', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.15)', border: '4px solid white' }} />
+                      </div>
+                    )}
+                  </div>
                 </div>
                 
                 <div className="rqAdmin__modalFoot" style={{ marginTop: '24px' }}>

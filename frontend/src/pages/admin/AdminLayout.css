@@ -25,6 +25,8 @@
   justify-content: space-between;
   padding: 0 32px;
   flex-shrink: 0;
+  position: relative;
+  z-index: 9999;
 }
 
 .admin-topbar__left {

@@ -5,7 +5,7 @@
 .topbar{
   position: sticky;
   top: 0;
-  z-index: 50;
+  z-index: 9999;
 
   height: 100px;
   padding: 0 10px;

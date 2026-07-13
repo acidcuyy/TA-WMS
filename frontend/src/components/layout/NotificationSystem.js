@@ -67,14 +67,101 @@ export default function NotificationSystem({ role }) {
     markNotificationAsRead(n.id);
     setIsOpen(false);
     
-    // Simple routing based on role and type
-    const base = `/${role.toLowerCase()}`;
-    if (n.type === 'request_toko' || n.type === 'request_accepted' || n.type === 'request_declined') {
-      navigate(`${base}/requests`);
-    } else if (n.type === 'shipping') {
-      navigate(`${base}/requests`); // Or specific shipping page if available
-    } else if (n.type === 'restock_new' || n.type === 'restock_accepted') {
-      navigate(`${base}/requests`);
+    const roleLower = role.toLowerCase();
+    const base = `/${roleLower}`;
+
+    // Extract ID from message, e.g. REQ-123456 or ADM-RST-12345
+    const extractId = (msg) => {
+      if (!msg) return null;
+      // Match REQ-123456 or ADM-RST-123456 or TRF-123456
+      const match = msg.match(/[A-Z]+(?:-[A-Z]+)*-\d+/i);
+      return match ? match[0].toUpperCase() : null;
+    };
+    
+    const relatedId = extractId(n.message);
+    const msgLower = (n.message || "").toLowerCase();
+    const titleLower = (n.title || "").toLowerCase();
+
+    // Prioritize tracking/shipping notifications
+    const isShippingRelated = 
+      n.type === 'pickup' || 
+      n.type === 'shipping' || 
+      n.type === 'shipping_complete' || 
+      n.type === 'received' ||
+      titleLower.includes('pengiriman') || 
+      msgLower.includes('dalam perjalanan');
+
+    console.log("NOTIF CLICK DEBUG:", {
+      role: roleLower, 
+      type: n.type, 
+      title: titleLower, 
+      relatedId, 
+      isShippingRelated
+    });
+
+    if (isShippingRelated) {
+        if (roleLower === 'driver') {
+          navigate(`${base}/tracking`);
+        }
+        else if (roleLower === 'toko') {
+          const dest = relatedId ? `${base}/pengiriman/${relatedId}` : `${base}/request`;
+          console.log("Navigating Toko to:", dest);
+          navigate(dest);
+        }
+        else if (roleLower === 'gudang') {
+          const dest = relatedId ? `${base}/pengiriman/${relatedId}` : `${base}/pengiriman`;
+          console.log("Navigating Gudang to:", dest);
+          navigate(dest);
+        }
+        else if (roleLower === 'admin') {
+          const dest = relatedId ? `${base}/pengiriman/${relatedId}` : `${base}/requests`;
+          console.log("Navigating Admin to:", dest);
+          navigate(dest);
+        }
+        return;
+    }
+
+    switch(n.type) {
+      // Requests from Toko
+      case 'request_toko':
+      case 'request_accepted':
+      case 'request_declined':
+        if (roleLower === 'toko') navigate(`${base}/request`, { state: { openRequestId: relatedId } });
+        else navigate(`${base}/requests`, { state: { openRequestId: relatedId } });
+        break;
+        
+      // Restock (Gudang -> Admin)
+      case 'restock_new':
+      case 'restock_accepted':
+      case 'restock_done':
+        navigate(`${base}/requests`, { state: { openRequestId: relatedId } });
+        break;
+
+      // Admin Restock (Admin -> Gudang)
+      case 'admin_restock_new':
+      case 'admin_restock_accepted':
+      case 'admin_restock_done':
+        if (roleLower === 'gudang') navigate(`${base}/orders`, { state: { openRequestId: relatedId } });
+        else navigate(`${base}/requests`, { state: { openRequestId: relatedId } });
+        break;
+
+      // Reports
+      case 'toko_report_new':
+      case 'gudang_report_new':
+        if (roleLower === 'admin') navigate(`${base}/laporan`);
+        break;
+
+      default:
+        // Fallbacks for unmapped types
+        if (n.type && n.type.includes('report')) {
+          navigate(`${base}/laporan`);
+        } else if (n.type && (n.type.includes('restock') || n.type.includes('request'))) {
+          if (roleLower === 'toko') navigate(`${base}/request`, { state: { openRequestId: relatedId } });
+          else navigate(`${base}/requests`, { state: { openRequestId: relatedId } });
+        } else {
+          navigate(base); // Dashboard fallback
+        }
+        break;
     }
   };
 

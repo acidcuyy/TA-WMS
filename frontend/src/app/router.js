@@ -151,6 +151,7 @@ export const router = createBrowserRouter([
           { index: true, element: <TokoDashboard /> },
 
           { path: "request", element: <RequestToko /> },
+          { path: "requests", element: <RequestToko /> }, // alias to prevent 404
 
           { path: "stok", element: <StokToko /> },
           { path: "penerimaan", element: <PenerimaanBarangToko /> },

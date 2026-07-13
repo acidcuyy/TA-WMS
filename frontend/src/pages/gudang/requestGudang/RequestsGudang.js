@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import Card from "../../../components/common/Card";
 import "./RequestsGudang.css";
@@ -27,6 +27,7 @@ const getStatusClass = (status) => {
 
 export default function RequestsGudang() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState("Semua Request");
 
   const [allReq, setAllReq] = useState([]);
@@ -52,20 +53,13 @@ export default function RequestsGudang() {
     // Subscribe to users to get drivers count for this company
     const unsubUsers = subscribeBranchUsers?.((users) => {
       if (!users) return;
-      console.log("Users fetched:", users);
       const count = users.filter(u => String(u.role).toLowerCase() === "driver").length;
-      console.log("Driver count:", count);
       setDriversCount(count);
     });
 
     return () => { unsubReq?.(); unsubAdminReq?.(); unsubUsers?.(); };
   }, []);
-  
-  const openProof = (img) => {
-    setProofImg(img);
-    setProofOpen(true);
-  };
-  
+
   const displayedRequests = useMemo(() => {
     const currentBranchId = sessionStorage.getItem("reastock_branch_id") || "BRC-001";
     
@@ -89,6 +83,22 @@ export default function RequestsGudang() {
     if (activeTab === "Restock Admin") return mappedAdminRestock;
     return [...tokoReq, ...mappedAdminRestock];
   }, [allReq, adminRestock, activeTab]);
+
+  useEffect(() => {
+    if (location.state?.openRequestId && displayedRequests && displayedRequests.length > 0) {
+      const found = displayedRequests.find(r => r.id === location.state.openRequestId);
+      if (found && !detailModal.open) {
+        setDetailModal({ open: true, data: found });
+        navigate(location.pathname, { replace: true, state: {} });
+      }
+    }
+  }, [location.state, displayedRequests, navigate, location.pathname, detailModal.open]);
+  
+  const openProof = (img) => {
+    setProofImg(img);
+    setProofOpen(true);
+  };
+
 
   const stats = [
     { label: "Request Toko", value: allReq.filter(r => r.fromRole?.toLowerCase() === "toko").length, sub: "Total", icon: "📥", color: "#1890ff", bg: "#e6f7ff" },

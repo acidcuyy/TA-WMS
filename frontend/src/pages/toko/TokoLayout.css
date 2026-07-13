@@ -28,7 +28,7 @@
   justify-content: space-between;
   position: sticky;
   top: 0;
-  z-index: 90;
+  z-index: 9999;
 }
 
 .toko-topbar__left {
