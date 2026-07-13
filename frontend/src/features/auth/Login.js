@@ -37,7 +37,7 @@ export default function Login() {
     e.preventDefault();
     setError("");
 
-    const eLower = email.trim().toLowerCase();
+    const eLower = email.trim();
     const p = password.trim();
 
     try {
