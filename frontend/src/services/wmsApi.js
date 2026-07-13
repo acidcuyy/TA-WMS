@@ -1,6 +1,6 @@
 // src/services/wmsApi.js
 
-const API_URL = "http://localhost:3000/api";
+const API_URL = "https://reastock.site/api";
 
 function authHeader() {
   const token = sessionStorage.getItem("reastock_token");
@@ -35,10 +35,10 @@ function makePollingSubscription(path, callback, intervalMs = 3000) {
       console.error(`Subscription error for ${path}:`, e);
     }
   };
-  
+
   fetchData();
   const timer = setInterval(fetchData, intervalMs);
-  
+
   return () => {
     active = false;
     clearInterval(timer);
@@ -428,8 +428,8 @@ export function sendHeartbeat() {
 
 // Dummy storage Db triggers (compatibility)
 export const loadDb = () => ({});
-export const saveDb = () => {};
-export const updateDb = () => {};
+export const saveDb = () => { };
+export const updateDb = () => { };
 export function subscribeDb(callback) {
-  return () => {};
+  return () => { };
 }
