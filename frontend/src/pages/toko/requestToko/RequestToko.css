@@ -439,51 +439,57 @@ select.input-field {
   filter: brightness(1.1);
 }
 
-/* RESPONSIVE AUTO-GENERATED */
+/* RESPONSIVE */
 @media (max-width: 1024px) {
-  .request-toko__main {
-    grid-template-columns: 1fr !important;
-  }
-  .request-toko__summary {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) !important;
-  }
-  .form-grid {
-    grid-template-columns: 1fr !important;
-  }
+  .request-toko__main { grid-template-columns: 1fr !important; }
+  .request-toko__summary { grid-template-columns: repeat(3, 1fr) !important; }
+  .form-grid { grid-template-columns: 1fr !important; }
 }
 
 @media (max-width: 768px) {
-  .request-toko {
-    padding: 16px !important;
+  .request-toko { padding: 14px 12px 90px !important; }
+  .request-toko__header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
   }
-  .request-toko__header-top, .header-actions, .stok-filters {
-    flex-wrap: wrap;
+  .request-toko__title-section h1 { font-size: 20px !important; }
+  .request-toko__summary {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
   }
-  [class*="-list-card"], [class*="-table-card"], .table-container {
-    overflow-x: auto;
-  }
-  
-  /* Mengubah HTML table menjadi Card View */
+  .summary-card { padding: 14px !important; }
+  .request-toko__header-top, .header-actions, .stok-filters { flex-wrap: wrap !important; }
+
   .request-table, .request-table tbody, .request-table tr, .request-table td {
-    display: block;
-    width: 100%;
+    display: block !important; width: 100% !important;
   }
-  .request-table thead, .request-table th {
-    display: none;
-  }
+  .request-table thead, .request-table th { display: none !important; }
   .request-table tr {
-    margin-bottom: 12px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 12px;
+    margin-bottom: 12px !important; background: var(--bg) !important;
+    border: 1px solid var(--border) !important; border-radius: 12px !important; padding: 12px !important;
   }
   .request-table td {
-    padding: 8px 0;
-    text-align: left;
-    border-bottom: 1px solid var(--border-subtle);
+    padding: 6px 0 !important; border-bottom: 1px solid var(--border-subtle) !important;
   }
-  .request-table td:last-child {
-    border-bottom: none;
+  .request-table td:last-child { border-bottom: none !important; }
+
+  .mgAdmin__modalOverlay { align-items: flex-end !important; padding: 0 !important; }
+  .mgAdmin__modal {
+    border-radius: 22px 22px 0 0 !important; max-width: 100% !important;
+    width: 100% !important; max-height: 92vh !important; overflow-y: auto !important;
   }
 }
+
+@media (max-width: 480px) {
+  .request-toko__summary {
+    grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important;
+  }
+  .summary-card { padding: 10px !important; gap: 6px !important; }
+  .summary-card__icon { width: 32px !important; height: 32px !important; font-size: 14px !important; }
+  .summary-card__value { font-size: 16px !important; }
+  .summary-card__label { font-size: 10px !important; }
+  .request-form-card, .request-list-card { padding: 14px !important; }
+  .mgAdmin__modalHead h3 { font-size: 16px !important; }
+}
+

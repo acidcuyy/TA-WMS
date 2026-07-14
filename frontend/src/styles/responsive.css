@@ -1,0 +1,647 @@
+/* ===================================================================
+   GLOBAL RESPONSIVE — ReaStock WMS
+   Covers ALL pages: Gudang, Toko, Admin, Driver
+   =================================================================== */
+
+/* ─── Prevent horizontal overflow ─── */
+html, body {
+  overflow-x: hidden;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+img, video, svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ─── Wrap long text everywhere ─── */
+h1, h2, h3, h4, h5, p, span, label, td, th {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* ─── Input iOS zoom fix ─── */
+@media (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* ===================================================================
+   TABLET (<=1024px)
+   =================================================================== */
+@media (max-width: 1024px) {
+
+  /* ── Semua summary card & stats: 5 kolom → 3 kolom ── */
+  .request-toko__summary,
+  .penerimaan-toko__summary,
+  [class*="__summary"],
+  [class*="-summary"],
+  [class*="__stats"],
+  [class*="-stats"] {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+
+  /* ── Stats 4–5 kolom → 2 kolom ── */
+  .rqGudang__stats,
+  .rqAdmin__stats {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* ── Main 2-kolom layout → 1 kolom ── */
+  .request-toko__main,
+  [class*="__main"],
+  [class*="-main"],
+  [class*="__topGrid"],
+  [class*="topGrid"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── Form grid 2 kolom → 1 kolom ── */
+  .form-grid,
+  .formGrid,
+  .form-group-row {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── Admin profile & settings grid → 1 kolom ── */
+  .profile-content-grid,
+  .settings-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .profile-card.full-width,
+  .settings-card.full-width {
+    grid-column: span 1 !important;
+  }
+
+  /* ── Sembunyikan info teks di topbar ── */
+  .loc-info,
+  .user-info-text,
+  .admin-info,
+  .store-info,
+  .user-info {
+    display: none !important;
+  }
+}
+
+/* ===================================================================
+   MOBILE (≤ 768px)
+   =================================================================== */
+@media (max-width: 768px) {
+
+  /* ── Padding semua halaman ── */
+  .request-toko,
+  .penerimaan-toko,
+  .pengeluaran-toko,
+  .stok-toko,
+  .riwayat-toko,
+  .retur-toko,
+  .laporan-gudang,
+  .stok-gudang,
+  .pageAdmin-container,
+  .profile-page,
+  .settings-page,
+  .gdash,
+  .pageAdmin,
+  .stokAdm,
+  .laporan-admin,
+  .ddash {
+    padding: 14px 12px 90px !important;
+  }
+
+
+  /* ── Summary cards & stats: 3 → 2 kolom ── */
+  .request-toko__summary,
+  .penerimaan-toko__summary,
+  [class*="__summary"],
+  [class*="-summary"],
+  [class*="__stats"],
+  [class*="-stats"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  /* ── Summary card & stat card isi kompak ── */
+  .summary-card,
+  [class*="statCard"],
+  [class*="-stat-card"] {
+    padding: 14px !important;
+    gap: 8px !important;
+  }
+  .summary-card__value,
+  [class*="statValue"] {
+    font-size: 18px !important;
+  }
+  .summary-card__icon,
+  [class*="statIcon"] {
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 16px !important;
+  }
+
+  /* rqGudang & rqAdmin stats ── */
+  .rqGudang__stats,
+  .rqAdmin__stats {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+    margin-bottom: 20px !important;
+  }
+
+  /* ── Header semua halaman → flex column ── */
+  .request-toko__header,
+  .penerimaan-toko__header,
+  [class*="__header"],
+  [class*="-header"],
+  [class*="__head"],
+  [class*="-head"] {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+
+  .rqAdmin__headRight,
+  [class*="__headRight"] {
+    align-items: flex-start !important;
+    width: 100% !important;
+  }
+
+
+  /* Tombol di header: full width */
+  .btn-buat-request,
+  .request-toko__header button,
+  .penerimaan-toko__header button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  /* Filter bar: wrap */
+  .rqGudang__filterBar,
+  [class*="filterBar"],
+  [class*="filter-bar"],
+  .stok-filters {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+  .rqGudang__searchWrap {
+    width: 100% !important;
+    flex: none !important;
+  }
+  .rqGudang__select,
+  [class*="__select"] {
+    flex: 1 !important;
+    min-width: 0 !important;
+  }
+
+  /* Tabs: scroll horizontal */
+  .rqGudang__tabs,
+  [class*="__tabs"],
+  [class*="-tabs"] {
+    overflow-x: auto !important;
+    gap: 16px !important;
+    padding-bottom: 4px !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .rqGudang__tabs::-webkit-scrollbar,
+  [class*="__tabs"]::-webkit-scrollbar {
+    display: none;
+  }
+  .rqGudang__tab,
+  [class*="__tab"] {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Card grid produk: 2 kolom */
+  .rqGudang__grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  /* Judul halaman */
+  h1 {
+    font-size: 20px !important;
+    line-height: 1.3 !important;
+  }
+
+  /* Dashboard Gudang */
+  .gdash__head {
+    flex-direction: column !important;
+    gap: 10px !important;
+    margin-bottom: 16px !important;
+  }
+  .gdash__dateCard {
+    width: 100% !important;
+  }
+  .gdash__stats {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+  .gdash__chartsGrid,
+  .gdash__dataGrid {
+    grid-template-columns: 1fr !important;
+  }
+  .gdash__actionsGrid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+  }
+  .gdash__actionBtn {
+    padding: 12px 6px !important;
+    font-size: 11px !important;
+    gap: 4px !important;
+  }
+  .gdash__card {
+    padding: 16px !important;
+  }
+  .gdash__statCard {
+    padding: 14px !important;
+  }
+  .gdash__statMain h3 {
+    font-size: 20px !important;
+  }
+
+  /* HTML table → card view (semua table) */
+  .request-table, .request-table tbody, .request-table tr, .request-table td,
+  .penerimaan-table, .penerimaan-table tbody, .penerimaan-table tr, .penerimaan-table td,
+  .gdash__table, .gdash__table tbody, .gdash__table tr, .gdash__table td,
+  [class*="__table"], [class*="__table"] tbody, [class*="__table"] tr, [class*="__table"] td,
+  [class*="-table"], [class*="-table"] tbody, [class*="-table"] tr, [class*="-table"] td,
+  [class*="Table"], [class*="Table"] tbody, [class*="Table"] tr, [class*="Table"] td {
+    display: block !important;
+    width: 100% !important;
+  }
+  .request-table thead, .request-table th,
+  .penerimaan-table thead, .penerimaan-table th,
+  .gdash__table thead, .gdash__table th,
+  [class*="__table"] thead, [class*="__table"] th,
+  [class*="-table"] thead, [class*="-table"] th,
+  [class*="Table"] thead, [class*="Table"] th {
+    display: none !important;
+  }
+  .request-table tr,
+  .penerimaan-table tr,
+  .gdash__table tr,
+  [class*="__table"] tr,
+  [class*="-table"] tr,
+  [class*="Table"] tr {
+    margin-bottom: 10px !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 12px !important;
+    padding: 12px !important;
+    background: var(--bg) !important;
+  }
+  .request-table td,
+  .penerimaan-table td,
+  .gdash__table td,
+  [class*="__table"] td,
+  [class*="-table"] td,
+  [class*="Table"] td {
+    padding: 6px 0 !important;
+    border-bottom: 1px solid var(--border-subtle) !important;
+    font-size: 13px !important;
+    text-align: left !important;
+  }
+  .request-table td:last-child,
+  .penerimaan-table td:last-child,
+  .gdash__table td:last-child,
+  [class*="__table"] td:last-child,
+  [class*="-table"] td:last-child,
+  [class*="Table"] td:last-child {
+    border-bottom: none !important;
+  }
+
+  /* Modal: sheet dari bawah */
+  .mgAdmin__modalOverlay,
+  .rqGudang__modalOverlay,
+  .modalOverlay,
+  [class*="modalOverlay"],
+  [class*="modal-overlay"],
+  [class*="ModalOverlay"] {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+  .mgAdmin__modal,
+  .rqGudang__modal,
+  .modalCard,
+  [class*="__modal"]:not([class*="Overlay"]):not([class*="Head"]):not([class*="Body"]):not([class*="Footer"]):not([class*="Close"]):not([class*="Head"]):not([class*="Btn"]):not([class*="Foot"]) {
+    border-radius: 22px 22px 0 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 92vh !important;
+    overflow-y: auto !important;
+  }
+
+  /* Admin profile */
+  .header-stats {
+    width: 100% !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+  }
+  .mini-stat-card {
+    flex: 1 1 calc(50% - 5px) !important;
+    min-width: 0 !important;
+  }
+  .profile-hero-section {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 16px !important;
+  }
+  .hero-actions {
+    width: 100% !important;
+    flex-direction: column !important;
+  }
+  .hero-actions button {
+    width: 100% !important;
+  }
+  .info-item {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 4px !important;
+  }
+  .info-value {
+    word-break: break-word !important;
+  }
+  .settings-row-modern {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+  .sync-controls {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+  .card-actions {
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+  .card-actions button {
+    width: 100% !important;
+  }
+
+  /* Theme options */
+  .theme-options {
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+  }
+  .theme-option-card {
+    flex: 1 1 calc(50% - 5px) !important;
+    min-width: 0 !important;
+  }
+
+  /* Notif dropdown */
+  .topbar__menu--notif {
+    width: calc(100vw - 20px) !important;
+    right: 0 !important;
+    left: 10px !important;
+  }
+
+  /* Section header */
+  .sectionHeader {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+  .btnRow {
+    width: 100% !important;
+    flex-wrap: wrap !important;
+  }
+  .btnPrimary, .btnGhost {
+    flex: 1 !important;
+    text-align: center !important;
+    justify-content: center !important;
+    display: flex !important;
+  }
+
+  /* Pagination */
+  .rqGudang__footer {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  /* Stock cards */
+  .stockCard {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+  .stockImageWrap {
+    width: 100% !important;
+    height: 160px !important;
+  }
+}
+
+/* ===================================================================
+   SMALL MOBILE (<=480px)
+   =================================================================== */
+@media (max-width: 480px) {
+
+  /* Summary: tetap 2 kolom tapi lebih compact */
+  .request-toko__summary,
+  .penerimaan-toko__summary,
+  [class*="__summary"],
+  [class*="-summary"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .summary-card {
+    padding: 10px !important;
+    gap: 6px !important;
+  }
+  .summary-card__icon {
+    width: 30px !important;
+    height: 30px !important;
+    font-size: 14px !important;
+  }
+  .summary-card__value {
+    font-size: 16px !important;
+  }
+  .summary-card__label {
+    font-size: 10px !important;
+  }
+
+  /* Card grid → 1 kolom */
+  .rqGudang__grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Dashboard stats */
+  .gdash__stats {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+  .gdash__statCard {
+    padding: 12px !important;
+    gap: 8px !important;
+  }
+  .gdash__statMain h3 {
+    font-size: 18px !important;
+  }
+  .gdash__actionsGrid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 6px !important;
+  }
+  .gdash__actionBtn {
+    padding: 10px 4px !important;
+    font-size: 10px !important;
+    border-radius: 12px !important;
+  }
+
+  /* Heading */
+  h1 {
+    font-size: 18px !important;
+  }
+
+  /* Topbar search sembunyi */
+  .topbar__search {
+    display: none !important;
+  }
+
+  /* Mini stat cards */
+  .mini-stat-card {
+    flex: 1 1 100% !important;
+  }
+
+  /* Theme card */
+  .theme-option-card {
+    flex: 1 1 100% !important;
+  }
+
+  /* rqGudang select full width */
+  .rqGudang__select {
+    width: 100% !important;
+    flex: none !important;
+  }
+
+  /* Detail table di modal */
+  .detailTable thead,
+  .detailTable th {
+    display: none !important;
+  }
+  .detailTable tr {
+    display: block !important;
+    margin-bottom: 8px !important;
+    padding: 10px !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 10px !important;
+  }
+  .detailTable td {
+    display: block !important;
+    padding: 4px 0 !important;
+    font-size: 12px !important;
+    border-bottom: 1px solid var(--border-subtle) !important;
+  }
+  .detailTable td:last-child {
+    border-bottom: none !important;
+  }
+
+  .la-filters {
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 12px !important;
+  }
+  .la-date-filters {
+    margin-left: 0 !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+  .la-date-filters input {
+    flex: 1 1 calc(50% - 30px) !important;
+    min-width: 110px !important;
+    padding: 8px 10px !important;
+  }
+  .la-date-filters span {
+    white-space: nowrap !important;
+    margin: 0 4px !important;
+  }
+  .la-btn-print-batch {
+    width: 100% !important;
+    justify-content: center !important;
+    margin-top: 8px !important;
+  }
+
+  /* ── Panel Head Flex Wrap Fix ── */
+  .stokAdm__panelHead,
+  [class*="__panelHead"],
+  [class*="-panelHead"],
+  [class*="__panel-head"],
+  [class*="-panel-head"] {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    width: 100% !important;
+  }
+  .stokAdm__panelHead h2,
+  [class*="__panelHead"] h2,
+  .stokAdm__panelHead h3,
+  [class*="__panelHead"] h3,
+  .stokAdm__panelHead p,
+  [class*="__panelHead"] p {
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+  }
+  .stokAdm__panelHead > div,
+  [class*="__panelHead"] > div {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  .stokAdm__panelHead > div:last-child,
+  [class*="__panelHead"] > div:last-child,
+  [class*="-panelHead"] > div:last-child {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  /* ── Panel Card Width Limit Fix (No scroll horizontally) ── */
+  .stokAdm__panel,
+  [class*="__panel"],
+  [class*="-panel"],
+  .la-card {
+    max-width: 100% !important;
+    width: 100% !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+    padding: 16px !important;
+  }
+
+  /* ── Date Range Picker component mobile ── */
+  .date-range-wrap {
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 6px 10px !important;
+  }
+  .date-range-input {
+    font-size: 13px !important;
+    flex: 1 !important;
+    min-width: 0 !important;
+    width: auto !important;
+  }
+
+  /* ── Driver pages layout improvements ── */
+  .ddash__grid {
+    grid-template-columns: 1fr !important;
+  }
+  .active-card__details {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .point-info {
+    word-break: break-word !important;
+  }
+}
+
